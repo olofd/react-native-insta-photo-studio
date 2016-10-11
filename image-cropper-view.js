@@ -13,18 +13,17 @@ import {
   PixelRatio,
   ImageEditor
 } from 'react-native';
-import ImageCropTool from 'react-native-image-crop';
 import ImageEffects from './effects/ImageEffects';
 import MultiImageFilterer from './filters/shaders/multi-shader';
 import FilteredImage from './filters/filtered-image';
 import PhotoGrid from './photo-grid';
-import FilterPreviewItem from './filters/filter-preview-item';
-import filters from './filters/filter-settings';
 import Icon from 'react-native-vector-icons/Ionicons';
 import fbjsPerformanceNow from 'fbjs/lib/performanceNow';
 import {ScrollViewPanDelegator, BoundarySwipeDelgator, ContentOffsetDelegator, swipeUpOrDownDetector} from './scroll-view-pan-delegator';
 import ImageResizer from 'react-native-image-resizer';
 import BlockView from 'react-native-scroll-block-view';
+const performanceNow = global.nativePerformanceNow || fbjsPerformanceNow;
+
 export default class ImageCrop extends Component {
   constructor(props) {
     super(props);
@@ -32,7 +31,6 @@ export default class ImageCrop extends Component {
     this.state = {
       imageReady: false,
       currentImageDimensions: null,
-      filters: filters,
       currentFilter: null,
       currentImage: null,
       scrollEnabled: false
@@ -51,16 +49,16 @@ export default class ImageCrop extends Component {
     let newY = height * offsetY;
     let newWidth = width / (this.lastScrollEvent.zoomScale * this.props.magnification);
     let newHeight = width / (this.lastScrollEvent.zoomScale * this.props.magnification);
-    if(newWidth > width){
+    if (newWidth > width) {
       newWidth = width;
     }
-    if(newHeight > height){
+    if (newHeight > height) {
       newHeight = height;
     }
-    if(newX < 0){
+    if (newX < 0) {
       newX = 0;
     }
-    if(newY < 0) {
+    if (newY < 0) {
       newY = 0;
     }
     const cropData = {
@@ -273,16 +271,16 @@ export default class ImageCrop extends Component {
         const {pointX, pointY} = this.lastPress;
         const {pageX, pageY} = e.nativeEvent;
         const totalDiff = (pointX - pageX) + (pointY - pageY);
-        if(totalDiff > -20 && totalDiff < 20) {
+        if (totalDiff > -20 && totalDiff < 20) {
           // double tap happend
           this.toogleViewportZoom();
         }
       }
     }
     this.lastPress = {
-      time : now,
-      pointY : e.nativeEvent.pageY,
-      pointX : e.nativeEvent.pageX
+      time: now,
+      pointY: e.nativeEvent.pageY,
+      pointX: e.nativeEvent.pageX
     };
   }
 
@@ -339,7 +337,7 @@ export default class ImageCrop extends Component {
           scrollEnabled={this.state.scrollEnabled}>
           {this.renderMainImage(this.state.currentImageDimensions, previewImageDimensions)}
         </ScrollView>
-</BlockView>
+      </BlockView>
     );
   }
 
@@ -395,7 +393,7 @@ const styles = StyleSheet.create({
     marginLeft: 5
   },
   zoomButtonContainer: {
-    position : 'absolute',
+    position: 'absolute',
     bottom: 12,
     left: 12,
     alignItems: 'center',

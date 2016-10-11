@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import fonts from 'GKFonts';
+import fonts from '../fonts';
 import FilteredImage from './filtered-image';
 export default class FilterPreviewItem extends Component {
 

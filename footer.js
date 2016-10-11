@@ -1,9 +1,7 @@
 import {View, Text, StyleSheet, PixelRatio, TouchableOpacity} from 'react-native';
-import Component from 'GKComponent';
-import React from 'react';
+import React, { Component } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
-import colors from 'GKColors';
-import fonts from 'GKFonts';
+import fonts from './fonts';
 export default class PhotoManagerHeader extends Component {
 
   render() {

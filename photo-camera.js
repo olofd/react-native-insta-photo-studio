@@ -7,11 +7,9 @@ import {
   Dimensions,
   Image
 } from 'react-native';
-import Component from 'GKComponent';
-import React from 'react';
+import React, { Component } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
-import colors from 'GKColors';
-import fonts from 'GKFonts';
+import fonts from './fonts';
 import Camera from 'react-native-camera';
 
 export default class PhotoCamera extends Component {

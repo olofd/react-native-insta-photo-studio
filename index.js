@@ -10,18 +10,14 @@ import {
   InteractionManager,
   Easing
 } from 'react-native';
-import {BlurView, VibrancyView} from 'react-native-blur';
-import fonts from 'GKFonts';
+import fonts from './fonts.js';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Component from 'GKComponent';
-import React from 'react';
+import React, { Component } from 'react';
 import Header from './header';
 import Footer from './footer';
 import ImageCopperView from './image-cropper-view';
 import CameraRollPicker from './camera-roll-picker';
 import PhotoCamera from './photo-camera';
-import {Actions as NavigationActions} from 'react-native-router-flux';
-import {inject, observer} from 'mobx-react/native';
 import Swiper from 'react-native-swiper';
 import ImageCropperViewSwitch from './image-cropper-view-switch';
 import clamp from 'clamp';
@@ -29,7 +25,6 @@ const SCROLLVIEW_REF = "SCROLLVIEW_REF";
 const TOP_BAR_HEIGHT = 45;
 const FOOTER_HEIGHT = 45;
 
-@inject('appStore', 'navigationActions')@observer
 export default class PhotoManager extends Component {
 
   constructor() {
@@ -124,7 +119,7 @@ export default class PhotoManager extends Component {
   onAnimatedViewLayout(e) {
     const newHeight = e.nativeEvent.layout.height;
     console.log('NEW HEIGHT', newHeight);
-    if ((this.state.animatedViewHeight + this.props.appStore.window.width) !== e.nativeEvent.layout.height) {
+    if ((this.state.animatedViewHeight + this.props.window.width) !== e.nativeEvent.layout.height) {
       //  this.setState({animatedViewHeight: e.nativeEvent.layout.height});
     }
   }
@@ -142,7 +137,7 @@ export default class PhotoManager extends Component {
       return;
     }
     const fixedValue = ((-val) + this.startValue);
-    const minimum = -this.props.appStore.window.width;
+    const minimum = -this.props.window.width;
     const maximum = 0;
     if (fixedValue > minimum && fixedValue < maximum) {
       return clamp(minimum, fixedValue, maximum);
@@ -159,23 +154,23 @@ export default class PhotoManager extends Component {
 
   finnishAnimation(finnishRetracted) {
     this.isResponding = false;
-    this.state.anim.stopAnimation((value : number) => {
+    this.state.anim.stopAnimation((value) => {
       Animated.timing(this.state.anim, {
         toValue: finnishRetracted
-          ? ((-this.props.appStore.window.width))
+          ? ((-this.props.window.width))
           : 0,
         duration: 220,
         easing: Easing.inOut(Easing.ease)
       }).start(() => {
         //    this.animate(!toValue);  this.startValue = finnishRetracted ?
-        // ((-this.props.appStore.window.width)) : 0;
+        // ((-this.props.window.width)) : 0;
       });
     });
     this.setState({isRetracted: finnishRetracted});
   }
 
   resetAnimation() {
-    if (this.startValue < (-this.props.appStore.window.width / 2)) {
+    if (this.startValue < (-this.props.window.width / 2)) {
       this.finnishAnimation(true);
     } else {
       this.finnishAnimation(false);
@@ -184,7 +179,7 @@ export default class PhotoManager extends Component {
 
   onSelectedImagesChanged(selectedImages, image) {
     this.setState({currentImage: image});
-    if (this.startValue > (-this.props.appStore.window.width / 2)) {
+    if (this.startValue > (-this.props.window.width / 2)) {
       this.finnishAnimation(false);
     }
   }
@@ -192,7 +187,7 @@ export default class PhotoManager extends Component {
   onSwiperTouchEnd(e, state, context) {
     //No idea why I need to subract 10 here, please enlighten me!:
     const distance = ((this.lastX - e.nativeEvent.pageX) - 10);
-    if (distance > (this.props.appStore.window.width / 2)) {
+    if (distance > (this.props.window.width / 2)) {
       //transision will happen
       this.revealTopBar(this.state.currentSwiperIndex === 0
         ? 1
@@ -221,7 +216,6 @@ export default class PhotoManager extends Component {
   }
 
   render() {
-    console.log('Hej');
     const animationStyle = {
       transform: [
         {
@@ -231,16 +225,16 @@ export default class PhotoManager extends Component {
     };
 
     const cropperView = {
-      height: this.props.appStore.window.width
+      height: this.props.window.width
     };
     const cameraRollPickerView = {
-      marginTop: this.props.appStore.window.width,
+      marginTop: this.props.window.width,
       paddingBottom : FOOTER_HEIGHT + TOP_BAR_HEIGHT,
       height : 100
     };
 
     const mainAnimationContainer = {
-      height: this.props.appStore.window.height + this.props.appStore.window.width
+      height: this.props.window.height + this.props.window.width
     };
 
     const forceTopBarAnim = {};
@@ -252,7 +246,7 @@ export default class PhotoManager extends Component {
       ];
     }
 
-    const mainAreaHeight = (this.props.appStore.window.height - TOP_BAR_HEIGHT - FOOTER_HEIGHT);
+    const mainAreaHeight = (this.props.window.height - TOP_BAR_HEIGHT - FOOTER_HEIGHT);
 
     const scrollViewStyle = {
     //  position : 'absolute',
@@ -283,7 +277,7 @@ export default class PhotoManager extends Component {
               replaceSelection={true}
               top={this.state.isRetracted
               ? 50
-              : (this.props.appStore.window.width + TOP_BAR_HEIGHT)}
+              : (this.props.window.width + TOP_BAR_HEIGHT)}
               willStartAnimating={this.willStartAnimating.bind(this)}
               finnishAnimation={this.finnishAnimation.bind(this)}
               getAnimationValue={this.getClampedAnimationValue.bind(this)}
@@ -291,14 +285,14 @@ export default class PhotoManager extends Component {
               resetAnimation={this.resetAnimation.bind(this)}
               style={cameraRollPickerView}
               maximum={1}
-              window={this.props.appStore.window}
+              window={this.props.window}
               imageMargin={2}
               imagesPerRow={4}></CameraRollPicker>
             <ImageCropperViewSwitch
               style={[styles.absolute, cropperView]}
               top={this.state.isRetracted
               ? 50
-              : (this.props.appStore.window.width + TOP_BAR_HEIGHT)}
+              : (this.props.window.width + TOP_BAR_HEIGHT)}
               willStartAnimating={this.willStartAnimating.bind(this)}
               finnishAnimation={this.finnishAnimation.bind(this)}
               getAnimationValue={this.getClampedAnimationValue.bind(this)}
@@ -306,13 +300,13 @@ export default class PhotoManager extends Component {
               resetAnimation={this.resetAnimation.bind(this)}
               image={this.state.currentImage}
               magnification={2.0}
-              window={this.props.appStore.window}></ImageCropperViewSwitch>
+              window={this.props.window}></ImageCropperViewSwitch>
           </Animated.View>
           <PhotoCamera
             style={styles.photoCamera}
             pendingMedia={this.state.pendingMedia}
             onPhotoTaken={this.onPhotoTaken.bind(this)}
-            window={this.props.appStore.window}></PhotoCamera>
+            window={this.props.window}></PhotoCamera>
         </Swiper>
         <Animated.View
           style={[animationStyle, styles.absolute, styles.headerContainer, forceTopBarAnim]}>

@@ -7,13 +7,10 @@ import {
   Dimensions,
   Image
 } from 'react-native';
-import Component from 'GKComponent';
-import React from 'react';
-import Icon from 'react-native-vector-icons/Ionicons';
-import colors from 'GKColors';
-import fonts from 'GKFonts';
+import React, { Component } from 'react';
+import fonts from './fonts';
 import ImageCopperView from './image-cropper-view';
-import {AnimatedCircularProgress} from 'react-native-circular-progress';
+//import {AnimatedCircularProgress} from 'react-native-circular-progress';
 const ACTIVE_POINTER = 'auto';
 const INACTIVE_POINTER = 'none';
 export default class ImageCropperViewSwitch extends Component {
