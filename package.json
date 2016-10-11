@@ -30,15 +30,11 @@
     "gl-react-image": "0.0.2",
     "gl-react-native": "^2.35.0-rc.0",
     "gl-react-negative": "~1.1.0",
-    "react-native": "0.36.0-rc.0",
     "react-native-camera": "git+https://github.com/lwansbrough/react-native-camera.git",
     "react-native-circular-progress": "0.0.7",
     "react-native-image-resizer": "0.0.11",
     "react-native-scroll-block-view": "0.0.7",
     "react-native-swiper": "^1.5.1",
     "react-native-vector-icons": "^2.1.0"
-  },
-  "scripts": {
-    "postinstall": "react-native link"
   }
 }
