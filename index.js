@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import fonts from './fonts.js';
 import Icon from 'react-native-vector-icons/Ionicons';
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Header from './header';
 import Footer from './footer';
 import ImageCopperView from './image-cropper-view';
@@ -39,40 +39,10 @@ export default class PhotoManager extends Component {
       isRetracted: false,
       currentImage: undefined,
       forceTopBarShow: false,
-      currentSwiperIndex : 0,
-      swiperScrollEnabled : true
+      currentSwiperIndex: 0,
+      swiperScrollEnabled: true
     };
     this.currentSwiperIndex = 0;
-  }
-
-  componentDidMount() {
-    this.state.anim.addListener((newVal, oldVal) => {
-      this.latestAnimVal = newVal;
-    })
-    setTimeout(() => {
-      InteractionManager.runAfterInteractions(() => {
-        //  this.finnishAnimation(true);
-        /*  setTimeout(() => {
-          this.state.anim.stopAnimation((value) => {
-            debugger;
-          });
-        }, 250);
-*/
-      });
-    }, 1000)
-
-  }
-
-  animateTo(toValue, duration, cb) {
-    this.isAnimating = true;
-    Animated.timing(this.state.anim, {
-      toValue: toValue,
-      duration: duration,
-      easing: Easing.linear
-    }).start(() => {
-      //    this.animate(!toValue);
-      this.isAnimating = false;
-    });
   }
 
   componentWillMount() {
@@ -81,10 +51,10 @@ export default class PhotoManager extends Component {
 
   onFooterPress(action) {
     this.updateHeader(action);
-    if(this.state.currentSwiperIndex === 0 && action === 'photo') {
+    if (this.state.currentSwiperIndex === 0 && action === 'photo') {
       this.swiper.scrollBy(1);
     }
-    if(this.state.currentSwiperIndex === 1 && action === 'library') {
+    if (this.state.currentSwiperIndex === 1 && action === 'library') {
       this.swiper.scrollBy(-1);
     }
   }
@@ -116,14 +86,6 @@ export default class PhotoManager extends Component {
     }
   }
 
-  onAnimatedViewLayout(e) {
-    const newHeight = e.nativeEvent.layout.height;
-    console.log('NEW HEIGHT', newHeight);
-    if ((this.state.animatedViewHeight + this.props.window.width) !== e.nativeEvent.layout.height) {
-      //  this.setState({animatedViewHeight: e.nativeEvent.layout.height});
-    }
-  }
-
   willStartAnimating() {
     this.isResponding = false;
     this.state.anim.stopAnimation((value) => {
@@ -148,7 +110,6 @@ export default class PhotoManager extends Component {
     const fixedValue = correctedValue || this.getClampedAnimationValue(val);
     if (fixedValue !== undefined) {
       this.state.anim.setValue(fixedValue);
-      console.log(fixedValue);
     }
   }
 
@@ -161,10 +122,7 @@ export default class PhotoManager extends Component {
           : 0,
         duration: 220,
         easing: Easing.inOut(Easing.ease)
-      }).start(() => {
-        //    this.animate(!toValue);  this.startValue = finnishRetracted ?
-        // ((-this.props.window.width)) : 0;
-      });
+      }).start();
     });
     this.setState({isRetracted: finnishRetracted});
   }
@@ -192,7 +150,9 @@ export default class PhotoManager extends Component {
       this.revealTopBar(this.state.currentSwiperIndex === 0
         ? 1
         : 0);
-
+      this.updateHeader(this.state.currentSwiperIndex === 1
+        ? 'library'
+        : 'photo');
     }
   }
 
@@ -206,9 +166,7 @@ export default class PhotoManager extends Component {
   }
 
   onSwiperOnMomentumScrollEnd(e, state, context) {
-    this.setState({
-      currentSwiperIndex : state.index
-    });
+    this.setState({currentSwiperIndex: state.index});
     this.updateHeader(state.index === 0
       ? 'library'
       : 'photo')
@@ -229,8 +187,8 @@ export default class PhotoManager extends Component {
     };
     const cameraRollPickerView = {
       marginTop: this.props.window.width,
-      paddingBottom : FOOTER_HEIGHT + TOP_BAR_HEIGHT,
-      height : 100
+      paddingBottom: FOOTER_HEIGHT + TOP_BAR_HEIGHT,
+      height: 100
     };
 
     const mainAnimationContainer = {
@@ -249,7 +207,7 @@ export default class PhotoManager extends Component {
     const mainAreaHeight = (this.props.window.height - TOP_BAR_HEIGHT - FOOTER_HEIGHT);
 
     const scrollViewStyle = {
-    //  position : 'absolute',
+      //  position : 'absolute',
     };
 
     return (
@@ -266,10 +224,9 @@ export default class PhotoManager extends Component {
           style={styles.swiper}
           showsButtons={false}>
           <Animated.View
-            style={[animationStyle, styles.mainAnimationContainer, mainAnimationContainer]}
-            onLayout={this.onAnimatedViewLayout.bind(this)}>
+            style={[animationStyle, styles.mainAnimationContainer, mainAnimationContainer]}>
             <CameraRollPicker
-              setOuterScrollEnabled={(enabled) => this.setState({swiperScrollEnabled : enabled})}
+              setOuterScrollEnabled={(enabled) => this.setState({swiperScrollEnabled: enabled})}
               scrollViewStyle={scrollViewStyle}
               scrollToRowOnSelection={this.state.isRetracted}
               initalSelectedImageIndex={0}
@@ -316,7 +273,13 @@ export default class PhotoManager extends Component {
             headerTitle={this.state.headerTitle}
             onCancelAction={this.onCancelAction.bind(this)}></Header>
         </Animated.View>
-        <Footer onPress={this.onFooterPress.bind(this)} style={styles.footer} selectedTab={this.state.currentSwiperIndex === 0 ? 'library' : 'photo'} height={FOOTER_HEIGHT}></Footer>
+        <Footer
+          onPress={this.onFooterPress.bind(this)}
+          style={styles.footer}
+          selectedTab={this.state.currentSwiperIndex === 0
+          ? 'library'
+          : 'photo'}
+          height={FOOTER_HEIGHT}></Footer>
       </View>
     );
   }
@@ -327,9 +290,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white'
   },
-  mainAnimationContainer : {
-    marginTop : TOP_BAR_HEIGHT,
-    overflow : 'hidden',
+  mainAnimationContainer: {
+    marginTop: TOP_BAR_HEIGHT,
+    overflow: 'hidden'
   },
   swiper: {},
   blurBackground: {
@@ -402,7 +365,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0
   },
-  footer : {
+  footer: {
     position: 'absolute',
     left: 0,
     right: 0,
