@@ -221,27 +221,14 @@ class CameraRollPicker extends Component {
     );
   }
 
-  scrollToRow(rowIndex) {
-    const scrollResponder = this.wlv && this.wlv.getScrollResponder();
-    if (scrollResponder) {
-      const {imageMargin} = this.props;
-      scrollResponder.scrollTo({
-        x: 0,
-        y: ((this._imageSize) + imageMargin) * rowIndex,
-        animated: true
-      });
-    }
-  }
-
   renderListView() {
     if (!this.state.dataSource) {
       return <ActivityIndicator style={styles.spinner}/>;
     }
     return (
-
       <WindowedListView
         ref={wlv => this.wlv = wlv}
-        onScroll={this.scrollViewPanDelegatorBound.onScroll}
+        onScroll={this.onScroll.bind(this)}
         disableIncrementalRendering={false}
         renderScrollComponent={this.renderScrollView.bind(this)}
         initialNumToRender={30}
@@ -367,8 +354,50 @@ class CameraRollPicker extends Component {
     this.markRowForRerender(rowIndex);
     this.setState({selected: selected, shouldUpdate: this.guid()});
     onSelectedImagesChanged(this.state.selected, image);
+    this.onScrollAdjustmentOnSelect(rowIndex);
+  }
+
+  onScrollAdjustmentOnSelect(rowIndex) {
+    const imageWidthMarginSize = this.getImageWithMarginHeight();
+    const rowScrollPosition = this.getRowIndexScrollTop(rowIndex, imageWidthMarginSize);
     if (this.props.scrollToRowOnSelection) {
-      this.scrollToRow(rowIndex);
+      this.scrollToRow(rowIndex, rowScrollPosition);
+    } else {
+      if (rowScrollPosition < this.lastContentOffset.y) {
+        this.scrollToRow(rowIndex, rowScrollPosition);
+      }
+      if ((rowScrollPosition + imageWidthMarginSize) > (this.props.scrollViewStyle.height + this.lastContentOffset.y)) {
+        this.scrollToRow(rowIndex, rowScrollPosition - this.props.scrollViewStyle.height + imageWidthMarginSize);
+      }
+    }
+  }
+
+  onScroll(e) {
+    this.lastContentOffset = e.nativeEvent.contentOffset;
+    this.scrollViewPanDelegatorBound.onScroll(e);
+  }
+
+  getImageWithMarginHeight() {
+    const {imageMargin} = this.props;
+    return ((this._imageSize) + imageMargin);
+  }
+
+  getRowIndexScrollTop(rowIndex, imageWidthMarginSize) {
+    return ((imageWidthMarginSize !== undefined
+      ? imageWidthMarginSize
+      : this.getImageWithMarginHeight()) * rowIndex);
+  }
+
+  scrollToRow(rowIndex, predefinedYValye) {
+    const scrollResponder = this.wlv && this.wlv.getScrollResponder();
+    if (scrollResponder) {
+      scrollResponder.scrollTo({
+        x: 0,
+        y: predefinedYValye !== undefined
+          ? predefinedYValye
+          : this.getRowIndexScrollTop(rowIndex),
+        animated: true
+      });
     }
   }
 
