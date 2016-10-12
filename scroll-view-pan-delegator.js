@@ -23,13 +23,13 @@ export class BaseDelegator {
       this.events.willStartAnimating();
     }
 
-    delegate(newNativeEvent) {
+    delegate(newNativeEvent, oldNativeEvent) {
         if (newNativeEvent.pageY !== this.swipeStartPoint) {
             const move = this.swipeStartPoint - newNativeEvent.pageY;
             const fixedValue = this.events.getAnimationValue(move);
             if (fixedValue !== undefined) {
               this.hasAnimated = true;
-              this.animate(move, fixedValue);
+              this.animate(move, fixedValue, newNativeEvent, oldNativeEvent);
             }
         }
         return true;
@@ -51,7 +51,7 @@ export class BaseDelegator {
                     this.events.willStartAnimating();
                     this.swipeStartPoint = newNativeEvent.pageY;
                 }
-                return this.delegate(newNativeEvent);
+                return this.delegate(newNativeEvent, oldNativeEvent);
             }
         }
         return false;

@@ -106,11 +106,12 @@ class CameraRollPicker extends Component {
     this.fetchRound++;
     var {groupTypes, assetType} = this.props;
 
-    const fetchNum = 32;
+    const fetchNum = 90;
+    const fetchNumber = this.fetchRound === 0
+      ? fetchNum
+      : (fetchNum * (this.fetchRound + 1)) * 2;
     var fetchParams = {
-      first: this.fetchRound === 0
-        ? fetchNum
-        : (fetchNum * (this.fetchRound + 1)) * 3,
+      first: fetchNumber,
       groupTypes: groupTypes,
       assetType: assetType
     };
@@ -213,6 +214,7 @@ class CameraRollPicker extends Component {
         onTouchEnd={this.scrollViewPanDelegatorBound.onTouchEnd}
         onTouchStart={this.scrollViewPanDelegatorBound.onTouchStart}
         {...props}
+        style={this.props.scrollViewStyle}
         scrollEnabled={this.state.scrollingEnabled}
         scrollEventThrottle={16}
         decelerationRate='normal'></ScrollView>
@@ -243,7 +245,7 @@ class CameraRollPicker extends Component {
         disableIncrementalRendering={false}
         renderScrollComponent={this.renderScrollView.bind(this)}
         initialNumToRender={30}
-        numToRenderAhead={120}
+        numToRenderAhead={40}
         maxNumToRender={500}
         shouldUpdateToken={this.state.shouldUpdate}
         onViewableRowsChanged={(e) => {
