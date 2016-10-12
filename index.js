@@ -246,6 +246,7 @@ export default class PhotoManager extends Component {
               imageMargin={2}
               imagesPerRow={4}></CameraRollPicker>
             <ImageCropperViewSwitch
+              anim={this.state.anim}
               style={[styles.absolute, cropperView]}
               top={this.state.isRetracted
               ? 50

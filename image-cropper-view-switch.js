@@ -5,7 +5,8 @@ import {
   PixelRatio,
   TouchableOpacity,
   Dimensions,
-  Image
+  Image,
+  Animated
 } from 'react-native';
 import React, { Component } from 'react';
 import fonts from './fonts';
@@ -93,6 +94,13 @@ export default class ImageCropperViewSwitch extends Component {
       animate: this.props.animate,
       resetAnimation: this.props.resetAnimation
     };
+    const drawerContainer = {
+      opacity : this.props.anim.interpolate({
+        inputRange : [0, width],
+        outputRange : [0 , -0.35],
+        extrapolate : 'extend'
+      })
+    };
     return (
       <View style={[styles.container, this.props.style]}>
         <ImageCopperView
@@ -119,7 +127,7 @@ export default class ImageCropperViewSwitch extends Component {
             : undefined
         ]}
           image={this.state.imageTwo}></ImageCopperView>
-
+        <Animated.View pointerEvents='none' style={[{backgroundColor : 'black', width, height : width, opacity : 0.4}, drawerContainer]} />
       </View>
     );
   }

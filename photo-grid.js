@@ -1,13 +1,5 @@
 import React, {Component} from 'react';
-import {View, Animated, Easing, PixelRatio} from 'react-native';
-
-const absoluteFill = {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0
-};
+import {View, Animated, Easing, PixelRatio, StyleSheet} from 'react-native';
 const SHOWN_OPACITY = 0.65;
 export default class PhotoGrid extends Component {
 
@@ -47,11 +39,10 @@ export default class PhotoGrid extends Component {
 
     return (
       <Animated.View
-        style={{
-        ...absoluteFill,
+        style={[styles.absolute, {
         flexDirection: direction,
         opacity: 1.0
-      }}>
+      }]}>
         <View
           style={[
           {
@@ -74,10 +65,20 @@ export default class PhotoGrid extends Component {
   }
   render() {
     return (
-      <Animated.View shouldRasterizeIOS={true} style={[absoluteFill, { opacity : this.state.anim }]} pointerEvents="none">
+      <Animated.View shouldRasterizeIOS={true} style={[styles.absolute, { opacity : this.state.anim }]} pointerEvents="none">
         {this.renderGrid('row')}
         {this.renderGrid('column')}
       </Animated.View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  absolute : {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0
+  }
+});

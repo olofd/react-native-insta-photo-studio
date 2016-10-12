@@ -1,26 +1,19 @@
 import React, {Component} from 'react';
 import {
-  AppRegistry,
   StyleSheet,
   View,
   Image,
   ScrollView,
-  ActivityIndicator,
   TouchableOpacity,
-  InteractionManager,
   Text,
-  PanResponder,
   PixelRatio,
   ImageEditor
 } from 'react-native';
-import ImageEffects from './effects/ImageEffects';
-import MultiImageFilterer from './filters/shaders/multi-shader';
 import FilteredImage from './filters/filtered-image';
 import PhotoGrid from './photo-grid';
 import Icon from 'react-native-vector-icons/Ionicons';
 import fbjsPerformanceNow from 'fbjs/lib/performanceNow';
 import {ScrollViewPanDelegator, BoundarySwipeDelgator, ContentOffsetDelegator, swipeUpOrDownDetector} from './scroll-view-pan-delegator';
-import ImageResizer from 'react-native-image-resizer';
 import BlockView from 'react-native-scroll-block-view';
 const performanceNow = global.nativePerformanceNow || fbjsPerformanceNow;
 
@@ -80,7 +73,7 @@ export default class ImageCrop extends Component {
   }
 
   setupScrollViewPanDelegator(props) {
-    this.scrollViewPanDelegator = new ScrollViewPanDelegator([new BoundarySwipeDelgator(swipeUpOrDownDetector, 100, this.props, {
+    this.scrollViewPanDelegator = new ScrollViewPanDelegator([new BoundarySwipeDelgator(swipeUpOrDownDetector, 100, props, {
         setScrollEnabled: (scrollEnabled) => {
           this.setState({scrollEnabled: scrollEnabled});
         }
