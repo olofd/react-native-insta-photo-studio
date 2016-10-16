@@ -39,6 +39,7 @@
     "react-native-vector-icons": "^2.1.0"
   },
   "scripts": {
+    "update" : "git add . && git commit -m \"Updated\"",
     "postinstall": "node install.js"
   }
 }
