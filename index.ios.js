@@ -244,7 +244,7 @@ export default class PhotoManager extends Component {
               setOuterScrollEnabled={(enabled) => this.setState({swiperScrollEnabled: enabled})}
               scrollViewStyle={scrollViewStyle}
               scrollToRowOnSelection={this.state.isRetracted}
-              initalSelectedImageIndex={0}
+              initalSelectedImageIndex={1}
               onSelectedImagesChanged={this.onSelectedImagesChanged.bind(this)}
               replaceSelection={true}
               top={this.state.isRetracted
@@ -272,7 +272,7 @@ export default class PhotoManager extends Component {
               animate={this.animate.bind(this)}
               resetAnimation={this.resetAnimation.bind(this)}
               image={this.state.currentImage}
-              magnification={2.0}
+              magnification={10}
               window={this.props.window}/>
           </Animated.View>
           <PhotoCamera

@@ -2,7 +2,6 @@ import {
   View,
   Text,
   StyleSheet,
-  PixelRatio,
   TouchableOpacity,
   Dimensions,
   Image,
@@ -13,76 +12,61 @@ import React, {Component} from 'react';
 import ImageCopperView from './image-cropper-view';
 const ACTIVE_POINTER = 'auto';
 const INACTIVE_POINTER = 'none';
+import BlockView from 'react-native-scroll-block-view';
 export default class ImageCropperViewSwitch extends Component {
 
   constructor(props) {
     super(props);
+    const images = [];
+    if (props.image) {
+      images.push({loaded: false, image: props.image});
+    }
     this.state = {
-      imageOne: props.image,
-      imageTwo: null,
-      currentImage: 0,
-      imageOneLoaded: false,
-      imageTwoLoaded: false
+      currentImageIndex: 0,
+      images: images
     };
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.image !== this.getCurrentImage()) {
-      const nextSlot = this.getNextSlot();
-      if (this.state[nextSlot] === nextProps.image) {
-        this.onLoad(nextSlot);
+    const currentImage = this.state.images[this.state.currentImageIndex];
+    if (!currentImage || currentImage.image !== nextProps.image) {
+      const nextPushIndex = this.getNextPushIndex();
+      const cropperImageObj = this.state.images[nextPushIndex];
+      if (cropperImageObj && cropperImageObj.image === nextProps.image) {
+        this.onLoad(this.state.images[nextPushIndex]);
       } else {
-        this.state[nextSlot] = nextProps.image;
+        this.state.images[nextPushIndex] = {
+          loaded: false,
+          image: nextProps.image
+        };
       }
-      this.updateCurrentImagePointer();
+      this.setState({currentImageIndex: nextPushIndex});
     }
   }
 
-  updateCurrentImagePointer() {
-    this.setState({
-      currentImage: this.state.currentImage === 0
-        ? 1
-        : 0
-    });
-  }
-
-  getNextSlot() {
-    if (this.state.currentImage === 0) {
-      return 'imageTwo';
+  getNextPushIndex() {
+    if (this.state.currentImageIndex < this.props.numberOfCroppers - 1) {
+      if (this.state.images.length < this.props.numberOfCroppers) {
+        return this.state.images.length;
+      }
+      return this.state.currentImageIndex + 1;
     }
-    return 'imageOne';
+    return 0;
   }
 
   getCurrentImage() {
-    if (this.state.currentImage === 0) {
-      return this.state.imageOne;
+    return this.state.images[this.state.currentImageIndex];
+  }
+
+  onLoad(imageObj) {
+    if (!imageObj.loaded) {
+      this.state.images.forEach(i => i.loaded = false);
+      imageObj.loaded = true;
+      this.forceUpdate();
     }
-    return this.state.imageTwo;
   }
 
-  getCurrentImageRef() {
-    if (this.state.currentImage === 0) {
-      return 'imageOne';
-    }
-    return 'imageTwo';
-  }
-
-  onLoad(imageRef) {
-    this.setState({
-      imageOneLoaded: imageRef === 'imageOne',
-      imageTwoLoaded: imageRef === 'imageTwo'
-    });
-  }
-
-  getOpacityFor(imageRef) {
-    return this.getCurrentImageRef() === imageRef
-      ? 1
-      : 0;
-  }
-
-  render() {
-    const {width, height} = this.props.window;
-    const imageOneActive = (this.state.currentImage === 0);
+  renderCroppers(cropperProps) {
     const commonProps = {
       top: this.props.top,
       magnification: this.props.magnification,
@@ -93,6 +77,31 @@ export default class ImageCropperViewSwitch extends Component {
       animate: this.props.animate,
       resetAnimation: this.props.resetAnimation
     };
+
+    const cropperViews = [];
+    for (var j = 0; j < this.state.images.length; j++) {
+      const imageObj = this.state.images[j];
+      const isActive = this.state.currentImageIndex === j;
+      cropperViews.push(<ImageCopperView
+        key={j}
+        {...commonProps}
+        pointerEvents={isActive
+        ? ACTIVE_POINTER
+        : INACTIVE_POINTER}
+        onLoad={this.onLoad.bind(this, imageObj)}
+        style={[
+        styles.imageCropperView, imageObj.loaded
+          ? styles.activeCropperView
+          : null
+      ]}
+        image={imageObj.image}/>);
+    }
+
+    return cropperViews;
+  }
+
+  render() {
+    const {width, height} = this.props.window;
     const drawerContainer = {
       opacity: this.props.anim.interpolate({
         inputRange: [
@@ -104,54 +113,34 @@ export default class ImageCropperViewSwitch extends Component {
         extrapolate: 'extend'
       })
     };
+    const widthHeightStyle = {
+      width,
+      height: width
+    };
+    const absoluteStyle = {
+      ...widthHeightStyle,
+      position: 'absolute'
+    };
     return (
-
-      <View style={[styles.container, this.props.style]}>
+      <BlockView style={[styles.container, this.props.style]}>
         <ScrollView
-          style={{width, height : width, position : 'absolute'}}
+          style={[absoluteStyle]}
           bounces={false}
-          scrollEnabled={false}
-          contentContainerStyle={{width, height : width}}>
-          <ImageCopperView
-            {...commonProps}
-            pointerEvents={imageOneActive
-            ? ACTIVE_POINTER
-            : INACTIVE_POINTER}
-            onLoad={this.onLoad.bind(this, 'imageOne')}
-            style={[
-            styles.imageCropperView, this.state.imageOneLoaded
-              ? styles.activeCropperView
-              : undefined
-          ]}
-            image={this.state.imageOne}></ImageCopperView>
-          <ImageCopperView
-            {...commonProps}
-            pointerEvents={!imageOneActive
-            ? ACTIVE_POINTER
-            : INACTIVE_POINTER}
-            onLoad={this.onLoad.bind(this, 'imageTwo')}
-            style={[
-            styles.imageCropperView, this.state.imageTwoLoaded
-              ? styles.activeCropperView
-              : undefined
-          ]}
-            image={this.state.imageTwo}></ImageCopperView>
+          scrollEnabled={true}
+          contentContainerStyle={absoluteStyle}>
+          {this.renderCroppers()}
         </ScrollView>
         <Animated.View
-          pointerEvents='none'
-          style={[
-          {
-            backgroundColor: 'black',
-            width,
-            height: width,
-            opacity: 0.4
-          },
-          drawerContainer
-        ]}/>
-      </View>
+          pointerEvents={INACTIVE_POINTER}
+          style={[styles.drawerContainer, widthHeightStyle, drawerContainer]}/>
+      </BlockView>
     );
   }
 }
+
+ImageCropperViewSwitch.defaultProps = {
+  numberOfCroppers: 2
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -185,5 +174,9 @@ const styles = StyleSheet.create({
         scale: 100
       }
     ]
+  },
+  drawerContainer: {
+    backgroundColor: 'black',
+    opacity: 0.4
   }
 });

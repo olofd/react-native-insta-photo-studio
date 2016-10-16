@@ -20,7 +20,7 @@ import {
 } from '../../pan-delegator/scroll-view-pan-delegator';
 const performanceNow = global.nativePerformanceNow || fbjsPerformanceNow;
 
-export default class ImageCrop extends Component {
+export default class ImageCropperView extends Component {
   constructor(props) {
     super(props);
     this.lastPress = 0;
@@ -43,8 +43,8 @@ export default class ImageCrop extends Component {
     const {width, height} = this.state.currentImageDimensions;
     let newX = width * offsetX;
     let newY = height * offsetY;
-    let newWidth = width / (this.lastScrollEvent.zoomScale * this.props.magnification);
-    let newHeight = width / (this.lastScrollEvent.zoomScale * this.props.magnification);
+    let newWidth = width / (this.lastScrollEvent.zoomScale * this.getMagnification());
+    let newHeight = width / (this.lastScrollEvent.zoomScale * this.getMagnification());
     if (newWidth > width) {
       newWidth = width;
     }
@@ -109,18 +109,24 @@ export default class ImageCrop extends Component {
   }
 
   getMagnification() {
+    //We need to magnify for zoomToRect not to flip out in it's animations.
+    //read: https://recalll.co/app/?q=ios%20-%20-%5BUIScrollView%20zoomToRect:animated:%5D%20weird%20behavior%20when%20contentSize%20%3C%20bounds.size
+    if(this.props.magnification <= 1.0) {
+      return 1.01;
+    }
     const {largerField, smallerField, imageRatio} = this.state.currentImageInfo;
     const largerFieldValue = (this.props.window.width * this.props.magnification) * imageRatio;
-    if (largerFieldValue < this.props.window.width) {
-      return this.props.magnification;
+    if (largerFieldValue <= this.props.window.width) {
+      return 1.01;
     }
     return this.props.magnification;
   }
 
   getMainPreviewImageDiemensions() {
     const {largerField, smallerField, imageRatio} = this.state.currentImageInfo;
-    const largerFieldValue = (this.props.window.width * this.getMagnification()) * imageRatio;
-    const smallerFieldValue = (this.props.window.width * this.getMagnification());
+    const magnifiedWindow = (this.props.window.width * this.getMagnification());
+    const largerFieldValue = magnifiedWindow * imageRatio;
+    const smallerFieldValue = magnifiedWindow;
     const preview = {
       [smallerField]: smallerFieldValue,
       [largerField]: largerFieldValue
@@ -296,11 +302,11 @@ export default class ImageCrop extends Component {
     };
     const contentContainerStyle = {
       height: height + 1,
-      width: width + 1,
-      flex: 1
+      width: width + 1
     };
     //maximumZoomScale
     const minimumZoomScale = this.getMinimumZoomLevel();
+    const maximumZoomScale = minimumZoomScale * 4;
     return (
       <ScrollView
         onTouchMove={this.onTouchMove.bind(this)}
@@ -311,8 +317,8 @@ export default class ImageCrop extends Component {
         centerContent={true}
         scrollEventThrottle={50}
         ref={scrollView => this.scrollView = scrollView}
-        maximumZoomScale={minimumZoomScale * 4}
         minimumZoomScale={minimumZoomScale}
+        maximumZoomScale={maximumZoomScale < 1 ? 1 : maximumZoomScale}
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
         style={scrollViewStyle}
