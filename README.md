@@ -8,15 +8,14 @@ import {
   AppRegistry,
   StyleSheet,
   Text,
-  View,
-  Dimensions
+  View
 } from 'react-native';
 import ReactNativeInstaPhotoStudio from 'react-native-insta-photo-studio';
 
 export default class HelloRN extends Component {
   render() {
     return (
-      <ReactNativeInstaPhotoStudio window={Dimensions.get('window')}></ReactNativeInstaPhotoStudio>
+      <ReactNativeInstaPhotoStudio></ReactNativeInstaPhotoStudio>
     );
   }
 }
