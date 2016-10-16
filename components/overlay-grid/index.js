@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {View, Animated, Easing, PixelRatio, StyleSheet} from 'react-native';
 const SHOWN_OPACITY = 0.65;
-export default class PhotoGrid extends Component {
+export default class OverlayGrid extends Component {
 
   constructor() {
     super();

@@ -9,12 +9,15 @@ import {
   PixelRatio,
   ImageEditor
 } from 'react-native';
-import FilteredImage from './filters/filtered-image';
-import PhotoGrid from './photo-grid';
+import OverlayGrid from '../overlay-grid';
 import Icon from 'react-native-vector-icons/Ionicons';
 import fbjsPerformanceNow from 'fbjs/lib/performanceNow';
-import {ScrollViewPanDelegator, BoundarySwipeDelgator, ContentOffsetDelegator, swipeUpOrDownDetector} from './scroll-view-pan-delegator';
-import BlockView from 'react-native-scroll-block-view';
+import {
+  ScrollViewPanDelegator,
+  BoundarySwipeDelgator,
+  ContentOffsetDelegator,
+  swipeUpOrDownDetector
+} from '../../pan-delegator/scroll-view-pan-delegator';
 const performanceNow = global.nativePerformanceNow || fbjsPerformanceNow;
 
 export default class ImageCrop extends Component {
@@ -227,23 +230,11 @@ export default class ImageCrop extends Component {
     )
   }
 
-  renderFilteredImage(currentImageDimensions, previewImageDimensions) {
-    const {width, height} = previewImageDimensions;
-    return (
-      <FilteredImage
-        onLoad={this.zoomToImage.bind(this)}
-        image={this.state.currentImage}
-        width={width}
-        height={height}
-        effects={this.state.currentFilter.settings}></FilteredImage>
-    );
-  }
-
   renderMainImage(currentImageDimensions, previewImageDimensions) {
-    if (this.state.currentImage && !this.state.currentFilter) {
-      return this.renderPlainImage(currentImageDimensions, previewImageDimensions);
+    if (!this.state.currentImage) {
+      return null;
     }
-    return this.renderFilteredImage(currentImageDimensions, previewImageDimensions);
+    return this.renderPlainImage(currentImageDimensions, previewImageDimensions);
   }
 
   onScroll(e) {
@@ -255,7 +246,7 @@ export default class ImageCrop extends Component {
     this.scrollViewPanDelegatorBound.onTouchStart(e);
     clearTimeout(this.showGridTimer);
     this.showGridTimer = setTimeout(() => {
-      this.photoGrid.show();
+      this.OverlayGrid.show();
     }, 130);
     const now = performanceNow();
     if (this.lastPress) {
@@ -281,12 +272,12 @@ export default class ImageCrop extends Component {
   onTouchMove(e) {
     this.scrollViewPanDelegatorBound.onTouchMove(e);
     clearTimeout(this.showGridTimer);
-    this.photoGrid.show();
+    this.OverlayGrid.show();
   }
 
   onTouchEnd(e) {
     this.scrollViewPanDelegatorBound.onTouchEnd(e);
-    this.photoGrid.hide();
+    this.OverlayGrid.hide();
     clearTimeout(this.showGridTimer);
   }
 
@@ -361,7 +352,7 @@ export default class ImageCrop extends Component {
         style={[styles.container, this.props.style]}
         pointerEvents={this.props.pointerEvents}>
         {this.renderMainImageScrollView()}
-        <PhotoGrid ref={photoGrid => this.photoGrid = photoGrid}></PhotoGrid>
+        <OverlayGrid ref={OverlayGrid => this.OverlayGrid = OverlayGrid}></OverlayGrid>
         {this.renderToolBar()}
       </View>
     );

@@ -34,8 +34,6 @@
     "react-native-camera": "git+https://github.com/lwansbrough/react-native-camera.git",
     "react-native-circular-progress": "0.0.7",
     "react-native-image-resizer": "0.0.11",
-    "react-native-scroll-block-view": "0.0.7",
-    "react-native-swiper": "^1.5.1",
     "react-native-vector-icons": "^2.1.0"
   },
   "scripts": {

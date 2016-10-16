@@ -13,13 +13,11 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import React, {Component} from 'react';
-import Header from './header';
-import Footer from './footer';
-import ImageCopperView from './image-cropper-view';
-import CameraRollPicker from './camera-roll-picker';
-import PhotoCamera from './photo-camera';
-import Swiper from 'react-native-swiper';
-import ImageCropperViewSwitch from './image-cropper-view-switch';
+import Header from './components/header';
+import Footer from './components/footer';
+import CameraRollPicker from './components/camera-roll-picker';
+import PhotoCamera from './components/camera';
+import CropperView from './components/cropper-view';
 import clamp from 'clamp';
 const SCROLLVIEW_REF = "SCROLLVIEW_REF";
 const TOP_BAR_HEIGHT = 45;
@@ -239,10 +237,7 @@ export default class PhotoManager extends Component {
     return (
       <View style={styles.container}>
         <StatusBar hidden={true}></StatusBar>
-        <ScrollView
-          horizontal={true}
-          pagingEnabled={true}
-          bounces={false}>
+        <ScrollView horizontal={true} pagingEnabled={true} bounces={false}>
           <Animated.View
             style={[animationStyle, styles.mainAnimationContainer, mainAnimationContainer]}>
             <CameraRollPicker
@@ -265,7 +260,7 @@ export default class PhotoManager extends Component {
               window={this.props.window}
               imageMargin={2}
               imagesPerRow={4}></CameraRollPicker>
-            <ImageCropperViewSwitch
+            <CropperView
               anim={this.state.anim}
               style={[styles.absolute, cropperView]}
               top={this.state.isRetracted
@@ -278,7 +273,7 @@ export default class PhotoManager extends Component {
               resetAnimation={this.resetAnimation.bind(this)}
               image={this.state.currentImage}
               magnification={2.0}
-              window={this.props.window}></ImageCropperViewSwitch>
+              window={this.props.window}/>
           </Animated.View>
           <PhotoCamera
             style={styles.photoCamera}
@@ -312,9 +307,9 @@ export default class PhotoManager extends Component {
 
 PhotoManager.defaultProps = {
   window: Dimensions.get('window'),
-  font : 'Arial',
-  libraryDisplayName : 'Library',
-  photoDisplayName : 'Photo'
+  font: 'Arial',
+  libraryDisplayName: 'Library',
+  photoDisplayName: 'Photo'
 };
 
 const styles = StyleSheet.create({

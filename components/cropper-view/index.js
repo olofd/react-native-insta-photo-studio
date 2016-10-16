@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import React, {Component} from 'react';
 import ImageCopperView from './image-cropper-view';
-//import {AnimatedCircularProgress} from 'react-native-circular-progress';
 const ACTIVE_POINTER = 'auto';
 const INACTIVE_POINTER = 'none';
 export default class ImageCropperViewSwitch extends Component {

@@ -15,10 +15,15 @@ import {
   PanResponder,
   TouchableWithoutFeedback
 } from 'react-native';
-import WindowedListView from '../react-native/Libraries/Experimental/WindowedListView';
-import checkMark from './circle-check.png';
+import WindowedListView from '../../../react-native/Libraries/Experimental/WindowedListView';
 import debounce from 'debounce';
-import {ScrollViewPanDelegator, BoundarySwipeDelgator, ContentOffsetDelegator, swipeUpDetector, swipeDownDetector} from './scroll-view-pan-delegator';
+import {
+  ScrollViewPanDelegator,
+  BoundarySwipeDelgator,
+  ContentOffsetDelegator,
+  swipeUpDetector,
+  swipeDownDetector
+} from '../../pan-delegator/scroll-view-pan-delegator';
 
 const PIVOT = 40;
 class CameraRollPicker extends Component {
@@ -107,7 +112,7 @@ class CameraRollPicker extends Component {
     this.fetchRound++;
     var {groupTypes, assetType} = this.props;
 
-    const fetchNum = 90;
+    const fetchNum = 60;
     const fetchNumber = this.fetchRound === 0
       ? fetchNum
       : (fetchNum * (this.fetchRound + 1)) * 2;
@@ -287,11 +292,7 @@ class CameraRollPicker extends Component {
       </TouchableOpacity>
     );
   }
-  /*
-{isSelected
-  ? <Image style={styles.marker} source={checkMark}/>
-  : null}
-*/
+
   _renderRow(rowData, unknown, rowIndex) {
     if (rowData === undefined) {
       return null;
