@@ -70,7 +70,6 @@ export default class PhotoManager extends Component {
         headerTitle = this.props.photoDisplayName;
         break;
       default:
-
     }
     this.setState({headerTitle, headerHasNextButton});
   }
