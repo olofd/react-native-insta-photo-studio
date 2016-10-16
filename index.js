@@ -8,9 +8,9 @@ import {
   ScrollView,
   Animated,
   InteractionManager,
-  Easing
+  Easing,
+  Dimensions
 } from 'react-native';
-import fonts from './fonts.js';
 import Icon from 'react-native-vector-icons/Ionicons';
 import React, {Component} from 'react';
 import Header from './header';
@@ -27,8 +27,8 @@ const FOOTER_HEIGHT = 45;
 
 export default class PhotoManager extends Component {
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.startValue = 0;
     this.isResponding = true;
     this.state = {
@@ -65,11 +65,11 @@ export default class PhotoManager extends Component {
     let headerHasNextButton = true;
     switch (action) {
       case 'library':
-        headerTitle = 'Bibliotek';
+        headerTitle = this.props.libraryDisplayName;
         break;
       case 'photo':
         headerHasNextButton = false;
-        headerTitle = 'Foto';
+        headerTitle = this.props.photoDisplayName;
         break;
       default:
 
@@ -239,16 +239,10 @@ export default class PhotoManager extends Component {
     return (
       <View style={styles.container}>
         <StatusBar hidden={true}></StatusBar>
-        <Swiper
-          scrollEnabled={this.state.swiperScrollEnabled}
-          ref={swiper => this.swiper = swiper}
-          onTouchStart={(e) => this.lastX = e.nativeEvent.pageX}
-          onTouchEnd={this.onSwiperTouchEnd.bind(this)}
-          onMomentumScrollEnd={this.onSwiperOnMomentumScrollEnd.bind(this)}
-          showsPagination={false}
-          loop={false}
-          style={styles.swiper}
-          showsButtons={false}>
+        <ScrollView
+          horizontal={true}
+          pagingEnabled={true}
+          bounces={false}>
           <Animated.View
             style={[animationStyle, styles.mainAnimationContainer, mainAnimationContainer]}>
             <CameraRollPicker
@@ -291,16 +285,20 @@ export default class PhotoManager extends Component {
             pendingMedia={this.state.pendingMedia}
             onPhotoTaken={this.onPhotoTaken.bind(this)}
             window={this.props.window}></PhotoCamera>
-        </Swiper>
+        </ScrollView>
         <Animated.View
           style={[animationStyle, styles.absolute, styles.headerContainer, forceTopBarAnim]}>
           <Header
+            font={this.props.font}
             hasNextButton={this.state.headerHasNextButton}
             height={TOP_BAR_HEIGHT}
             headerTitle={this.state.headerTitle}
             onCancelAction={this.onCancelAction.bind(this)}></Header>
         </Animated.View>
         <Footer
+          libraryDisplayName={this.props.libraryDisplayName}
+          photoDisplayName={this.props.photoDisplayName}
+          font={this.props.font}
           onPress={this.onFooterPress.bind(this)}
           style={styles.footer}
           selectedTab={this.state.currentSwiperIndex === 0
@@ -312,6 +310,13 @@ export default class PhotoManager extends Component {
   }
 }
 
+PhotoManager.defaultProps = {
+  window: Dimensions.get('window'),
+  font : 'Arial',
+  libraryDisplayName : 'Library',
+  photoDisplayName : 'Photo'
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -322,59 +327,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden'
   },
   swiper: {},
-  blurBackground: {
-    flex: 1
-  },
-  title: {
-    marginTop: 15,
-    fontFamily: fonts.serifLight,
-    fontSize: 40,
-    flex: 1
-  },
-  topcontainer: {
-    flexDirection: 'row',
-    marginLeft: 15,
-    marginBottom: 20
-  },
-  closeButtonContainer: {
-    position: 'absolute',
-    top: 5,
-    right: 5,
-    width: 50,
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  closeButton: {
-    fontSize: 30,
-    textAlign: 'center'
-  },
-  stepContainer: {
-    flex: 1
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    bottom: 15
-  },
-  button: {
-    backgroundColor: 'rgb(41, 130, 173)',
-    padding: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 100,
-    borderRadius: 10
-  },
-  buttonText: {
-    fontFamily: fonts.serifLight,
-    fontSize: 18,
-    color: 'white'
-  },
-  scrollViewContentContainer: {},
-  scrollView: {
-    flex: 1
-  },
   headerContainer: {
     height: TOP_BAR_HEIGHT
   },

@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import React, { Component } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
-import fonts from './fonts';
 import Camera from 'react-native-camera';
 
 export default class PhotoCamera extends Component {

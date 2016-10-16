@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   Dimensions,
   Image,
-  Animated
+  Animated,
+  ScrollView
 } from 'react-native';
-import React, { Component } from 'react';
-import fonts from './fonts';
+import React, {Component} from 'react';
 import ImageCopperView from './image-cropper-view';
 //import {AnimatedCircularProgress} from 'react-native-circular-progress';
 const ACTIVE_POINTER = 'auto';
@@ -95,55 +95,64 @@ export default class ImageCropperViewSwitch extends Component {
       resetAnimation: this.props.resetAnimation
     };
     const drawerContainer = {
-      opacity : this.props.anim.interpolate({
-        inputRange : [0, width],
-        outputRange : [0 , -0.35],
-        extrapolate : 'extend'
+      opacity: this.props.anim.interpolate({
+        inputRange: [
+          0, width
+        ],
+        outputRange: [
+          0, -0.35
+        ],
+        extrapolate: 'extend'
       })
     };
     return (
+
       <View style={[styles.container, this.props.style]}>
-        <ImageCopperView
-          {...commonProps}
-          pointerEvents={imageOneActive
-          ? ACTIVE_POINTER
-          : INACTIVE_POINTER}
-          onLoad={this.onLoad.bind(this, 'imageOne')}
+        <ScrollView
+          style={{width, height : width, position : 'absolute'}}
+          bounces={false}
+          scrollEnabled={false}
+          contentContainerStyle={{width, height : width}}>
+          <ImageCopperView
+            {...commonProps}
+            pointerEvents={imageOneActive
+            ? ACTIVE_POINTER
+            : INACTIVE_POINTER}
+            onLoad={this.onLoad.bind(this, 'imageOne')}
+            style={[
+            styles.imageCropperView, this.state.imageOneLoaded
+              ? styles.activeCropperView
+              : undefined
+          ]}
+            image={this.state.imageOne}></ImageCopperView>
+          <ImageCopperView
+            {...commonProps}
+            pointerEvents={!imageOneActive
+            ? ACTIVE_POINTER
+            : INACTIVE_POINTER}
+            onLoad={this.onLoad.bind(this, 'imageTwo')}
+            style={[
+            styles.imageCropperView, this.state.imageTwoLoaded
+              ? styles.activeCropperView
+              : undefined
+          ]}
+            image={this.state.imageTwo}></ImageCopperView>
+        </ScrollView>
+        <Animated.View
+          pointerEvents='none'
           style={[
-          styles.imageCropperView, this.state.imageOneLoaded
-            ? styles.activeCropperView
-            : undefined
-        ]}
-          image={this.state.imageOne}></ImageCopperView>
-        <ImageCopperView
-          {...commonProps}
-          pointerEvents={!imageOneActive
-          ? ACTIVE_POINTER
-          : INACTIVE_POINTER}
-          onLoad={this.onLoad.bind(this, 'imageTwo')}
-          style={[
-          styles.imageCropperView, this.state.imageTwoLoaded
-            ? styles.activeCropperView
-            : undefined
-        ]}
-          image={this.state.imageTwo}></ImageCopperView>
-        <Animated.View pointerEvents='none' style={[{backgroundColor : 'black', width, height : width, opacity : 0.4}, drawerContainer]} />
+          {
+            backgroundColor: 'black',
+            width,
+            height: width,
+            opacity: 0.4
+          },
+          drawerContainer
+        ]}/>
       </View>
     );
   }
 }
-
-/*
-<View style={[styles.loadingContainer, {width}]}>
-  <AnimatedCircularProgress
-    style={styles.animatedCircle}
-    size={40}
-    width={1}
-    fill={100}
-    tintColor='white'
-    backgroundColor="rgba(170, 170, 170, 1)"/>
-</View>
-*/
 
 const styles = StyleSheet.create({
   container: {

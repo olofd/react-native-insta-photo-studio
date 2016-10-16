@@ -36,6 +36,7 @@ class CameraRollPicker extends Component {
     };
     this._onEndReachedDebounce = debounce(this._onEndReached, 500).bind(this);
     this.setupScrollViewPanDelegator(props);
+    this.lastContentOffset = {y : 0, x : 0};
   }
 
   setupScrollViewPanDelegator(props) {

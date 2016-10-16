@@ -1,10 +1,11 @@
 import {View, Text, StyleSheet, PixelRatio, TouchableOpacity} from 'react-native';
 import React, { Component } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
-import fonts from './fonts';
 export default class PhotoManagerHeader extends Component {
 
   render() {
+    const fontStyle = {fontFamily : this.props.font || 'Helvetica'};
+
     return (
       <View style={[styles.topBar, this.props.style, {
         height: this.props.height
@@ -14,10 +15,10 @@ export default class PhotoManagerHeader extends Component {
           onPress={() => this.props.onPress('library')}>
           <Text
             style={[
-            styles.button, this.props.selectedTab === 'library'
+            styles.button, fontStyle, this.props.selectedTab === 'library'
               ? styles.buttonSelected
               : null
-          ]}>Bibliotek</Text>
+          ]}>{this.props.libraryDisplayName}</Text>
         </TouchableOpacity>
         <View style={{flex : 1}}></View>
         <TouchableOpacity
@@ -25,12 +26,11 @@ export default class PhotoManagerHeader extends Component {
           onPress={() => this.props.onPress('photo')}>
           <Text
             style={[
-            styles.button, this.props.selectedTab === 'photo'
+            styles.button, fontStyle, this.props.selectedTab === 'photo'
               ? styles.buttonSelected
               : null
-          ]}>Foto</Text>
+          ]}>{this.props.photoDisplayName}</Text>
         </TouchableOpacity>
-
       </View>
     );
   }
@@ -48,8 +48,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     textAlign: 'center',
-    margin: 10,
-    fontFamily: fonts.sansSerifBold
+    margin: 10
   },
   buttonArea: {
     alignItems: 'flex-start',
@@ -57,12 +56,12 @@ const styles = StyleSheet.create({
   },
   button: {
     color: '#999999',
-    fontFamily: fonts.sansSerifBold,
     fontSize: 15,
     textAlign: 'center'
   },
   buttonSelected: {
-    color: 'black'
+    color: 'black',
+    fontWeight : 'bold'
   },
   buttonArea: {
     height : 45,

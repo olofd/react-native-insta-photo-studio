@@ -1,10 +1,9 @@
 import {View, Text, StyleSheet, PixelRatio, TouchableOpacity} from 'react-native';
 import React, { Component } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
-import fonts from './fonts';
 export default class PhotoManagerHeader extends Component {
 
-  renderRightButton() {
+  renderRightButton(fontStyle) {
     return <View
       style={{
       opacity: this.props.hasNextButton
@@ -14,12 +13,13 @@ export default class PhotoManagerHeader extends Component {
       <TouchableOpacity
         style={[styles.buttonArea, styles.rightButtonArea]}
         onPress={this.props.onCreateLocationPress}>
-        <Text style={styles.linkButton}>Nästa</Text>
+        <Text style={[styles.linkButton, fontStyle]}>Nästa</Text>
       </TouchableOpacity>
     </View>;
   }
 
   render() {
+    const fontStyle = {fontFamily : this.props.font || 'Helvetica'};
     return (
       <View
         style={[
@@ -27,19 +27,22 @@ export default class PhotoManagerHeader extends Component {
           height: this.props.height
         }
       ]}>
+
         <TouchableOpacity
           style={[styles.buttonArea, styles.leftButtonArea]}
           onPress={this.props.onCancelAction}>
-          <Text style={styles.cancelButton}>Avbryt</Text>
+          <Text style={[styles.cancelButton, fontStyle]}>Avbryt</Text>
         </TouchableOpacity>
+
         <View style={[styles.buttonArea, styles.centerButton]}>
           <TouchableOpacity style={styles.centerContainer}>
-            <Text style={styles.title}>
+            <Text style={[styles.title, fontStyle]}>
               {this.props.headerTitle}
             </Text>
           </TouchableOpacity>
         </View>
-        {this.renderRightButton()}
+
+        {this.renderRightButton(fontStyle)}
       </View>
     );
   }
@@ -57,8 +60,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     textAlign: 'center',
-    margin: 10,
-    fontFamily: fonts.sansSerifBold
+    margin: 10
   },
   buttonArea: {
     alignItems: 'center',
@@ -67,7 +69,6 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     color: 'black',
-    fontFamily: fonts.sansSerif,
     fontSize: 15
   },
   leftButtonArea: {
@@ -78,7 +79,6 @@ const styles = StyleSheet.create({
   },
   linkButton: {
     color: '#3897f0',
-    fontFamily: fonts.sansSerifBold,
     fontSize: 15
   },
   centerContainer: {
@@ -87,20 +87,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  carrot: {
-    fontSize: 18
-  },
   rightButtonArea: {
     paddingHorizontal: 15,
     paddingRight: 15
-  },
-  addButtonIcon: {
-    fontSize: 30,
-    color: 'white'
-  },
-  peningMediaButton: {
-    color: 'black',
-    fontFamily: fonts.sansSerifBold,
-    fontSize: 15
   }
 });

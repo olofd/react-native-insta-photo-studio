@@ -151,6 +151,7 @@ export default class ImageCrop extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.image !== this.props.image) {
+      this.viewPortZoomIsZoomedOut = false;
       this.setState({imageReady: false});
       //We must reset zoom if there is a new image.
       this.zoomToRect(0, 0, this.props.window.width, this.props.window.width);
@@ -303,34 +304,33 @@ export default class ImageCrop extends Component {
         : 0
     };
     const contentContainerStyle = {
-      height: height,
-      width: width,
+      height: height + 1,
+      width: width + 1,
       flex: 1
     };
     //maximumZoomScale
     const minimumZoomScale = this.getMinimumZoomLevel();
     return (
-      <BlockView>
-        <ScrollView
-          onTouchMove={this.onTouchMove.bind(this)}
-          onTouchEnd={this.onTouchEnd.bind(this)}
-          onTouchStart={this.onTouchStart.bind(this)}
-          onScroll={this.onScroll.bind(this)}
-          centerContent={true}
-          scrollEventThrottle={50}
-          ref={scrollView => this.scrollView = scrollView}
-          maximumZoomScale={minimumZoomScale * 4}
-          minimumZoomScale={minimumZoomScale}
-          showsHorizontalScrollIndicator={false}
-          showsVerticalScrollIndicator={false}
-          style={scrollViewStyle}
-          contentContainerStyle={contentContainerStyle}
-          alwaysBounceVertical={true}
-          alwaysBounceHorizontal={true}
-          scrollEnabled={this.state.scrollEnabled}>
-          {this.renderMainImage(this.state.currentImageDimensions, previewImageDimensions)}
-        </ScrollView>
-      </BlockView>
+      <ScrollView
+        onTouchMove={this.onTouchMove.bind(this)}
+        onTouchEnd={this.onTouchEnd.bind(this)}
+        onTouchStart={this.onTouchStart.bind(this)}
+        onScroll={this.onScroll.bind(this)}
+        bounces={true}
+        centerContent={true}
+        scrollEventThrottle={50}
+        ref={scrollView => this.scrollView = scrollView}
+        maximumZoomScale={minimumZoomScale * 4}
+        minimumZoomScale={minimumZoomScale}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+        style={scrollViewStyle}
+        contentContainerStyle={contentContainerStyle}
+        alwaysBounceVertical={true}
+        alwaysBounceHorizontal={true}
+        scrollEnabled={this.state.scrollEnabled}>
+        {this.renderMainImage(this.state.currentImageDimensions, previewImageDimensions)}
+      </ScrollView>
     );
   }
 
