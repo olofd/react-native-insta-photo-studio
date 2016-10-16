@@ -272,7 +272,7 @@ export default class PhotoManager extends Component {
               animate={this.animate.bind(this)}
               resetAnimation={this.resetAnimation.bind(this)}
               image={this.state.currentImage}
-              magnification={10}
+              magnification={2.5}
               window={this.props.window}/>
           </Animated.View>
           <PhotoCamera

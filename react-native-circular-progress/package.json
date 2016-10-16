@@ -1,0 +1,94 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "react-native-circular-progress@0.0.7",
+        "scope": null,
+        "escapedName": "react-native-circular-progress",
+        "name": "react-native-circular-progress",
+        "rawSpec": "0.0.7",
+        "spec": "0.0.7",
+        "type": "version"
+      },
+      "/Users/olda/react-native-insta-photo-studio"
+    ]
+  ],
+  "_from": "react-native-circular-progress@0.0.7",
+  "_id": "react-native-circular-progress@0.0.7",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/react-native-circular-progress",
+  "_nodeVersion": "5.3.0",
+  "_npmOperationalInternal": {
+    "host": "packages-16-east.internal.npmjs.com",
+    "tmp": "tmp/react-native-circular-progress-0.0.7.tgz_1464064959669_0.029083715053275228"
+  },
+  "_npmUser": {
+    "name": "bgryszko",
+    "email": "b@gryszko.com"
+  },
+  "_npmVersion": "3.3.12",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "react-native-circular-progress@0.0.7",
+    "scope": null,
+    "escapedName": "react-native-circular-progress",
+    "name": "react-native-circular-progress",
+    "rawSpec": "0.0.7",
+    "spec": "0.0.7",
+    "type": "version"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/react-native-circular-progress/-/react-native-circular-progress-0.0.7.tgz",
+  "_shasum": "103ae9aca35c6f74115aee998de48f9717c73eee",
+  "_shrinkwrap": null,
+  "_spec": "react-native-circular-progress@0.0.7",
+  "_where": "/Users/olda/react-native-insta-photo-studio",
+  "author": {
+    "name": "Bart Gryszko",
+    "email": "b@gryszko.com"
+  },
+  "bugs": {
+    "url": "https://github.com/bgryszko/react-native-circular-progress/issues"
+  },
+  "dependencies": {
+    "art": "^0.10.0"
+  },
+  "description": "React Native component for creating animated, circular progress with ReactART",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "103ae9aca35c6f74115aee998de48f9717c73eee",
+    "tarball": "https://registry.npmjs.org/react-native-circular-progress/-/react-native-circular-progress-0.0.7.tgz"
+  },
+  "gitHead": "9510bcfbdab147b344e4603e98e893451d8c78a2",
+  "homepage": "https://github.com/bgryszko/react-native-circular-progress",
+  "keywords": [
+    "react",
+    "react-native",
+    "react-component",
+    "progress",
+    "chart",
+    "react-art",
+    "art"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "name": "bgryszko",
+      "email": "b@gryszko.com"
+    }
+  ],
+  "name": "react-native-circular-progress",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/bgryszko/react-native-circular-progress.git"
+  },
+  "scripts": {},
+  "version": "0.0.7"
+}
