@@ -39,6 +39,6 @@
     "react-native-vector-icons": "^2.1.0"
   },
   "scripts": {
-    "postinstall": "install.js"
+    "postinstall": "node install.js"
   }
 }
