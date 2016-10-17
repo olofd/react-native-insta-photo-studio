@@ -18,6 +18,7 @@ import Footer from './components/footer';
 import CameraRollPicker from './components/camera-roll-picker';
 import PhotoCamera from './components/camera';
 import CropperView from './components/cropper-view';
+import Swiper from './components/swiper';
 import clamp from 'clamp';
 const SCROLLVIEW_REF = "SCROLLVIEW_REF";
 const TOP_BAR_HEIGHT = 45;
@@ -50,12 +51,7 @@ export default class PhotoManager extends Component {
 
   onFooterPress(action) {
     this.updateHeader(action);
-    if (this.state.currentSwiperIndex === 0 && action === 'photo') {
-      this.swiper.scrollBy(1);
-    }
-    if (this.state.currentSwiperIndex === 1 && action === 'library') {
-      this.swiper.scrollBy(-1);
-    }
+    this.swiper && this.swiper.scrollToPage(action === 'library' ? 0 : 1);
   }
 
   updateHeader(action) {
@@ -236,7 +232,7 @@ export default class PhotoManager extends Component {
     return (
       <View style={styles.container}>
         <StatusBar hidden={true}></StatusBar>
-        <ScrollView horizontal={true} pagingEnabled={true} bounces={false}>
+        <Swiper window={this.props.window} ref={swiper => this.swiper = swiper}>
           <Animated.View
             style={[animationStyle, styles.mainAnimationContainer, mainAnimationContainer]}>
             <CameraRollPicker
@@ -279,7 +275,7 @@ export default class PhotoManager extends Component {
             pendingMedia={this.state.pendingMedia}
             onPhotoTaken={this.onPhotoTaken.bind(this)}
             window={this.props.window}></PhotoCamera>
-        </ScrollView>
+        </Swiper>
         <Animated.View
           style={[animationStyle, styles.absolute, styles.headerContainer, forceTopBarAnim]}>
           <Header
