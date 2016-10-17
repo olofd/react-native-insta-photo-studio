@@ -112,10 +112,10 @@ class CameraRollPicker extends Component {
     this.fetchRound++;
     var {groupTypes, assetType} = this.props;
 
-    const fetchNum = 60;
+    const fetchNum = 12;
     const fetchNumber = this.fetchRound === 0
       ? fetchNum
-      : (fetchNum * (this.fetchRound + 1)) * 2;
+      : (fetchNum * (this.fetchRound + 1)) * 3;
     var fetchParams = {
       first: fetchNumber,
       groupTypes: groupTypes,
@@ -130,6 +130,7 @@ class CameraRollPicker extends Component {
     if (this.state.lastCursor) {
       fetchParams.after = this.state.lastCursor;
     }
+
     CameraRoll.getPhotos(fetchParams).then((data) => {
       //  console.log('RECIVE', data.edges.length);
       this._appendImages(data);

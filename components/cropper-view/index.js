@@ -11,12 +11,21 @@ import {
 } from 'react-native';
 import React, {Component} from 'react';
 import ImageCopperView from './image-cropper-view';
-const ACTIVE_POINTER = 'auto';
-const INACTIVE_POINTER = 'none';
 import BlockView from 'react-native-scroll-block-view';
 import {BlurView} from 'react-native-blur';
 import {AnimatedCircularProgress} from '../../react-native-circular-progress';
-export default class ImageCropperViewSwitch extends Component {
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
+const loadingViewScale = {
+  inputRange: [
+    0, 1
+  ],
+  outputRange: [1.15, 1]
+};
+
+const ACTIVE_POINTER = 'auto';
+const INACTIVE_POINTER = 'none';
+
+export default class CropperViewContainer extends Component {
 
   constructor(props) {
     super(props);
@@ -26,7 +35,8 @@ export default class ImageCropperViewSwitch extends Component {
     }
     this.state = {
       currentImageIndex: 0,
-      images: images
+      images: images,
+      loadingViewAnim: new Animated.Value(0)
     };
   }
 
@@ -42,19 +52,33 @@ export default class ImageCropperViewSwitch extends Component {
           loaded: false,
           image: nextProps.image
         };
-
-        const currentLoadingGuid = this.guid();
-        this.currentLoadingGuid = currentLoadingGuid;
-        InteractionManager.runAfterInteractions(() => {
-          if (this.currentLoadingGuid === currentLoadingGuid) {
-            this.setState({isLoading: true});
-            this.loadCircle.animateFill();
-          }
-        });
-
+        this.startLoadingTimer();
       }
-      this.loadCircle.setAnimationValue(0);
-      this.setState({currentImageIndex: nextPushIndex, isLoading : false});
+      this.loadCircle && this.loadCircle.setAnimationValue(0);
+      this.setState({currentImageIndex: nextPushIndex, isLoading: false});
+    }
+  }
+
+  startLoadingTimer() {
+    const currentLoadingGuid = this.guid();
+    this.currentLoadingGuid = currentLoadingGuid;
+    InteractionManager.runAfterInteractions(() => {
+      if (this.currentLoadingGuid === currentLoadingGuid) {
+        this.animateLoadingView(1, undefined, true);
+        this.loadCircle && this.loadCircle.animateFill();
+      }
+    });
+  }
+
+  animateLoadingView(toValue, cb, instant) {
+    if (instant) {
+      this.state.loadingViewAnim.setValue(toValue);
+    } else {
+      Animated.spring(this.state.loadingViewAnim, {
+        toValue: toValue,
+        tension: 10,
+        friction: 7
+      }).start(cb);
     }
   }
 
@@ -85,40 +109,37 @@ export default class ImageCropperViewSwitch extends Component {
       imageObj.loaded = true;
       if (currentLoadingGuid === this.currentLoadingGuid) {
         this.currentLoadingGuid = null;
-        this.setState({isLoading: false});
+        this.animateLoadingView(0, undefined);
       }
       this.forceUpdate();
     }
   }
 
   renderCroppers(cropperProps) {
-    const commonProps = {
-      top: this.props.top,
-      magnification: this.props.magnification,
-      window: this.props.window,
-      willStartAnimating: this.props.willStartAnimating,
-      finnishAnimation: this.props.finnishAnimation,
-      getAnimationValue: this.props.getAnimationValue,
-      animate: this.props.animate,
-      resetAnimation: this.props.resetAnimation
-    };
-
     const cropperViews = [];
     for (var j = 0; j < this.state.images.length; j++) {
       const imageObj = this.state.images[j];
       const isActive = this.state.currentImageIndex === j;
+      const style = [
+        styles.imageCropperView, styles.absoluteStyle, imageObj.loaded
+          ? styles.activeCropperView
+          : null
+      ];
       cropperViews.push(<ImageCopperView
         key={j}
-        {...commonProps}
+        top={this.props.top}
+        magnification={this.props.magnification}
+        window={this.props.window}
+        willStartAnimating={this.props.willStartAnimating}
+        finnishAnimation={this.props.finnishAnimation}
+        getAnimationValue={this.props.getAnimationValue}
+        animate={this.props.animate}
+        resetAnimation={this.props.resetAnimation}
         pointerEvents={isActive
         ? ACTIVE_POINTER
         : INACTIVE_POINTER}
         onLoad={this.onLoad.bind(this, imageObj, this.currentLoadingGuid)}
-        style={[
-        styles.imageCropperView, imageObj.loaded
-          ? styles.activeCropperView
-          : null
-      ]}
+        style={style}
         image={imageObj.image}/>);
     }
     return cropperViews;
@@ -141,78 +162,73 @@ export default class ImageCropperViewSwitch extends Component {
       width,
       height: width
     };
-    const absoluteStyle = {
-      ...widthHeightStyle,
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0
-    };
     return (
       <BlockView style={[styles.container, this.props.style]}>
         <ScrollView
+          style={widthHeightStyle}
           scrollsToTop={false}
-          style={[absoluteStyle]}
           bounces={false}
-          scrollEnabled={true}
-          contentContainerStyle={absoluteStyle}>
+          contentContainerStyle={widthHeightStyle}
+          scrollEnabled={true}>
           {this.renderCroppers()}
         </ScrollView>
         <Animated.View
           pointerEvents={INACTIVE_POINTER}
-          style={[styles.drawerContainer, widthHeightStyle, drawerContainer]}/>
-        <BlurView
-          pointerEvents={INACTIVE_POINTER}
-          style={[
-          absoluteStyle,
-          styles.blurView, {
-            opacity: this.state.isLoading
-              ? 1
-              : 0
-          }
-        ]}
-          blurType='dark'>
-          <AnimatedCircularProgress
-            ref={loadCircle => this.loadCircle = loadCircle}
-            rotation={0}
-            style={styles.animatedCircle}
-            size={40}
-            width={1}
-            fill={100}
-            tintColor='white'
-            backgroundColor="rgba(170, 170, 170, 1)"/>
-        </BlurView>
+          style={[styles.drawerContainer, styles.absoluteStyle, drawerContainer]}></Animated.View>
+        {this.renderLoadingView(widthHeightStyle)}
       </BlockView>
+    );
+  }
+
+  renderLoadingView(widthHeightStyle) {
+    return (
+      <AnimatedBlurView
+        pointerEvents={INACTIVE_POINTER}
+        style={[
+        styles.absoluteStyle,
+        styles.blurView, {
+          opacity: this.state.loadingViewAnim,
+          transform: [
+            {
+              scale: this.state.loadingViewAnim.interpolate(loadingViewScale)
+            }
+          ]
+        }
+      ]}
+        blurType='dark'>
+        <AnimatedCircularProgress
+          ref={loadCircle => this.loadCircle = loadCircle}
+          rotation={0}
+          style={styles.animatedCircle}
+          size={55}
+          width={1}
+          fill={100}
+          tintColor='white'
+          backgroundColor="rgba(170, 170, 170, 1)"/>
+      </AnimatedBlurView>
     );
   }
 }
 
-ImageCropperViewSwitch.defaultProps = {
+CropperViewContainer.defaultProps = {
   numberOfCroppers: 2
 };
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)'
+    overflow: 'hidden'
   },
   animatedCircle: {
     backgroundColor: 'transparent'
   },
-  imageCropperView: {
+  absoluteStyle: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
+    bottom: 0
+  },
+  imageCropperView: {
     opacity: 0
   },
   activeCropperView: {
@@ -224,7 +240,6 @@ const styles = StyleSheet.create({
   },
   blurView: {
     alignItems: 'center',
-    justifyContent: 'center',
-    opacity: 1
+    justifyContent: 'center'
   }
 });
