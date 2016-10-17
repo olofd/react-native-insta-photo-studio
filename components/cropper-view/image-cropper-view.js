@@ -309,6 +309,7 @@ export default class ImageCropperView extends Component {
     const maximumZoomScale = minimumZoomScale * 4;
     return (
       <ScrollView
+        scrollsToTop={false}
         onTouchMove={this.onTouchMove.bind(this)}
         onTouchEnd={this.onTouchEnd.bind(this)}
         onTouchStart={this.onTouchStart.bind(this)}

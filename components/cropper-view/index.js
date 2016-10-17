@@ -152,6 +152,7 @@ export default class ImageCropperViewSwitch extends Component {
     return (
       <BlockView style={[styles.container, this.props.style]}>
         <ScrollView
+          scrollsToTop={false}
           style={[absoluteStyle]}
           bounces={false}
           scrollEnabled={true}

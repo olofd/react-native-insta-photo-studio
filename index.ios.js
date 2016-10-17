@@ -32,14 +32,11 @@ export default class PhotoManager extends Component {
     this.isResponding = true;
     this.state = {
       headerHasNextButton: true,
-      pendingMedia: null,
-      animatedViewHeight: undefined,
       anim: new Animated.Value(0),
       isRetracted: false,
       currentImage: undefined,
       forceTopBarShow: false,
       currentSwiperIndex: 0,
-      swiperScrollEnabled: true,
       smallCameraRollContainer: true
     };
     this.currentSwiperIndex = 0;
@@ -51,7 +48,9 @@ export default class PhotoManager extends Component {
 
   onFooterPress(action) {
     this.updateHeader(action);
-    this.swiper && this.swiper.scrollToPage(action === 'library' ? 0 : 1);
+    this.swiper && this.swiper.scrollToPage(action === 'library'
+      ? 0
+      : 1);
   }
 
   updateHeader(action) {
@@ -73,11 +72,7 @@ export default class PhotoManager extends Component {
   onPhotoTaken(photo) {}
 
   onCancelAction() {
-    if (this.state.pendingMedia) {
-      this.setState({pendingMedia: null});
-    } else {
-      this.props.navigationActions.pop();
-    }
+    this.props.onClose && this.props.onClose();
   }
 
   willStartAnimating() {
@@ -143,11 +138,7 @@ export default class PhotoManager extends Component {
   }
 
   resetAnimation() {
-    if (this.isRetracted()) {
-      this.finnishAnimation(true);
-    } else {
-      this.finnishAnimation(false);
-    }
+    this.finnishAnimation(this.isRetracted());
   }
 
   onSelectedImagesChanged(selectedImages, image) {
@@ -157,35 +148,17 @@ export default class PhotoManager extends Component {
     }
   }
 
-  onSwiperTouchEnd(e, state, context) {
-    //No idea why I need to subract 10 here, please enlighten me!:
-    const distance = ((this.lastX - e.nativeEvent.pageX) - 10);
-    if (distance > (this.props.window.width / 2)) {
-      //transision will happen
-      this.revealTopBar(this.state.currentSwiperIndex === 0
-        ? 1
-        : 0);
-      this.updateHeader(this.state.currentSwiperIndex === 1
+  onSelectedPageChanged(newPageIndex, lastPageIndex) {
+    if (newPageIndex !== this.state.currentSwiperIndex) {
+      this.setState({currentSwiperIndex: newPageIndex});
+      this.updateHeader(newPageIndex === 0
         ? 'library'
         : 'photo');
+      //Force to show header if we a are not on the firstpage, but it's retracted.
+      this.setState({
+        forceTopBarShow: newPageIndex !== 0 && this.isRetracted()
+      });
     }
-  }
-
-  revealTopBar(currentSwiperIndex) {
-    if (currentSwiperIndex === 1 && this.isRetracted()) {
-      this.setState({forceTopBarShow: true});
-    }
-    if (currentSwiperIndex === 0 && this.state.forceTopBarShow) {
-      this.setState({forceTopBarShow: false});
-    }
-  }
-
-  onSwiperOnMomentumScrollEnd(e, state, context) {
-    this.setState({currentSwiperIndex: state.index});
-    this.updateHeader(state.index === 0
-      ? 'library'
-      : 'photo')
-    this.revealTopBar(state.index);
   }
 
   render() {
@@ -232,11 +205,14 @@ export default class PhotoManager extends Component {
     return (
       <View style={styles.container}>
         <StatusBar hidden={true}></StatusBar>
-        <Swiper window={this.props.window} ref={swiper => this.swiper = swiper}>
+        <Swiper
+          pageWillChange={this.onSelectedPageChanged.bind(this)}
+          selectedPageChanged={this.onSelectedPageChanged.bind(this)}
+          window={this.props.window}
+          ref={swiper => this.swiper = swiper}>
           <Animated.View
             style={[animationStyle, styles.mainAnimationContainer, mainAnimationContainer]}>
             <CameraRollPicker
-              setOuterScrollEnabled={(enabled) => this.setState({swiperScrollEnabled: enabled})}
               scrollViewStyle={scrollViewStyle}
               scrollToRowOnSelection={this.state.isRetracted}
               initalSelectedImageIndex={1}
@@ -272,7 +248,6 @@ export default class PhotoManager extends Component {
           </Animated.View>
           <PhotoCamera
             style={styles.photoCamera}
-            pendingMedia={this.state.pendingMedia}
             onPhotoTaken={this.onPhotoTaken.bind(this)}
             window={this.props.window}></PhotoCamera>
         </Swiper>

@@ -215,6 +215,7 @@ class CameraRollPicker extends Component {
   renderScrollView(props) {
     return (
       <ScrollView
+        scrollsToTop={true}
         bounces={this.state.bounces}
         onTouchMove={this.scrollViewPanDelegatorBound.onTouchMove}
         onTouchEnd={this.scrollViewPanDelegatorBound.onTouchEnd}
