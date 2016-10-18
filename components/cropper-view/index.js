@@ -47,28 +47,28 @@ export default class CropperViewContainer extends Component {
       const nextPushIndex = this.getNextPushIndex();
       const cropperImageObj = this.state.images[nextPushIndex];
       if (cropperImageObj && cropperImageObj.image === nextProps.image) {
+        this.onPartialLoad(this.state.images[nextPushIndex], this.currentLoadingGuid);
         this.onLoad(this.state.images[nextPushIndex], this.currentLoadingGuid);
       } else {
         this.state.images[nextPushIndex] = {
           loaded: false,
           image: nextProps.image
         };
-        this.startLoadingTimer();
+        this.startLoadingTimer(this.state.images.length === 1);
       }
       this.loadCircle && this.loadCircle.setAnimationValue(0);
       this.setState({currentImageIndex: nextPushIndex, isLoading: false});
     }
   }
 
-  startLoadingTimer() {
+  startLoadingTimer(firstImage) {
     const currentLoadingGuid = this.guid();
     this.currentLoadingGuid = currentLoadingGuid;
-    InteractionManager.runAfterInteractions(() => {
+    setTimeout(() => {
       if (this.currentLoadingGuid === currentLoadingGuid) {
-        this.animateLoadingView(1, undefined, true);
-        this.loadCircle && this.loadCircle.animateFill();
+        this.animateLoadingView(1, undefined, false);
       }
-    });
+    }, 320);
   }
 
   animateLoadingView(toValue, cb, instant) {
@@ -105,15 +105,27 @@ export default class CropperViewContainer extends Component {
   }
 
   onLoad(imageObj, currentLoadingGuid) {
+    if (currentLoadingGuid === this.currentLoadingGuid) {
+      this.currentLoadingGuid = null;
+      this.loadCircle && this.loadCircle.animateFill(100, undefined, false);
+      setTimeout(() => {
+        this.animateLoadingView(0, undefined, true);
+      }, 100);
+    }
+  }
+
+  onPartialLoad(imageObj) {
     if (!imageObj.loaded) {
       this.state.images.forEach(i => i.loaded = false);
       imageObj.loaded = true;
-      if (currentLoadingGuid === this.currentLoadingGuid) {
-        this.currentLoadingGuid = null;
-        this.animateLoadingView(0, undefined);
-      }
       this.forceUpdate();
     }
+  }
+
+  onProgress(e) {
+    const p = Math.round((e.nativeEvent.loaded / e.nativeEvent.total) * 100);
+    console.log('progress', p);
+    this.loadCircle && this.loadCircle.animateFill(p, undefined, false);
   }
 
   renderCroppers(cropperProps) {
@@ -139,7 +151,9 @@ export default class CropperViewContainer extends Component {
         pointerEvents={isActive
         ? ACTIVE_POINTER
         : INACTIVE_POINTER}
+        onProgress={this.onProgress.bind(this)}
         onLoad={this.onLoad.bind(this, imageObj, this.currentLoadingGuid)}
+        onPartialLoad={this.onPartialLoad.bind(this, imageObj, this.currentLoadingGuid)}
         style={style}
         image={imageObj.image}/>);
     }
@@ -183,12 +197,18 @@ export default class CropperViewContainer extends Component {
 
   renderLoadingView(widthHeightStyle) {
     return (
-      <AnimatedBlurView
+      <Animated.View
         pointerEvents={INACTIVE_POINTER}
         style={[
         styles.absoluteStyle,
         styles.blurView, {
-          opacity: this.state.loadingViewAnim,
+          backgroundColor: 'black',
+          opacity: this.state.loadingViewAnim.interpolate({
+            inputRange: [
+              0, 1
+            ],
+            outputRange: [0, 0.55]
+          }),
           transform: [
             {
               scale: this.state.loadingViewAnim.interpolate(loadingViewScale)
@@ -201,12 +221,12 @@ export default class CropperViewContainer extends Component {
           ref={loadCircle => this.loadCircle = loadCircle}
           rotation={0}
           style={styles.animatedCircle}
-          size={55}
-          width={1}
-          fill={100}
+          size={50}
+          width={1.5}
+          fill={5}
           tintColor='white'
           backgroundColor="rgba(170, 170, 170, 1)"/>
-      </AnimatedBlurView>
+      </Animated.View>
     );
   }
 }

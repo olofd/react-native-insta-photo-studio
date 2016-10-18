@@ -13,27 +13,31 @@ export default class AnimatedCircularProgress extends React.Component {
   }
 
   componentDidMount() {
-    this.animateFill();
+  //  this.animateFill();
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.fill !== this.props.fill) {
-      this.animateFill();
+    //  this.animateFill();
     }
   }
 
-  animateFill(cb) {
+  animateFill(toValue, cb, runAfterInteractions) {
+    console.log('ANIMATE FILL', toValue);
     const { tension, friction } = this.props;
-    InteractionManager.runAfterInteractions(() => {
-      Animated.spring(
-        this.state.chartFillAnimation,
-        {
-          toValue: this.props.fill,
-          tension,
-          friction
-        }
-      ).start(cb);
-    });
+    const animate = () => Animated.spring(
+            this.state.chartFillAnimation,
+            {
+              toValue: toValue || this.props.fill,
+              tension,
+              friction
+            }
+          ).start(cb);
+    if(runAfterInteractions){
+      InteractionManager.runAfterInteractions(() => animate());
+    }else {
+      animate();
+    }
   }
 
   performLinearAnimation(toValue, duration) {
@@ -72,6 +76,6 @@ AnimatedCircularProgress.propTypes = {
 }
 
 AnimatedCircularProgress.defaultProps = {
-  tension: 20,
+  tension: 14,
   friction: 8
 };

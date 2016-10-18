@@ -236,7 +236,9 @@ export default class ImageCropperView extends Component {
   renderPlainImage(currentImageDimensions, previewImageDimensions) {
     return (
       <Image
-        onLoadEnd={this.zoomToImage.bind(this, this.props.onLoad)}
+        onProgress={this.props.onProgress}
+        onPartialLoad={this.zoomToImage.bind(this, this.props.onPartialLoad)}
+        onLoadEnd={this.props.onLoad}
         source={{
         uri: this.state.currentImage,
         width: previewImageDimensions.width,

@@ -114,7 +114,7 @@ class CameraRollPicker extends Component {
     this.fetchRound++;
     var {groupTypes, assetType} = this.props;
 
-    const fetchNum = 30;
+    const fetchNum = 12;
     const fetchNumber = this.fetchRound === 0
       ? fetchNum
       : (fetchNum * (this.fetchRound + 1)) * 3;
@@ -288,7 +288,7 @@ class CameraRollPicker extends Component {
         key={item.uri}
         style={cellStyles.cellMargin}
         onPress={() => this._selectImage(item, rowIndex, rowData)}>
-        <Image onLayout={(e, d) => console.log(e.nativeEvent, d)} source={item} style={cellStyles.imageSize}>
+        <Image source={item} style={cellStyles.imageSize}>
           {isSelected
             ? <View style={[cellStyles.imageSize, styles.selectedImage]}></View>
             : null}
