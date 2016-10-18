@@ -24,6 +24,7 @@ import {
   swipeUpDetector,
   swipeDownDetector
 } from '../../pan-delegator/scroll-view-pan-delegator';
+import CameraRollService from '../../services/camera-roll-service';
 
 const PIVOT = 40;
 class CameraRollPicker extends Component {
@@ -39,9 +40,10 @@ class CameraRollPicker extends Component {
       bounces: true,
       scrollingEnabled: true
     };
-    this._onEndReachedDebounce = debounce(this._onEndReached, 500).bind(this);
+    this._onEndReachedDebounce = debounce(this._onEndReached, 200).bind(this);
     this.setupScrollViewPanDelegator(props);
     this.lastContentOffset = {y : 0, x : 0};
+    this.startIndex = 0;
   }
 
   setupScrollViewPanDelegator(props) {
@@ -112,14 +114,17 @@ class CameraRollPicker extends Component {
     this.fetchRound++;
     var {groupTypes, assetType} = this.props;
 
-    const fetchNum = 12;
+    const fetchNum = 30;
     const fetchNumber = this.fetchRound === 0
       ? fetchNum
       : (fetchNum * (this.fetchRound + 1)) * 3;
+
     var fetchParams = {
       first: fetchNumber,
       groupTypes: groupTypes,
-      assetType: assetType
+      assetType: assetType,
+      startIndex : this.startIndex,
+      endIndex : this.startIndex + fetchNumber
     };
 
     if (Platform.OS === "android") {
@@ -131,28 +136,30 @@ class CameraRollPicker extends Component {
       fetchParams.after = this.state.lastCursor;
     }
 
-    CameraRoll.getPhotos(fetchParams).then((data) => {
+    CameraRollService.getPhotosPhotoKit(fetchParams).then((data) => {
       //  console.log('RECIVE', data.edges.length);
+      this.startIndex = (this.startIndex + (data.images.length));
+      if(this.fetchRound === 0) {
+        this.setInitalSelection(data.images);
+      }
       this._appendImages(data);
       this.fetchInProgress = false;
       if (this.fetchRound === 0 || this.fetchRound === 1) {
         this._fetch();
       }
     }, (e) => console.log(e));
+  }
 
-    if (this.fetchRound === 0) {
-      setInterval(() => {
-        if (!this.state.noMore) {
-          this._fetch();
-        }
-      }, this.fetchRound < 5
-        ? 1600
-        : 3000);
+  setInitalSelection(assets) {
+    if (this.props.initalSelectedImageIndex !== undefined) {
+      const image = assets[this.props.initalSelectedImageIndex];
+      this.state.selected.push(image);
+      this.props.onSelectedImagesChanged(this.state.selected, image);
     }
   }
 
   _appendImages(data) {
-    var assets = data.edges;
+    var assets = data.images;
     var newState = {
       loadingMore: false,
       dataSource: this.state.dataSource || []
@@ -167,11 +174,6 @@ class CameraRollPicker extends Component {
       }
       newState.lastCursor = data.page_info.end_cursor;
       newState.dataSource = this.appendToState(newState.dataSource, assets, this.props.imagesPerRow);
-      if (firstFetch && this.props.initalSelectedImageIndex !== undefined) {
-        const image = assets[this.props.initalSelectedImageIndex].node.image;
-        this.state.selected.push(image);
-        this.props.onSelectedImagesChanged(this.state.selected, image);
-      }
       newState.shouldUpdate = this.guid();
     }
     this.setState(newState);
@@ -244,7 +246,7 @@ class CameraRollPicker extends Component {
         maxNumToRender={500}
         shouldUpdateToken={this.state.shouldUpdate}
         onViewableRowsChanged={(e) => {
-        if (e[e.length - 1] >= (this.state.dataSource.length - 30)) {
+        if (e[e.length - 1] >= (this.state.dataSource.length - 60)) {
           this._onEndReachedDebounce();
         }
       }}
@@ -274,7 +276,7 @@ class CameraRollPicker extends Component {
   _renderImage(item, rowIndex, rowColumn, rowData) {
     var isSelected = false;
     for (var i = 0; i < this.state.selected.length; i++) {
-      if (this.state.selected[i].uri === item.node.image.uri) {
+      if (this.state.selected[i].uri === item.uri) {
         isSelected = true;
         break;
       }
@@ -283,10 +285,10 @@ class CameraRollPicker extends Component {
     return (
       <TouchableOpacity
         activeOpacity={1.0}
-        key={item.node.image.uri}
+        key={item.uri}
         style={cellStyles.cellMargin}
-        onPress={() => this._selectImage(item.node.image, rowIndex, rowData)}>
-        <Image source={item.node.image} style={cellStyles.imageSize}>
+        onPress={() => this._selectImage(item, rowIndex, rowData)}>
+        <Image onLayout={(e, d) => console.log(e.nativeEvent, d)} source={item} style={cellStyles.imageSize}>
           {isSelected
             ? <View style={[cellStyles.imageSize, styles.selectedImage]}></View>
             : null}
@@ -300,7 +302,6 @@ class CameraRollPicker extends Component {
       return null;
     }
     var items = rowData.filter(x => !!x).map((item, rowColumn) => this._renderImage(item, rowIndex, rowColumn, rowData));
-
     return (
       <View style={styles.row}>
         {items}
@@ -316,6 +317,8 @@ class CameraRollPicker extends Component {
   }
 
   _onEndReached() {
+    console.log('FETCH FROM SCROLL')
+
     //    console.log('END');
     if (!this.state.noMore) {
       this.fetch();
@@ -342,7 +345,7 @@ class CameraRollPicker extends Component {
           let rowFound = false;
           for (var j = 0; j < row.rowData.length; j++) {
             const item = row.rowData[j];
-            if (item.node.image === itemToRemove) {
+            if (item === itemToRemove) {
               this.markRowForRerender(i);
               rowFound = true;
               break;
@@ -491,7 +494,7 @@ CameraRollPicker.propTypes = {
 }
 
 CameraRollPicker.defaultProps = {
-  groupTypes: 'SavedPhotos',
+  groupTypes: 'All',
   maximum: 15,
   imagesPerRow: 3,
   imageMargin: 5,

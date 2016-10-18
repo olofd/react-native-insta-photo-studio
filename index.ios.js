@@ -215,9 +215,9 @@ export default class PhotoManager extends Component {
             <CameraRollPicker
               scrollViewStyle={scrollViewStyle}
               scrollToRowOnSelection={this.state.isRetracted}
-              initalSelectedImageIndex={1}
               onSelectedImagesChanged={this.onSelectedImagesChanged.bind(this)}
               replaceSelection={true}
+              initalSelectedImageIndex={0}
               top={this.state.isRetracted
               ? 50
               : (this.props.window.width + TOP_BAR_HEIGHT)}
@@ -231,20 +231,20 @@ export default class PhotoManager extends Component {
               window={this.props.window}
               imageMargin={2}
               imagesPerRow={4}></CameraRollPicker>
-            <CropperView
-              anim={this.state.anim}
-              style={[styles.absolute, cropperView]}
-              top={this.state.isRetracted
-              ? 50
-              : (this.props.window.width + TOP_BAR_HEIGHT)}
-              willStartAnimating={this.willStartAnimating.bind(this)}
-              finnishAnimation={this.finnishAnimation.bind(this)}
-              getAnimationValue={this.getAnimationValue.bind(this)}
-              animate={this.animate.bind(this)}
-              resetAnimation={this.resetAnimation.bind(this)}
-              image={this.state.currentImage}
-              magnification={2.5}
-              window={this.props.window}/>
+              <CropperView
+                anim={this.state.anim}
+                style={[styles.absolute, cropperView]}
+                top={this.state.isRetracted
+                ? 50
+                : (this.props.window.width + TOP_BAR_HEIGHT)}
+                willStartAnimating={this.willStartAnimating.bind(this)}
+                finnishAnimation={this.finnishAnimation.bind(this)}
+                getAnimationValue={this.getAnimationValue.bind(this)}
+                animate={this.animate.bind(this)}
+                resetAnimation={this.resetAnimation.bind(this)}
+                image={this.state.currentImage}
+                magnification={2.0}
+                window={this.props.window}/>
           </Animated.View>
           <PhotoCamera
             style={styles.photoCamera}
@@ -319,3 +319,20 @@ const styles = StyleSheet.create({
     top: TOP_BAR_HEIGHT
   }
 });
+//              initalSelectedImageIndex={0}
+
+/*
+<CropperView
+  anim={this.state.anim}
+  style={[styles.absolute, cropperView]}
+  top={this.state.isRetracted
+  ? 50
+  : (this.props.window.width + TOP_BAR_HEIGHT)}
+  willStartAnimating={this.willStartAnimating.bind(this)}
+  finnishAnimation={this.finnishAnimation.bind(this)}
+  getAnimationValue={this.getAnimationValue.bind(this)}
+  animate={this.animate.bind(this)}
+  resetAnimation={this.resetAnimation.bind(this)}
+  image={this.state.currentImage}
+  magnification={3.0}
+  window={this.props.window}/>*/

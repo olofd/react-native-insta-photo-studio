@@ -14,6 +14,7 @@ import ImageCopperView from './image-cropper-view';
 import BlockView from 'react-native-scroll-block-view';
 import {BlurView} from 'react-native-blur';
 import {AnimatedCircularProgress} from '../../react-native-circular-progress';
+
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 const loadingViewScale = {
   inputRange: [

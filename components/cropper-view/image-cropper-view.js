@@ -140,22 +140,31 @@ export default class ImageCropperView extends Component {
 
   getImageDimensions(image) {
     if (image) {
-      if (typeof image !== 'string') {
+      if (typeof image !== 'string' && image.width && image.height) {
         const currentImageDimensions = {
           width: image.width,
           height: image.height
         };
         this.setState({currentImage: image.uri, currentImageDimensions, currentImageInfo: this.getImageRatioInfo(currentImageDimensions)});
       } else {
-        Image.getSize(image, (width, height) => {
-          const currentImageDimensions = {
-            width,
-            height
-          };
-          this.setState({currentImage: image, currentImageDimensions: currentImageDimensions, currentImageInfo: this.getImageRatioInfo(currentImageDimensions)});
-        });
+        if (typeof image === 'string') {
+          this.getSize(image);
+
+        }else {
+          this.getSize(image.uri);
+        }
       }
     }
+  }
+
+  getSize(uri) {
+    Image.getSize(uri, (width, height) => {
+      const currentImageDimensions = {
+        width,
+        height
+      };
+      this.setState({currentImage: uri, currentImageDimensions: currentImageDimensions, currentImageInfo: this.getImageRatioInfo(currentImageDimensions)});
+    });
   }
 
   componentWillReceiveProps(nextProps) {
