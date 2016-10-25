@@ -68,7 +68,7 @@ export default class CropperViewContainer extends Component {
       if (this.currentLoadingGuid === currentLoadingGuid) {
         this.animateLoadingView(1, undefined, false);
       }
-    }, 320);
+    }, 350);
   }
 
   animateLoadingView(toValue, cb, instant) {

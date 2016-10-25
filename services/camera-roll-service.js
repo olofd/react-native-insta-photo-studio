@@ -1,7 +1,7 @@
 import {
     CameraRoll
 } from 'react-native';
-import CameraRollPhotoKit from '../components/camera-roll';
+import RNPhotosFramework from 'react-native-photos-framework';
 
 export default class CameraRollService {
     static getPhotos(fetchParams) {
@@ -14,7 +14,7 @@ export default class CameraRollService {
     }
 
     static getPhotosPhotoKit(fetchParams) {
-        return CameraRollPhotoKit.getPhotos(fetchParams).then((data) => {
+        return RNPhotosFramework.getAssets(fetchParams).then((data) => {
             return {
               images : data,
               page_info : {
