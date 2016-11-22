@@ -142,8 +142,8 @@ export default class ImageCropperView extends Component {
     if (image) {
       if (typeof image !== 'string' && image.width && image.height) {
         let opportunisticImage = image;
-        if(image.widthOptions) {
-          opportunisticImage = image.widthOptions({
+        if(image.withOptions) {
+          opportunisticImage = image.withOptions({
             deliveryMode : 'opportunistic'
           });
         }

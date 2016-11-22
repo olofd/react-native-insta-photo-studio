@@ -40,6 +40,7 @@ class CameraRollPicker extends Component {
       bounces: true,
       scrollingEnabled: true
     };
+    this.cameraRollService = new CameraRollService();
     this._onEndReachedDebounce = debounce(this._onEndReached, 200).bind(this);
     this.setupScrollViewPanDelegator(props);
     this.lastContentOffset = {y : 0, x : 0};
@@ -136,7 +137,7 @@ class CameraRollPicker extends Component {
       fetchParams.after = this.state.lastCursor;
     }
 
-    CameraRollService.getPhotosPhotoKit(fetchParams).then((data) => {
+    this.cameraRollService.getPhotosPhotoKit(fetchParams).then((data) => {
       //  console.log('RECIVE', data.edges.length);
       this.startIndex = (this.startIndex + (data.images.length));
       if(this.fetchRound === 0) {
@@ -288,7 +289,7 @@ class CameraRollPicker extends Component {
         key={item.uri}
         style={cellStyles.cellMargin}
         onPress={() => this._selectImage(item, rowIndex, rowData)}>
-        <Image source={item} style={cellStyles.imageSize}>
+        <Image source={item.image} style={cellStyles.imageSize}>
           {isSelected
             ? <View style={[cellStyles.imageSize, styles.selectedImage]}></View>
             : null}

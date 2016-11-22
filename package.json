@@ -29,13 +29,13 @@
     "gl-react-contrast-saturation-brightness": "~1.1.0",
     "gl-react-hue-rotate": "~1.1.0",
     "gl-react-image": "0.0.2",
-    "gl-react-native": "^2.35.0-rc.0",
+    "gl-react-native": "^2.37.0",
     "gl-react-negative": "~1.1.0",
-    "react-native-blur": "^1.0.1",
+    "react-native-blur": "^1.2.0",
     "react-native-camera": "git+https://github.com/lwansbrough/react-native-camera.git",
     "react-native-circular-progress": "0.0.7",
-    "react-native-image-resizer": "0.0.11",
-    "react-native-vector-icons": "^2.1.0"
+    "react-native-image-resizer": "0.0.12",
+    "react-native-vector-icons": "^3.0.0"
   },
   "scripts": {
     "update": "git add . && git commit -m \"Updated\" && npm version patch && git push --tags && git push origin master && npm publish",

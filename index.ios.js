@@ -9,7 +9,7 @@ import {
   Animated,
   InteractionManager,
   Easing,
-  Dimensions
+  Dimensions  
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import React, {Component} from 'react';
