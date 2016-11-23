@@ -17,33 +17,25 @@ import {
 } from 'react-native';
 import WindowedListView from '../../../react-native/Libraries/Experimental/WindowedListView';
 import debounce from 'debounce';
-import {
-  ScrollViewPanDelegator,
-  BoundarySwipeDelgator,
-  ContentOffsetDelegator,
-  swipeUpDetector,
-  swipeDownDetector
-} from '../../pan-delegator/scroll-view-pan-delegator';
-import CameraRollService from '../../services/camera-roll-service';
+import {ScrollViewPanDelegator, BoundarySwipeDelgator, ContentOffsetDelegator, swipeUpDetector, swipeDownDetector} from '../../pan-delegator/scroll-view-pan-delegator';
+import cameraRollService from '../../services/camera-roll-service';
 
-const PIVOT = 40;
 class CameraRollPicker extends Component {
   constructor(props) {
     super(props);
     this.state = {
       images: [],
       selected: this.props.selected,
-      lastCursor: null,
-      loadingMore: false,
       noMore: false,
       shouldUpdate: this.guid(),
-      bounces: true,
-      scrollingEnabled: true
+      bounces: true
     };
-    this.cameraRollService = new CameraRollService();
     this._onEndReachedDebounce = debounce(this._onEndReached, 200).bind(this);
     this.setupScrollViewPanDelegator(props);
-    this.lastContentOffset = {y : 0, x : 0};
+    this.lastContentOffset = {
+      y: 0,
+      x: 0
+    };
     this.startIndex = 0;
   }
 
@@ -91,21 +83,20 @@ class CameraRollPicker extends Component {
 
   componentWillReceiveProps(nextProps) {
     this.setState({selected: nextProps.selected});
-  }
-
-  fetch() {
-    if (!this.state.loadingMore) {
+    if (nextProps.currentAlbum !== this.props.currentAlbum) {
       this.setState({
-        loadingMore: true
+        dataSource : [],
+        noMore: false
       }, () => {
-        this._fetch();
+        this.fetchRound = 0;
+        this.startIndex = 0;
+        this.fetch(true);
       });
     }
   }
 
-  _fetch() {
-    //  console.log('FETCH');
-    if (this.fetchInProgress) {
+  fetch(force) {
+    if (this.fetchInProgress && !force) {
       return;
     }
     this.fetchInProgress = true;
@@ -121,11 +112,8 @@ class CameraRollPicker extends Component {
       : (fetchNum * (this.fetchRound + 1)) * 3;
 
     var fetchParams = {
-      first: fetchNumber,
-      groupTypes: groupTypes,
-      assetType: assetType,
-      startIndex : this.startIndex,
-      endIndex : this.startIndex + fetchNumber
+      startIndex: this.startIndex,
+      endIndex: this.startIndex + fetchNumber
     };
 
     if (Platform.OS === "android") {
@@ -133,20 +121,19 @@ class CameraRollPicker extends Component {
       delete fetchParams.groupTypes;
     }
 
-    if (this.state.lastCursor) {
-      fetchParams.after = this.state.lastCursor;
-    }
-
-    this.cameraRollService.getPhotosPhotoKit(fetchParams).then((data) => {
+    const fetchFromAlbum = this.props.currentAlbum;
+    this.props.currentAlbum.getAssets(fetchParams).then((data) => {
       //  console.log('RECIVE', data.edges.length);
-      this.startIndex = (this.startIndex + (data.images.length));
-      if(this.fetchRound === 0) {
-        this.setInitalSelection(data.images);
-      }
-      this._appendImages(data);
-      this.fetchInProgress = false;
-      if (this.fetchRound === 0 || this.fetchRound === 1) {
-        this._fetch();
+      if (fetchFromAlbum === this.props.currentAlbum) {
+        this.startIndex = (this.startIndex + (data.assets.length));
+        if (this.fetchRound === 0) {
+          this.setInitalSelection(data.assets);
+        }
+        this._appendImages(data);
+        this.fetchInProgress = false;
+        if (this.fetchRound === 0 || this.fetchRound === 1) {
+          this.fetch(true);
+        }
       }
     }, (e) => console.log(e));
   }
@@ -160,20 +147,15 @@ class CameraRollPicker extends Component {
   }
 
   _appendImages(data) {
-    var assets = data.images;
+    var assets = data.assets;
     var newState = {
-      loadingMore: false,
       dataSource: this.state.dataSource || []
     };
     var firstFetch = false;
-    if (!data.page_info.has_next_page) {
+    if (data.includesLastAsset) {
       newState.noMore = true;
     }
     if (assets.length > 0) {
-      if (!this.state.lastCursor) {
-        firstFetch = true;
-      }
-      newState.lastCursor = data.page_info.end_cursor;
       newState.dataSource = this.appendToState(newState.dataSource, assets, this.props.imagesPerRow);
       newState.shouldUpdate = this.guid();
     }
@@ -226,7 +208,6 @@ class CameraRollPicker extends Component {
         onTouchStart={this.scrollViewPanDelegatorBound.onTouchStart}
         {...props}
         style={this.props.scrollViewStyle}
-        scrollEnabled={this.state.scrollingEnabled}
         scrollEventThrottle={16}
         decelerationRate='normal'></ScrollView>
     );
@@ -474,17 +455,7 @@ const styles = StyleSheet.create({
 })
 
 CameraRollPicker.propTypes = {
-  groupTypes: React.PropTypes.oneOf([
-    'Album',
-    'All',
-    'Event',
-    'Faces',
-    'Library',
-    'PhotoStream',
-    'SavedPhotos'
-  ]),
   maximum: React.PropTypes.number,
-  assetType: React.PropTypes.oneOf(['Photos', 'Videos', 'All']),
   imagesPerRow: React.PropTypes.number,
   imageMargin: React.PropTypes.number,
   containerWidth: React.PropTypes.number,
@@ -495,11 +466,9 @@ CameraRollPicker.propTypes = {
 }
 
 CameraRollPicker.defaultProps = {
-  groupTypes: 'All',
   maximum: 15,
   imagesPerRow: 3,
   imageMargin: 5,
-  assetType: 'Photos',
   backgroundColor: 'white',
   selected: [],
   onSelectedImagesChanged: function(selectedImages, currentImage) {

@@ -1,15 +1,22 @@
 import {CameraRoll} from 'react-native';
 import RNPhotosFramework from 'react-native-photos-framework';
 
-export default class CameraRollService {
+class CameraRollService {
 
   constructor() {
-    this.albumFetchPromise = RNPhotosFramework.getAlbumsCommon()
-    .then((a) => {
-      return a;
-    });
-
+    this.albumFetchPromise = RNPhotosFramework
+      .requestAuthorization().then((status) => {
+        if(!status.isAuthorized) {
+          throw new Error('Unauthorized');
+        }
+        return RNPhotosFramework.getAlbumsCommon({
+          assetCount: 'exact',
+          includeMetaData: true,
+          previewAssets: 2
+        }, true);
+      });
   }
+
   getPhotos(fetchParams) {
     return CameraRoll.getPhotos(fetchParams).then((data) => {
       return {
@@ -19,8 +26,26 @@ export default class CameraRollService {
     });
   }
 
-  getPhotosPhotoKit(fetchParams) {
+  async getCurrentAlbum() {
+    if(!this.currentAlbum) {
+      this.currentAlbum = await this.getAllPhotosAlbum();
+      if(!this.currentAlbum) {
+        throw new Error('Could not find default album');
+      }
+    }
+    return this.currentAlbum;
+  }
+
+  getAllPhotosAlbum() {
     return this.albumFetchPromise.then((queryResult) => {
+      return queryResult.albums.find(album =>
+        album.type === 'smartAlbum' &&
+        album.subType === 'smartAlbumUserLibrary');
+    });
+  }
+
+  getPhotosPhotoKit(fetchParams) {
+    return this.getCurrentAlbum().then((currentAlbum) => {
       return RNPhotosFramework.getAssets({
         ...fetchParams,
         includeMetaData : true,
@@ -43,3 +68,5 @@ export default class CameraRollService {
     });
   }
 }
+
+export default new CameraRollService();

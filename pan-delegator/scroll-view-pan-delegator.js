@@ -172,7 +172,7 @@ export class ScrollViewPanDelegator {
         if (this.currentDelegator) {
             this.currentDelegator[event] && this.currentDelegator[event](...args);
             return;
-        }
+        } 
         for (var i = 0; i < this.delegators.length; i++) {
             const delegator = this.delegators[i];
             const acceptsEvent = delegator[event] && delegator[event](...args);

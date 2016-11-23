@@ -11,7 +11,7 @@ export default class OverlayGrid extends Component {
   }
 
   show() {
-    this.anim(SHOWN_OPACITY, 20);
+    this.anim(1, 20);
   }
 
   hide() {
@@ -22,26 +22,27 @@ export default class OverlayGrid extends Component {
     Animated.timing(this.state.anim, {
       duration : duration,
       toValue: toVal,
-      easing: Easing.elastic(1)
+      easing: Easing.elastic(1),
+      useNativeDriver : true
     }).start();
   }
 
   renderGrid = (direction) => {
     const blockStyle = direction === 'row'
       ? {
-        borderColor: 'white',
+        borderColor: 'rgba(255, 255, 255, 0.65)',
         borderRightWidth: 1 / PixelRatio.get()
       }
       : {
-        borderColor: 'white',
+        borderColor: 'rgba(255, 255, 255, 0.65)',
         borderBottomWidth: 1 / PixelRatio.get()
       };
 
     return (
-      <Animated.View
+      <View
+        shouldRasterizeIOS={true}
         style={[styles.absolute, {
-        flexDirection: direction,
-        opacity: 1.0
+        flexDirection: direction
       }]}>
         <View
           style={[
@@ -60,7 +61,7 @@ export default class OverlayGrid extends Component {
         <View style={{
           flex: 1
         }}/>
-      </Animated.View>
+    </View>
     );
   }
   render() {

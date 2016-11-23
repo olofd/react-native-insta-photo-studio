@@ -1,7 +1,37 @@
-import {View, Text, StyleSheet, PixelRatio, TouchableOpacity} from 'react-native';
-import React, { Component } from 'react';
+import {
+  Animated,
+  View,
+  Text,
+  StyleSheet,
+  PixelRatio,
+  TouchableOpacity
+} from 'react-native';
+import React, {Component} from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
+const AnimatedIcon = Animated.createAnimatedComponent(Icon);
 export default class PhotoManagerHeader extends Component {
+
+  constructor() {
+    super();
+    this.albumsButtonPressed = false;
+    this.state = {
+      anim: new Animated.Value(1)
+    };
+  }
+
+  onTitleButtonPressed() {
+    this.state.anim.stopAnimation((value) => {
+      this.albumsButtonPressed = !this.albumsButtonPressed;
+      Animated.timing(this.state.anim, {
+        toValue: this.albumsButtonPressed
+          ? 0
+          : 1,
+        duration: 230,
+        useNativeDriver: true
+      }).start();
+    });
+
+  }
 
   renderRightButton(fontStyle) {
     return <View
@@ -19,7 +49,25 @@ export default class PhotoManagerHeader extends Component {
   }
 
   render() {
-    const fontStyle = {fontFamily : this.props.font || 'Helvetica'};
+    const fontStyle = {
+      fontFamily: this.props.font || 'Helvetica'
+    };
+    const interpolatedRotateAnimation = this.state.anim.interpolate({
+      inputRange: [
+        0, 1
+      ],
+      outputRange: ['180deg', '0deg']
+    });
+    const arrowAnim = {
+      transform: [
+        {
+          rotate: interpolatedRotateAnimation
+        }
+      ]
+    };
+    const fadeAnim = {
+      opacity: this.state.anim
+    };
     return (
       <View
         style={[
@@ -27,22 +75,30 @@ export default class PhotoManagerHeader extends Component {
           height: this.props.height
         }
       ]}>
-
-        <TouchableOpacity
-          style={[styles.buttonArea, styles.leftButtonArea]}
-          onPress={this.props.onCancelAction}>
-          <Text style={[styles.cancelButton, fontStyle]}>Avbryt</Text>
-        </TouchableOpacity>
+        <Animated.View style={fadeAnim}>
+          <TouchableOpacity
+            style={[styles.buttonArea, styles.leftButtonArea]}
+            onPress={this.props.onCancelAction}>
+            <Text style={[styles.cancelButton, fontStyle]}>Avbryt</Text>
+          </TouchableOpacity>
+        </Animated.View>
 
         <View style={[styles.buttonArea, styles.centerButton]}>
-          <TouchableOpacity style={styles.centerContainer}>
+          <TouchableOpacity
+            style={styles.centerContainer}
+            onPress={this.onTitleButtonPressed.bind(this)}>
             <Text style={[styles.title, fontStyle]}>
-              {this.props.headerTitle}
+              {this.props.currentAlbum.title}
             </Text>
+            <Animated.View style={arrowAnim}>
+              <Icon style={styles.arrow} name='ios-arrow-down'></Icon>
+            </Animated.View>
           </TouchableOpacity>
         </View>
+        <Animated.View style={fadeAnim}>
+          {this.renderRightButton(fontStyle)}
+        </Animated.View>
 
-        {this.renderRightButton(fontStyle)}
       </View>
     );
   }
@@ -57,10 +113,9 @@ const styles = StyleSheet.create({
     height: 45
   },
   title: {
-    flex: 1,
     fontSize: 15,
     textAlign: 'center',
-    margin: 10
+    margin: 5
   },
   buttonArea: {
     alignItems: 'center',
@@ -82,13 +137,18 @@ const styles = StyleSheet.create({
     fontSize: 15
   },
   centerContainer: {
+    flex: 1,
     flexDirection: 'row',
-    width: 110,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    paddingHorizontal: 10
   },
   rightButtonArea: {
     paddingHorizontal: 15,
     paddingRight: 15
+  },
+  arrow: {
+    fontSize: 20,
+    top: 2
   }
 });

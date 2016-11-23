@@ -23,7 +23,6 @@ export default class AnimatedCircularProgress extends React.Component {
   }
 
   animateFill(toValue, cb, runAfterInteractions) {
-    console.log('ANIMATE FILL', toValue);
     const { tension, friction } = this.props;
     const animate = () => Animated.spring(
             this.state.chartFillAnimation,
@@ -43,7 +42,8 @@ export default class AnimatedCircularProgress extends React.Component {
   performLinearAnimation(toValue, duration) {
     Animated.timing(this.state.chartFillAnimation, {
       toValue: toValue,
-      duration: duration
+      duration: duration,
+      useNativeDriver : true
     }).start();
   }
 
