@@ -59,11 +59,13 @@ export default class PhotoManagerHeader extends Component {
 
   _renderExitMenu() {
     return (
-      <View></View>
+      <View style={{
+        flex: 1
+      }}></View>
     );
   }
 
-  _renderMenu() {
+  render() {
     if(!this.props.currentAlbum) {
       return this._renderExitMenu();
     }
@@ -87,7 +89,12 @@ export default class PhotoManagerHeader extends Component {
       opacity: this.props.showAlbumsAnim
     };
     return (
-      <View>
+      <View
+        style={[
+        styles.topBar, {
+          height: this.props.height
+        }
+      ]}>
         <Animated.View style={fadeAnim}>
           <TouchableOpacity
             style={[styles.buttonArea, styles.leftButtonArea]}
@@ -110,19 +117,6 @@ export default class PhotoManagerHeader extends Component {
         <Animated.View style={fadeAnim}>
           {this.renderRightButton(fontStyle)}
         </Animated.View>
-      </View>
-    );
-  }
-
-  render() {
-    return (
-      <View
-        style={[
-        styles.topBar, {
-          height: this.props.height
-        }
-      ]}>
-        {this._renderMenu()}
       </View>
     );
   }
@@ -154,7 +148,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15
   },
   centerButton: {
-    flex: 1
+    flex: 1,
+    flexGrow: 1
   },
   linkButton: {
     color: '#3897f0',

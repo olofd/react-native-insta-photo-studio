@@ -9,7 +9,8 @@ import {
   Animated,
   InteractionManager,
   Easing,
-  Dimensions
+  Dimensions,
+  ActivityIndicator
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import React, {Component} from 'react';
@@ -229,12 +230,21 @@ export default class PhotoManager extends Component {
     );
   }
 
+  _renderLoading() {
+    return (
+      <View style={[styles.loadingContainer, {width : this.props.window.width}]}>
+        <ActivityIndicator></ActivityIndicator>
+      </View>
+    );
+  }
+
   _renderLibraryPicker(animationStyle) {
-    if(!this.props.currentAlbum) {
-      return null;
-    }
     if(this.props.authStatus && !this.props.authStatus.isAuthorized) {
-      return (<Unauthorized {...this.props}></Unauthorized>)
+      return (<Unauthorized style={{width : this.props.window.width, paddingBottom : TOP_BAR_HEIGHT}} {...this.props}></Unauthorized>);
+    }
+
+    if(!this.props.currentAlbum) {
+      return this._renderLoading();
     }
 
     const mainAnimationContainer = {
@@ -250,15 +260,7 @@ export default class PhotoManager extends Component {
     );
   }
 
-  render() {
-    const animationStyle = {
-      transform: [
-        {
-          translateY: this.state.anim
-        }
-      ]
-    };
-
+  _renderHeader(animationStyle) {
     const forceTopBarAnim = {};
     if (this.state.forceTopBarShow) {
       forceTopBarAnim.transform = [
@@ -267,7 +269,31 @@ export default class PhotoManager extends Component {
         }
       ];
     }
+    return (
+      <Animated.View
+        style={[animationStyle, styles.absolute, styles.headerContainer, forceTopBarAnim]}>
+        <Header
+          showAlbumsAnim={this.props.showAlbumsAnim}
+          currentAlbum={this.props.currentAlbum}
+          showAlbumView={this.props.showAlbumView}
+          hideAlbumView={this.props.hideAlbumView}
+          font={this.props.font}
+          hasNextButton={this.state.headerHasNextButton}
+          height={TOP_BAR_HEIGHT}
+          headerTitle={this.state.headerTitle}
+          onCancelAction={this.onCancelAction.bind(this)}></Header>
+      </Animated.View>
+    );
+  }
 
+  render() {
+    const animationStyle = {
+      transform: [
+        {
+          translateY: this.state.anim
+        }
+      ]
+    };
     return (
       <View style={styles.container}>
         <StatusBar hidden={true}></StatusBar>
@@ -282,19 +308,7 @@ export default class PhotoManager extends Component {
             onPhotoTaken={this.onPhotoTaken.bind(this)}
             window={this.props.window}></PhotoCamera>
         </Swiper>
-        <Animated.View
-          style={[animationStyle, styles.absolute, styles.headerContainer, forceTopBarAnim]}>
-          <Header
-            showAlbumsAnim={this.props.showAlbumsAnim}
-            currentAlbum={this.props.currentAlbum}
-            showAlbumView={this.props.showAlbumView}
-            hideAlbumView={this.props.hideAlbumView}
-            font={this.props.font}
-            hasNextButton={this.state.headerHasNextButton}
-            height={TOP_BAR_HEIGHT}
-            headerTitle={this.state.headerTitle}
-            onCancelAction={this.onCancelAction.bind(this)}></Header>
-        </Animated.View>
+        {this._renderHeader(animationStyle)}
         <Footer
           libraryDisplayName={this.props.libraryDisplayName}
           photoDisplayName={this.props.photoDisplayName}
@@ -352,5 +366,10 @@ const styles = StyleSheet.create({
   },
   photoCamera: {
     top: TOP_BAR_HEIGHT
+  },
+  loadingContainer : {
+    flex : 1,
+    alignItems : 'center',
+    justifyContent : 'center'
   }
 });
