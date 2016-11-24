@@ -4,7 +4,8 @@ import {
   Text,
   StyleSheet,
   PixelRatio,
-  TouchableOpacity
+  TouchableOpacity,
+  Easing
 } from 'react-native';
 import React, {Component} from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -22,13 +23,21 @@ export default class PhotoManagerHeader extends Component {
   onTitleButtonPressed() {
     this.state.anim.stopAnimation((value) => {
       this.albumsButtonPressed = !this.albumsButtonPressed;
-      Animated.timing(this.state.anim, {
+      if (this.albumsButtonPressed) {
+        this.props.showAlbumView && this.props.showAlbumView(this.state.anim);
+      }
+      Animated.timing(this.props.showAlbumsAnim, {
         toValue: this.albumsButtonPressed
           ? 0
           : 1,
-        duration: 230,
-        useNativeDriver: true
-      }).start();
+        duration: 200,
+        useNativeDriver: true,
+        easing: Easing. in(Easing.ease)
+      }).start(() => {
+        if (!this.albumsButtonPressed) {
+          this.props.hideAlbumView && this.props.hideAlbumView(this.state.anim);
+        }
+      });
     });
 
   }
@@ -48,11 +57,20 @@ export default class PhotoManagerHeader extends Component {
     </View>;
   }
 
-  render() {
+  _renderExitMenu() {
+    return (
+      <View></View>
+    );
+  }
+
+  _renderMenu() {
+    if(!this.props.currentAlbum) {
+      return this._renderExitMenu();
+    }
     const fontStyle = {
       fontFamily: this.props.font || 'Helvetica'
     };
-    const interpolatedRotateAnimation = this.state.anim.interpolate({
+    const interpolatedRotateAnimation = this.props.showAlbumsAnim.interpolate({
       inputRange: [
         0, 1
       ],
@@ -66,15 +84,10 @@ export default class PhotoManagerHeader extends Component {
       ]
     };
     const fadeAnim = {
-      opacity: this.state.anim
+      opacity: this.props.showAlbumsAnim
     };
     return (
-      <View
-        style={[
-        styles.topBar, {
-          height: this.props.height
-        }
-      ]}>
+      <View>
         <Animated.View style={fadeAnim}>
           <TouchableOpacity
             style={[styles.buttonArea, styles.leftButtonArea]}
@@ -82,7 +95,6 @@ export default class PhotoManagerHeader extends Component {
             <Text style={[styles.cancelButton, fontStyle]}>Avbryt</Text>
           </TouchableOpacity>
         </Animated.View>
-
         <View style={[styles.buttonArea, styles.centerButton]}>
           <TouchableOpacity
             style={styles.centerContainer}
@@ -98,7 +110,19 @@ export default class PhotoManagerHeader extends Component {
         <Animated.View style={fadeAnim}>
           {this.renderRightButton(fontStyle)}
         </Animated.View>
+      </View>
+    );
+  }
 
+  render() {
+    return (
+      <View
+        style={[
+        styles.topBar, {
+          height: this.props.height
+        }
+      ]}>
+        {this._renderMenu()}
       </View>
     );
   }

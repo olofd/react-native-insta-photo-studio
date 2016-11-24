@@ -20,6 +20,8 @@ import PhotoCamera from './components/camera';
 import CropperView from './components/cropper-view';
 import Swiper from './components/swiper';
 import clamp from 'clamp';
+import Unauthorized from './components/unauthorized';
+
 const SCROLLVIEW_REF = "SCROLLVIEW_REF";
 const TOP_BAR_HEIGHT = 45;
 const FOOTER_HEIGHT = 45;
@@ -162,6 +164,92 @@ export default class PhotoManager extends Component {
     }
   }
 
+  _renderCropper() {
+    const cropperView = {
+      height: this.props.window.width
+    };
+    return (
+      <CropperView
+        anim={this.state.anim}
+        style={[styles.absolute, cropperView]}
+        top={this.state.isRetracted
+        ? 50
+        : (this.props.window.width + TOP_BAR_HEIGHT)}
+        willStartAnimating={this.willStartAnimating.bind(this)}
+        finnishAnimation={this.finnishAnimation.bind(this)}
+        getAnimationValue={this.getAnimationValue.bind(this)}
+        animate={this.animate.bind(this)}
+        resetAnimation={this.resetAnimation.bind(this)}
+        image={this.state.currentImage}
+        magnification={2.0}
+        window={this.props.window}/>
+    );
+  }
+
+  _renderPicker() {
+    if(!this.props.currentAlbum) {
+      return null;
+    }
+    const cameraRollPickerView = {
+      marginTop: this.props.window.width,
+      paddingBottom: FOOTER_HEIGHT + TOP_BAR_HEIGHT,
+      height: 100
+    };
+
+    const mainAreaHeight = (this.props.window.height - TOP_BAR_HEIGHT - FOOTER_HEIGHT);
+
+    const scrollViewStyle = {
+      position: 'absolute',
+      height: this.state.smallCameraRollContainer
+        ? (mainAreaHeight - this.props.window.width)
+        : mainAreaHeight
+    };
+
+    return (
+      <CameraRollPicker
+        currentAlbum={this.props.currentAlbum}
+        scrollViewStyle={scrollViewStyle}
+        scrollToRowOnSelection={this.state.isRetracted}
+        onSelectedImagesChanged={this.onSelectedImagesChanged.bind(this)}
+        replaceSelection={true}
+        initalSelectedImageIndex={0}
+        top={this.state.isRetracted
+        ? 50
+        : (this.props.window.width + TOP_BAR_HEIGHT)}
+        willStartAnimating={this.willStartAnimating.bind(this)}
+        finnishAnimation={this.finnishAnimation.bind(this)}
+        getAnimationValue={this.getAnimationValue.bind(this)}
+        animate={this.animate.bind(this)}
+        resetAnimation={this.resetAnimation.bind(this)}
+        style={cameraRollPickerView}
+        maximum={1}
+        window={this.props.window}
+        imageMargin={2}
+        imagesPerRow={4}></CameraRollPicker>
+    );
+  }
+
+  _renderLibraryPicker(animationStyle) {
+    if(!this.props.currentAlbum) {
+      return null;
+    }
+    if(this.props.authStatus && !this.props.authStatus.isAuthorized) {
+      return (<Unauthorized {...this.props}></Unauthorized>)
+    }
+
+    const mainAnimationContainer = {
+      height: this.props.window.height + this.props.window.width
+    };
+
+    return (
+      <Animated.View
+        style={[animationStyle, styles.mainAnimationContainer, mainAnimationContainer]}>
+        {this._renderPicker()}
+        {this._renderCropper()}
+      </Animated.View>
+    );
+  }
+
   render() {
     const animationStyle = {
       transform: [
@@ -169,19 +257,6 @@ export default class PhotoManager extends Component {
           translateY: this.state.anim
         }
       ]
-    };
-
-    const cropperView = {
-      height: this.props.window.width
-    };
-    const cameraRollPickerView = {
-      marginTop: this.props.window.width,
-      paddingBottom: FOOTER_HEIGHT + TOP_BAR_HEIGHT,
-      height: 100
-    };
-
-    const mainAnimationContainer = {
-      height: this.props.window.height + this.props.window.width
     };
 
     const forceTopBarAnim = {};
@@ -193,16 +268,6 @@ export default class PhotoManager extends Component {
       ];
     }
 
-    const mainAreaHeight = (this.props.window.height - TOP_BAR_HEIGHT - FOOTER_HEIGHT);
-
-    const scrollViewStyle = {
-      position: 'absolute',
-      height: this.state.smallCameraRollContainer
-        ? (mainAreaHeight - this.props.window.width)
-        : mainAreaHeight
-    };
-    const isRetracted = this.isRetracted();
-
     return (
       <View style={styles.container}>
         <StatusBar hidden={true}></StatusBar>
@@ -211,43 +276,7 @@ export default class PhotoManager extends Component {
           selectedPageChanged={this.onSelectedPageChanged.bind(this)}
           window={this.props.window}
           ref={swiper => this.swiper = swiper}>
-          <Animated.View
-            style={[animationStyle, styles.mainAnimationContainer, mainAnimationContainer]}>
-            <CameraRollPicker
-              currentAlbum={this.props.currentAlbum}
-              scrollViewStyle={scrollViewStyle}
-              scrollToRowOnSelection={this.state.isRetracted}
-              onSelectedImagesChanged={this.onSelectedImagesChanged.bind(this)}
-              replaceSelection={true}
-              initalSelectedImageIndex={0}
-              top={this.state.isRetracted
-              ? 50
-              : (this.props.window.width + TOP_BAR_HEIGHT)}
-              willStartAnimating={this.willStartAnimating.bind(this)}
-              finnishAnimation={this.finnishAnimation.bind(this)}
-              getAnimationValue={this.getAnimationValue.bind(this)}
-              animate={this.animate.bind(this)}
-              resetAnimation={this.resetAnimation.bind(this)}
-              style={cameraRollPickerView}
-              maximum={1}
-              window={this.props.window}
-              imageMargin={2}
-              imagesPerRow={4}></CameraRollPicker>
-              <CropperView
-                anim={this.state.anim}
-                style={[styles.absolute, cropperView]}
-                top={this.state.isRetracted
-                ? 50
-                : (this.props.window.width + TOP_BAR_HEIGHT)}
-                willStartAnimating={this.willStartAnimating.bind(this)}
-                finnishAnimation={this.finnishAnimation.bind(this)}
-                getAnimationValue={this.getAnimationValue.bind(this)}
-                animate={this.animate.bind(this)}
-                resetAnimation={this.resetAnimation.bind(this)}
-                image={this.state.currentImage}
-                magnification={2.0}
-                window={this.props.window}/>
-          </Animated.View>
+          {this._renderLibraryPicker(animationStyle)}
           <PhotoCamera
             style={styles.photoCamera}
             onPhotoTaken={this.onPhotoTaken.bind(this)}
@@ -256,6 +285,7 @@ export default class PhotoManager extends Component {
         <Animated.View
           style={[animationStyle, styles.absolute, styles.headerContainer, forceTopBarAnim]}>
           <Header
+            showAlbumsAnim={this.props.showAlbumsAnim}
             currentAlbum={this.props.currentAlbum}
             showAlbumView={this.props.showAlbumView}
             hideAlbumView={this.props.hideAlbumView}

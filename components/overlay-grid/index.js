@@ -22,7 +22,7 @@ export default class OverlayGrid extends Component {
     Animated.timing(this.state.anim, {
       duration : duration,
       toValue: toVal,
-      easing: Easing.elastic(1),
+      easing: Easing.in(Easing.ease),
       useNativeDriver : true
     }).start();
   }

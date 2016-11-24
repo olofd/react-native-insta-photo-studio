@@ -217,11 +217,11 @@ class CameraRollPicker extends Component {
     if (!this.state.dataSource) {
       return <ActivityIndicator style={styles.spinner}/>;
     }
-    return (
+    return ( 
       <WindowedListView
         ref={wlv => this.wlv = wlv}
         onScroll={this.onScroll.bind(this)}
-        disableIncrementalRendering={false}
+        disableIncrementalRendering={true}
         renderScrollComponent={this.renderScrollView.bind(this)}
         initialNumToRender={30}
         numToRenderAhead={40}
