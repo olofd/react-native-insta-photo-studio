@@ -46,7 +46,7 @@ export default class CropperViewContainer extends Component {
     if (!currentImage || currentImage.image !== nextProps.image) {
       const nextPushIndex = this.getNextPushIndex();
       const cropperImageObj = this.state.images[nextPushIndex];
-      if (cropperImageObj && cropperImageObj.image === nextProps.image) {
+      if (cropperImageObj && (cropperImageObj.image === nextProps.image || cropperImageObj.image.uri === nextProps.image.uri)) {
         this.onPartialLoad(this.state.images[nextPushIndex], this.currentLoadingGuid);
         this.onLoad(this.state.images[nextPushIndex], this.currentLoadingGuid);
       } else {
@@ -125,7 +125,6 @@ export default class CropperViewContainer extends Component {
 
   onProgress(e) {
     const p = Math.round((e.nativeEvent.loaded / e.nativeEvent.total) * 100);
-    console.log('progress', p);
     this.loadCircle && this.loadCircle.animateFill(p, undefined, false);
   }
 

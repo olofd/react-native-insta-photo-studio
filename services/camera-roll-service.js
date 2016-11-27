@@ -86,6 +86,7 @@ class CameraRollService extends EventEmitter {
   }
 
   async getAllPhotosAlbum() {
+    return (await this.queryResult).albums[0];
     return (await this.queryResult).albums.find(album => album.type === 'smartAlbum' && album.subType === 'smartAlbumUserLibrary');
   }
 }
