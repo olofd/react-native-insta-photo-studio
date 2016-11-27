@@ -57,21 +57,15 @@ const styles = StyleSheet.create({
   button: {
     color: '#999999',
     fontSize: 15,
-    textAlign: 'center'
+    textAlign: 'center',
+    fontWeight : '600'
   },
   buttonSelected: {
     color: 'black',
-    fontWeight : 'bold'
   },
   buttonArea: {
     height : 45,
     paddingHorizontal: 15,
     justifyContent: 'center'
-  },
-  leftButtonArea: {
-  //  flex: 1
-  },
-  centerButton: {
-    //  flex: 1
   }
 });

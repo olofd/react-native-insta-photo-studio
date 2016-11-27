@@ -29,7 +29,7 @@
     "gl-react-contrast-saturation-brightness": "~1.1.0",
     "gl-react-hue-rotate": "~1.1.0",
     "gl-react-image": "0.0.2",
-    "gl-react-native": "^2.37.0",
+    "gl-react-native": "^2.38.0",
     "gl-react-negative": "~1.1.0",
     "react-native-blur": "^1.2.0",
     "react-native-camera": "git+https://github.com/lwansbrough/react-native-camera.git",

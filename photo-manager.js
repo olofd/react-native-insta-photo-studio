@@ -24,10 +24,18 @@ import clamp from 'clamp';
 import Unauthorized from './components/unauthorized';
 
 const SCROLLVIEW_REF = "SCROLLVIEW_REF";
-const TOP_BAR_HEIGHT = 45;
-const FOOTER_HEIGHT = 45;
 
 export default class PhotoManager extends Component {
+
+  static defaultProps = {
+    finnishCropperAnimationDuration : 200,
+    topBarHeight : 45,
+    footerHeight : 45,
+    window: Dimensions.get('window'),
+    font: 'Arial',
+    libraryDisplayName: 'Library',
+    photoDisplayName: 'Photo'
+  };
 
   constructor(props) {
     super(props);
@@ -37,10 +45,12 @@ export default class PhotoManager extends Component {
       headerHasNextButton: true,
       anim: new Animated.Value(0),
       isRetracted: false,
-      currentImage: undefined,
+      currentLibraryImage: undefined,
+      currentCameraImage: undefined,
       forceTopBarShow: false,
       currentSwiperIndex: 0,
-      smallCameraRollContainer: true
+      smallCameraRollContainer: true,
+      swiperIndexHasChangedAtSomePoint: false
     };
     this.currentSwiperIndex = 0;
   }
@@ -61,6 +71,7 @@ export default class PhotoManager extends Component {
     let headerHasNextButton = true;
     switch (action) {
       case 'library':
+        headerHasNextButton = this.state.currentLibraryImage;
         headerTitle = this.props.libraryDisplayName;
         break;
       case 'photo':
@@ -119,9 +130,9 @@ export default class PhotoManager extends Component {
         toValue: finnishRetracted
           ? retractedValue
           : 0,
-        duration: 220,
+        duration: this.props.finnishCropperAnimationDuration,
         easing: Easing.inOut(Easing.ease),
-      //  useNativeDriver : true
+        //  useNativeDriver : true
       }).start((e) => {
         if (e.finished) {
           this.startValue = finnishRetracted
@@ -146,7 +157,7 @@ export default class PhotoManager extends Component {
   }
 
   onSelectedImagesChanged(selectedImages, image) {
-    this.setState({currentImage: image});
+    this.setState({currentLibraryImage: image});
     if (this.isRetracted()) {
       this.finnishAnimation(false);
     }
@@ -154,7 +165,7 @@ export default class PhotoManager extends Component {
 
   onSelectedPageChanged(newPageIndex, lastPageIndex) {
     if (newPageIndex !== this.state.currentSwiperIndex) {
-      this.setState({currentSwiperIndex: newPageIndex});
+      this.setState({currentSwiperIndex: newPageIndex, swiperIndexHasChangedAtSomePoint: true});
       this.updateHeader(newPageIndex === 0
         ? 'library'
         : 'photo');
@@ -165,39 +176,43 @@ export default class PhotoManager extends Component {
     }
   }
 
+  getCurrentImageForSwiperIndex() {
+    if (this.state.currentSwiperIndex === 0) {
+      return this.state.currentLibraryImage;
+    }
+
+    if (this.state.currentSwiperIndex === 1) {
+      return this.state.currentCameraImage;
+    }
+  }
+
   _renderCropper() {
     const cropperView = {
       height: this.props.window.width
     };
-    return (
-      <CropperView
-        anim={this.state.anim}
-        style={[styles.absolute, cropperView]}
-        top={this.state.isRetracted
-        ? 50
-        : (this.props.window.width + TOP_BAR_HEIGHT)}
-        willStartAnimating={this.willStartAnimating.bind(this)}
-        finnishAnimation={this.finnishAnimation.bind(this)}
-        getAnimationValue={this.getAnimationValue.bind(this)}
-        animate={this.animate.bind(this)}
-        resetAnimation={this.resetAnimation.bind(this)}
-        image={this.state.currentImage}
-        magnification={2.0}
-        window={this.props.window}/>
-    );
+    return (<CropperView
+      anim={this.state.anim}
+      style={[styles.absolute, cropperView]}
+      willStartAnimating={this.willStartAnimating.bind(this)}
+      finnishAnimation={this.finnishAnimation.bind(this)}
+      getAnimationValue={this.getAnimationValue.bind(this)}
+      animate={this.animate.bind(this)}
+      resetAnimation={this.resetAnimation.bind(this)}
+      image={this.state.currentLibraryImage}
+      magnification={this.props.cropperMagnification}
+      window={this.props.window}/>);
   }
 
   _renderPicker() {
-    if(!this.props.currentAlbum) {
+    if (!this.props.currentAlbum) {
       return null;
     }
     const cameraRollPickerView = {
       marginTop: this.props.window.width,
-      paddingBottom: FOOTER_HEIGHT + TOP_BAR_HEIGHT,
-      height: 100
+      paddingBottom: this.props.footerHeight + this.props.topBarHeight
     };
 
-    const mainAreaHeight = (this.props.window.height - TOP_BAR_HEIGHT - FOOTER_HEIGHT);
+    const mainAreaHeight = (this.props.window.height - this.props.topBarHeight - this.props.footerHeight);
 
     const scrollViewStyle = {
       position: 'absolute',
@@ -216,7 +231,7 @@ export default class PhotoManager extends Component {
         initalSelectedImageIndex={0}
         top={this.state.isRetracted
         ? 50
-        : (this.props.window.width + TOP_BAR_HEIGHT)}
+        : (this.props.window.width + this.props.topBarHeight)}
         willStartAnimating={this.willStartAnimating.bind(this)}
         finnishAnimation={this.finnishAnimation.bind(this)}
         getAnimationValue={this.getAnimationValue.bind(this)}
@@ -232,22 +247,35 @@ export default class PhotoManager extends Component {
 
   _renderLoading() {
     return (
-      <View style={[styles.loadingContainer, {width : this.props.window.width}]}>
+      <View
+        style={[
+        styles.loadingContainer, {
+          width: this.props.window.width
+        }
+      ]}>
         <ActivityIndicator></ActivityIndicator>
       </View>
     );
   }
 
   _renderLibraryPicker(animationStyle) {
-    if(this.props.authStatus && !this.props.authStatus.isAuthorized) {
-      return (<Unauthorized style={{width : this.props.window.width, paddingBottom : TOP_BAR_HEIGHT}} {...this.props}></Unauthorized>);
+    if (this.props.authStatus && !this.props.authStatus.isAuthorized) {
+      return (
+        <Unauthorized
+          style={{
+          width: this.props.window.width,
+          paddingBottom: this.props.footerHeight
+        }}
+          {...this.props}></Unauthorized>
+      );
     }
 
-    if(!this.props.currentAlbum) {
+    if (!this.props.currentAlbum) {
       return this._renderLoading();
     }
 
     const mainAnimationContainer = {
+      marginTop: this.props.topBarHeight,
       height: this.props.window.height + this.props.window.width
     };
 
@@ -261,7 +289,10 @@ export default class PhotoManager extends Component {
   }
 
   _renderHeader(animationStyle) {
-    const forceTopBarAnim = {};
+    const currentImage = this.getCurrentImageForSwiperIndex();
+    const forceTopBarAnim = {
+      height: this.props.topBarHeight
+    };
     if (this.state.forceTopBarShow) {
       forceTopBarAnim.transform = [
         {
@@ -269,18 +300,22 @@ export default class PhotoManager extends Component {
         }
       ];
     }
+    const renderMenu = !!this.props.authStatus;
+    const renderExitMenu = !this.state.swiperIndexHasChangedAtSomePoint && this.props.authStatus && !this.props.authStatus.isAuthorized
     return (
       <Animated.View
         style={[animationStyle, styles.absolute, styles.headerContainer, forceTopBarAnim]}>
         <Header
+          renderMenu={renderMenu}
+          renderExitMenu={renderExitMenu}
           showAlbumsAnim={this.props.showAlbumsAnim}
           currentAlbum={this.props.currentAlbum}
-          showAlbumView={this.props.showAlbumView}
-          hideAlbumView={this.props.hideAlbumView}
+          onAlbumDropDownPressed={this.props.onAlbumDropDownPressed}
           font={this.props.font}
-          hasNextButton={this.state.headerHasNextButton}
-          height={TOP_BAR_HEIGHT}
+          hasNextButton={currentImage !== undefined}
+          height={this.props.topBarHeight}
           headerTitle={this.state.headerTitle}
+          showAlbumsDropDown={this.state.currentSwiperIndex === 0}
           onCancelAction={this.onCancelAction.bind(this)}></Header>
       </Animated.View>
     );
@@ -304,7 +339,11 @@ export default class PhotoManager extends Component {
           ref={swiper => this.swiper = swiper}>
           {this._renderLibraryPicker(animationStyle)}
           <PhotoCamera
-            style={styles.photoCamera}
+            style={[
+            styles.photoCamera, {
+              top: this.props.topBarHeight
+            }
+          ]}
             onPhotoTaken={this.onPhotoTaken.bind(this)}
             window={this.props.window}></PhotoCamera>
         </Swiper>
@@ -318,18 +357,11 @@ export default class PhotoManager extends Component {
           selectedTab={this.state.currentSwiperIndex === 0
           ? 'library'
           : 'photo'}
-          height={FOOTER_HEIGHT}></Footer>
+          height={this.props.footerHeight}></Footer>
       </View>
     );
   }
 }
-
-PhotoManager.defaultProps = {
-  window: Dimensions.get('window'),
-  font: 'Arial',
-  libraryDisplayName: 'Library',
-  photoDisplayName: 'Photo'
-};
 
 const styles = StyleSheet.create({
   container: {
@@ -337,13 +369,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'white'
   },
   mainAnimationContainer: {
-    marginTop: TOP_BAR_HEIGHT,
     overflow: 'hidden'
   },
   swiper: {},
-  headerContainer: {
-    height: TOP_BAR_HEIGHT
-  },
+  headerContainer: {},
   cropperContainer: {
     position: 'absolute',
     top: 0,
@@ -364,12 +393,10 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0
   },
-  photoCamera: {
-    top: TOP_BAR_HEIGHT
-  },
-  loadingContainer : {
-    flex : 1,
-    alignItems : 'center',
-    justifyContent : 'center'
+  photoCamera: {},
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 });

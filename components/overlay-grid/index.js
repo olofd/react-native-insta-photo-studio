@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
-import {View, Animated, Easing, PixelRatio, StyleSheet} from 'react-native';
+import {View, Animated, Easing, PixelRatio, Image,StyleSheet} from 'react-native';
+import GridImage from './grid.png';
+
 const POINTER_EVENTS = 'none';
 const COLUMN = 'column';
 const ROW = 'row';
@@ -78,13 +80,13 @@ export default class OverlayGrid extends Component {
     );
   }
 }
-const shadowProps = {
-  shadowColor : 'black',
-  shadowOpacity : 0.7,
-  shadowRadius  : 1,
-  shadowOffset : {
-    width : 1,
-    height : 1,
+const shadowProps = window.__DEV__ ? {} : {
+  shadowColor: 'black',
+  shadowOpacity: 0.7,
+  shadowRadius: 0.5,
+  shadowOffset: {
+    width: 1,
+    height: 1
   }
 };
 const styles = StyleSheet.create({
@@ -92,12 +94,12 @@ const styles = StyleSheet.create({
     flex: 1
   },
   blockStyleRight: Object.assign({
-    backgroundColor : 'transparent',
+    backgroundColor: 'transparent',
     flex: 1,
     borderRightWidth: 1 / PixelRatio.get()
   }, shadowProps),
   blockStyleBottom: Object.assign({
-    backgroundColor : 'transparent',
+    backgroundColor: 'transparent',
     flex: 1,
     borderBottomWidth: 1 / PixelRatio.get()
   }, shadowProps),

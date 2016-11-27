@@ -1,11 +1,19 @@
 import PhotoManager from './photo-manager';
 import React, {Component} from 'react';
-import {View, StyleSheet, Animated, Dimensions} from 'react-native';
+import {View, StyleSheet, Animated, Dimensions, Easing} from 'react-native';
 import photoFrameworkService from './services/camera-roll-service';
 import AlbumList from './components/album-list';
 export default class InstaPhotoStudio extends Component {
 
   static defaultProps = {
+    font: 'Arial',
+    libraryDisplayName: 'Library',
+    photoDisplayName: 'Photo',
+    topBarHeight : 45,
+    footerHeight : 45,
+    cropperMagnification : 2.0,
+    finnishCropperAnimationDuration : 200,
+    showAlbumsAnimationDuration : 200,
     unauthorizedHeaderText : 'Grant access to your photos',
     unauthorizedSubtitle : 'This will make it possible for this app to crop and select photos from the camera roll.',
     unauthorizedSettingsButtonText : 'Activate access to library'
@@ -19,6 +27,7 @@ export default class InstaPhotoStudio extends Component {
       currentAlbum: null,
       showAlbumsAnim: new Animated.Value(1)
     };
+    this.albumsButtonPressed = false;
   }
 
   componentWillUnmount() {
@@ -57,20 +66,36 @@ export default class InstaPhotoStudio extends Component {
     });
   }
 
-  showAlbumView() {}
+  onAlbumSelected(album) {
+    photoFrameworkService.setCurrentAlbum(album);
+    this.onAlbumDropDownPressed();
+  }
 
-  hideAlbumView() {}
+  onAlbumDropDownPressed() {
+    this.state.showAlbumsAnim.stopAnimation((value) => {
+      this.albumsButtonPressed = !this.albumsButtonPressed;
+      Animated.timing(this.state.showAlbumsAnim, {
+        toValue: this.albumsButtonPressed
+          ? 0
+          : 1,
+        duration: this.props.showAlbumsAnimationDuration,
+        useNativeDriver: true,
+        easing: Easing. in(Easing.ease)
+      }).start();
+    });
+  }
 
 
   render() {
     const showAlbumViewAnim = {
+      bottom : this.props.topBarHeight,
       transform: [
         {
           translateY: this.state.showAlbumsAnim.interpolate({
             inputRange: [
               0, 1
             ],
-            outputRange: [45, this.state.window.height]
+            outputRange: [this.props.topBarHeight, this.state.window.height]
           })
         }
       ]
@@ -79,14 +104,13 @@ export default class InstaPhotoStudio extends Component {
       <View style={styles.container} onLayout={this.onLayout.bind(this)}>
         <PhotoManager
           {...this.props}
-          authStatus={this.state.authStatus}
-          showAlbumView={this.showAlbumView.bind(this)}
-          hideAlbumView={this.hideAlbumView.bind(this)}
-          showAlbumsAnim={this.state.showAlbumsAnim}
           window={this.state.window}
+          authStatus={this.state.authStatus}
+          onAlbumDropDownPressed={this.onAlbumDropDownPressed.bind(this)}
+          showAlbumsAnim={this.state.showAlbumsAnim}
           currentAlbum={this.state.currentAlbum}></PhotoManager>
         <Animated.View style={[styles.albumListModal, showAlbumViewAnim]}>
-          <AlbumList {...this.props} albums={this.state.currentAlbums}></AlbumList>
+          <AlbumList {...this.props} albums={this.state.currentAlbums} onAlbumSelected={this.onAlbumSelected.bind(this)}></AlbumList>
         </Animated.View>
       </View>
     );
@@ -97,13 +121,11 @@ export default class InstaPhotoStudio extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    //  overflow : 'hidden'
   },
   albumListModal: {
     position: 'absolute',
     top: 0,
     left: 0,
-    right: 0,
-    bottom: 0
+    right: 0
   }
 });

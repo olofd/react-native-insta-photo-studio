@@ -31,8 +31,8 @@ export default class AlbumList extends Component {
     }
   }
 
-  onRowPress() {
-    this.props.onAlbumSelected()
+  onRowPress(row) {
+    this.props.onAlbumSelected(row);
   }
 
   renderRow(row) {
