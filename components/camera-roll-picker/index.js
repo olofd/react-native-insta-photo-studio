@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
 import {
+  ActivityIndicator,
   CameraRoll,
   Image,
   Platform,
@@ -9,7 +10,6 @@ import {
   Dimensions,
   TouchableOpacity,
   ListView,
-  ActivityIndicator,
   InteractionManager,
   ScrollView,
   PanResponder,
@@ -207,12 +207,19 @@ class CameraRollPicker extends Component {
     );
   }
 
+  renderFooter() {
+    return (
+      <ActivityIndicator style={styles.activityIndicator}></ActivityIndicator>
+    )
+  }
+
   renderListView() {
     if (!this.state.dataSource) {
       return <ActivityIndicator style={styles.spinner}/>;
     }
     return (
       <WindowedListView
+        renderWindowBoundaryIndicator={this.renderFooter.bind(this)}
         ref={wlv => this.wlv = wlv}
         onScroll={this.onScroll.bind(this)}
         disableIncrementalRendering={true}
@@ -407,6 +414,9 @@ const styles = StyleSheet.create({
   },
   selectedImage: {
     backgroundColor: 'rgba(255, 255, 255, 0.65)'
+  },
+  activityIndicator : {
+    marginTop : 20
   }
 })
 

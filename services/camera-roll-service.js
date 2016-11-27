@@ -29,7 +29,7 @@ class CameraRollService extends EventEmitter {
 
   async authorize() {
     const authStatus = await RNPhotosFramework.requestAuthorization();
-    if(authStatus.isAuthorized !== this.isAuthorized) {
+    if (authStatus.isAuthorized !== this.isAuthorized) {
       this.emit('onAuthorizationChanged', authStatus);
       this.isAuthorized = authStatus.isAuthorized;
     }
@@ -42,12 +42,12 @@ class CameraRollService extends EventEmitter {
   }
 
   async fetchCurrentAlbums() {
-    const albums = (await this.queryResult).albums;
+    const albums = await this._getAlbums();
     return this.setCurrentAlbums(albums);
   }
 
   setCurrentAlbums(albums) {
-    if(albums !== this.currentAlbums) {
+    if (albums !== this.currentAlbums) {
       this.currentAlbums = albums;
       this.emit('onCurrentAlbumsChanged', albums);
     }
@@ -57,24 +57,25 @@ class CameraRollService extends EventEmitter {
   async fetchCurrentAlbum() {
     const allAlbum = await this.getAllPhotosAlbum();
     if (!allAlbum) {
-        console.log('Could not find default album');
+      console.log('Could not find default album');
     }
     return this.setCurrentAlbum(allAlbum);
   }
 
   setCurrentAlbum(album) {
-    if(album !== this.currentAlbum) {
+    if (album !== this.currentAlbum) {
       this.currentAlbum = album;
       this.emit('onCurrentAlbumChanged', album);
     }
     return this.currentAlbum;
   }
 
-  get queryResult() {
-    if (!this._albumsFetch) {
-      this._albumsFetch = this._getAlbums();
-    }
-    return this._albumsFetch;
+  filterAlbums(queryResult) {
+    const smartAlbumExludeList = ['smartAlbumVideos', 'smartAlbumSlomoVideos', 'smartAlbumTimelapses'];
+    return queryResult.instagramAppAlbumSort().filter(album => {
+      const notExludedSubType = (smartAlbumExludeList.indexOf(album.subType) === -1)
+      return notExludedSubType;
+    });
   }
 
   async _getAlbums() {
@@ -82,12 +83,18 @@ class CameraRollService extends EventEmitter {
       assetCount: 'exact',
       includeMetaData: false,
       previewAssets: 2
-    }, true);
+    }, true).then((queryResult) => {
+      queryResult.onChange((changeDetails, update, unsubscribe) => {
+        const newQueryResult = update();
+        this.setCurrentAlbums(this.filterAlbums(newQueryResult));
+      });
+
+      return this.filterAlbums(queryResult);
+    });
   }
 
   async getAllPhotosAlbum() {
-    return (await this.queryResult).albums[0];
-    return (await this.queryResult).albums.find(album => album.type === 'smartAlbum' && album.subType === 'smartAlbumUserLibrary');
+    return this.currentAlbums.find(album => album.type === 'smartAlbum' && album.subType === 'smartAlbumUserLibrary');
   }
 }
 

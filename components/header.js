@@ -11,11 +11,19 @@ import React, {Component} from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 export default class PhotoManagerHeader extends Component {
 
+  static defaultProps = {
+    styles : StyleSheet.create({
+       fontStyle : {
+        fontFamily: 'Arial'
+      }
+    })
+  }
+
   onTitleButtonPressed() {
     this.props.onAlbumDropDownPressed();
   }
 
-  renderRightButton(fontStyle) {
+  renderRightButton() {
     return <View
       style={{
       opacity: this.props.hasNextButton
@@ -25,12 +33,12 @@ export default class PhotoManagerHeader extends Component {
       <TouchableOpacity
         style={[styles.buttonArea, styles.rightButtonArea]}
         onPress={this.props.onCreateLocationPress}>
-        <Text style={[styles.linkButton, fontStyle]}>Nästa</Text>
+        <Text style={[styles.linkButton, this.props.styles.fontStyle]}>Nästa</Text>
       </TouchableOpacity>
     </View>;
   }
 
-  _renderExitMenu(fontStyle) {
+  _renderExitMenu() {
     return (
       <TouchableOpacity
         style={[styles.buttonArea, styles.exitButton]}
@@ -40,12 +48,12 @@ export default class PhotoManagerHeader extends Component {
     );
   }
 
-  _renderLeftButton(fontStyle) {
+  _renderLeftButton() {
     return (
       <TouchableOpacity
         style={[styles.buttonArea, styles.leftButtonArea]}
         onPress={this.props.onCancelAction}>
-        <Text style={[styles.cancelButton, fontStyle]}>Avbryt</Text>
+        <Text style={[styles.cancelButton, this.props.styles.fontStyle]}>Avbryt</Text>
       </TouchableOpacity>
     );
   }
@@ -71,7 +79,7 @@ export default class PhotoManagerHeader extends Component {
     );
   }
 
-  _renderAlbumsDropDown(fontStyle) {
+  _renderAlbumsDropDown() {
     const hasAlbum = !!this.props.currentAlbum;
     return (
       <View style={[styles.buttonArea, styles.centerButton]}>
@@ -79,7 +87,7 @@ export default class PhotoManagerHeader extends Component {
           disabled={!hasAlbum}
           style={styles.centerContainer}
           onPress={this.onTitleButtonPressed.bind(this)}>
-          <Text style={[styles.title, fontStyle]}>
+          <Text style={[styles.title, this.props.styles.fontStyle]}>
             {hasAlbum
               ? this.props.currentAlbum.title
               : ''}
@@ -92,14 +100,14 @@ export default class PhotoManagerHeader extends Component {
     );
   }
 
-  _renderCenterColumn(fontStyle) {
+  _renderCenterColumn() {
     const hasAlbum = !!this.props.currentAlbum;
     if (this.props.showAlbumsDropDown && hasAlbum) {
-      return this._renderAlbumsDropDown(fontStyle);
+      return this._renderAlbumsDropDown();
     }
     return (
       <View style={[styles.buttonArea, styles.centerButton]}>
-        <Text style={[styles.title, fontStyle]}>
+        <Text style={[styles.title, this.props.styles.fontStyle]}>
           {this.props.headerTitle}
         </Text>
       </View>
@@ -110,10 +118,6 @@ export default class PhotoManagerHeader extends Component {
     if(!this.props.renderMenu) {
       return null;
     }
-    const fontStyle = {
-      fontFamily: this.props.font || 'Helvetica'
-    };
-
     if(this.props.renderExitMenu) {
       return this._renderExitMenu();
     }
@@ -124,11 +128,11 @@ export default class PhotoManagerHeader extends Component {
     return (
       <View style={styles.topBarInner}>
         <Animated.View style={fadeAnim}>
-          {this._renderLeftButton(fontStyle)}
+          {this._renderLeftButton()}
         </Animated.View>
-        {this._renderCenterColumn(fontStyle)}
+        {this._renderCenterColumn()}
         <Animated.View style={fadeAnim}>
-          {this.renderRightButton(fontStyle)}
+          {this.renderRightButton()}
         </Animated.View>
       </View>
     );

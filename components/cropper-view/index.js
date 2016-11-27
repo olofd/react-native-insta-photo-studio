@@ -115,7 +115,6 @@ export default class CropperViewContainer extends Component {
   }
 
   onPartialLoad(imageObj) {
-    console.log('PARTIAL LOAD', imageObj.image.uri);
     if (!imageObj.loaded) {
       this.state.images.forEach(i => i.loaded = false);
       imageObj.loaded = true;

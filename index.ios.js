@@ -6,7 +6,7 @@ import AlbumList from './components/album-list';
 export default class InstaPhotoStudio extends Component {
 
   static defaultProps = {
-    font: 'Arial',
+    fontFamily: 'Arial',
     libraryDisplayName: 'Library',
     photoDisplayName: 'Photo',
     topBarHeight : 45,
@@ -30,6 +30,18 @@ export default class InstaPhotoStudio extends Component {
     this.albumsButtonPressed = false;
   }
 
+  setupStyleObjs(props) {
+    if(!this.state.styles || props.fontFamily !== this.props.fontFamily) {
+      this.setState({
+        styles : StyleSheet.create({
+          fontStyle : {
+            fontFamily : props.fontFamily
+          }
+        })
+      });
+    }
+  }
+
   componentWillUnmount() {
     this.ch.forEach(cb => cb && cb());
   }
@@ -46,7 +58,12 @@ export default class InstaPhotoStudio extends Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    this.setupStyleObjs(nextProps);
+  }
+
   componentWillMount() {
+    this.setupStyleObjs(this.props);
     this.ch.push(photoFrameworkService.onCurrentAlbumsChanged((currentAlbums) => {
       this.setState({currentAlbums: currentAlbums});
     }));
@@ -87,6 +104,10 @@ export default class InstaPhotoStudio extends Component {
 
 
   render() {
+    const statePass = {
+      window : this.state.window,
+      styles : this.state.styles
+    };
     const showAlbumViewAnim = {
       bottom : this.props.topBarHeight,
       transform: [
@@ -103,6 +124,7 @@ export default class InstaPhotoStudio extends Component {
     return (
       <View style={styles.container} onLayout={this.onLayout.bind(this)}>
         <PhotoManager
+          {...statePass}
           {...this.props}
           window={this.state.window}
           authStatus={this.state.authStatus}
@@ -110,7 +132,7 @@ export default class InstaPhotoStudio extends Component {
           showAlbumsAnim={this.state.showAlbumsAnim}
           currentAlbum={this.state.currentAlbum}></PhotoManager>
         <Animated.View style={[styles.albumListModal, showAlbumViewAnim]}>
-          <AlbumList {...this.props} albums={this.state.currentAlbums} onAlbumSelected={this.onAlbumSelected.bind(this)}></AlbumList>
+          <AlbumList {...statePass} {...this.props} albums={this.state.currentAlbums} onAlbumSelected={this.onAlbumSelected.bind(this)}></AlbumList>
         </Animated.View>
       </View>
     );

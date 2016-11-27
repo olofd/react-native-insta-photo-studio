@@ -185,7 +185,6 @@ export default class ImageCropperView extends Component {
   }
 
   zoomToImage(cb, animated) {
-    console.log('ZOOM TO IMAGE');
     if (this.state.currentImageDimensions) {
       const {width, height} = this.getMainPreviewImageDiemensions();
       const fixedSize = height > width

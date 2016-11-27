@@ -18,7 +18,7 @@ export default class PhotoCamera extends Component {
     const {auto, on, off} = Camera.constants.FlashMode;
     this.state = {
       flashMode: auto,
-      renderCamera : !window.__DEV__
+      renderCamera : true
     };
   }
   /*

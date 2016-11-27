@@ -1,7 +1,23 @@
 import React, {Component} from 'react';
-import {ListView, View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
+import {
+  ListView,
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity
+} from 'react-native';
 import photosFrameworkService from '../../services/camera-roll-service';
 export default class AlbumList extends Component {
+
+  static defaultProps = {
+    styles : StyleSheet.create({
+      fontStyle : {
+        fontFamily: 'Arial'
+      }
+    })
+  };
+
   constructor() {
     super();
     const ds = new ListView.DataSource({
@@ -21,7 +37,7 @@ export default class AlbumList extends Component {
   }
 
   extendDataSource(props) {
-    if(props.albums) {
+    if (props.albums) {
       if (!this.state.albums || this.props.albums !== props.albums) {
         this.setState({
           dataSource: this.state.dataSource.cloneWithRows(props.albums),
@@ -40,11 +56,13 @@ export default class AlbumList extends Component {
       ? row.previewAssets[0].image
       : null;
     return (
-      <TouchableOpacity style={styles.rowContainer} onPress={this.onRowPress.bind(this, row)}>
+      <TouchableOpacity
+        style={styles.rowContainer}
+        onPress={this.onRowPress.bind(this, row)}>
         <Image style={styles.previewImage} source={previewImage}></Image>
         <View style={styles.albumInfoContainer}>
-          <Text style={styles.albumTitle}>{row.title}</Text>
-          <Text style={styles.assetCount}>{row.assetCount}</Text>
+          <Text style={[styles.albumTitle, this.props.styles.fontStyle]}>{row.title}</Text>
+          <Text style={[styles.assetCount, this.props.styles.fontStyle]}>{row.assetCount}</Text>
         </View>
       </TouchableOpacity>
     );

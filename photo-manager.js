@@ -32,7 +32,6 @@ export default class PhotoManager extends Component {
     topBarHeight : 45,
     footerHeight : 45,
     window: Dimensions.get('window'),
-    font: 'Arial',
     libraryDisplayName: 'Library',
     photoDisplayName: 'Photo'
   };
@@ -306,12 +305,12 @@ export default class PhotoManager extends Component {
       <Animated.View
         style={[animationStyle, styles.absolute, styles.headerContainer, forceTopBarAnim]}>
         <Header
+          styles={this.props.styles}
           renderMenu={renderMenu}
           renderExitMenu={renderExitMenu}
           showAlbumsAnim={this.props.showAlbumsAnim}
           currentAlbum={this.props.currentAlbum}
           onAlbumDropDownPressed={this.props.onAlbumDropDownPressed}
-          font={this.props.font}
           hasNextButton={currentImage !== undefined}
           height={this.props.topBarHeight}
           headerTitle={this.state.headerTitle}
@@ -351,9 +350,9 @@ export default class PhotoManager extends Component {
         <Footer
           libraryDisplayName={this.props.libraryDisplayName}
           photoDisplayName={this.props.photoDisplayName}
-          font={this.props.font}
           onPress={this.onFooterPress.bind(this)}
           style={styles.footer}
+          styles={this.props.styles}
           selectedTab={this.state.currentSwiperIndex === 0
           ? 'library'
           : 'photo'}
