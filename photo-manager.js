@@ -83,6 +83,7 @@ export default class PhotoManager extends Component {
   }
 
   onPhotoTaken(photo) {
+
     this.setState({
       currentCameraImage : photo
     });

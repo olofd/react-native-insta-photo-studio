@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     textAlign: 'center',
     margin: 10
   },
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   },
   button: {
     color: '#999999',
-    fontSize: 15,
+    fontSize: 16,
     textAlign: 'center',
     fontWeight : '600'
   },

@@ -8,6 +8,12 @@ class CameraRollService extends EventEmitter {
     super();
   }
 
+  async saveTmpImage(tmpImage) {
+    return RNPhotosFramework.createImageAsset({
+      uri : tmpImage.path
+    });
+  }
+
   openSettings() {
     Linking.openURL('app-settings:');
   }
@@ -73,8 +79,8 @@ class CameraRollService extends EventEmitter {
   filterAlbums(queryResult) {
     const smartAlbumExludeList = ['smartAlbumVideos', 'smartAlbumSlomoVideos', 'smartAlbumTimelapses'];
     return queryResult.instagramAppAlbumSort().filter(album => {
-      const notExludedSubType = (smartAlbumExludeList.indexOf(album.subType) === -1)
-      return notExludedSubType;
+      const notExludedSubType = (smartAlbumExludeList.indexOf(album.subType) === -1);
+      return notExludedSubType && album.assetCount > 0;
     });
   }
 

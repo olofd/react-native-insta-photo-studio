@@ -19,7 +19,6 @@ import WindowedListView from '../../../react-native/Libraries/Experimental/Windo
 import debounce from 'debounce';
 import {ScrollViewPanDelegator, BoundarySwipeDelgator, ContentOffsetDelegator, swipeUpDetector, swipeDownDetector} from '../../pan-delegator/scroll-view-pan-delegator';
 import cameraRollService from '../../services/camera-roll-service';
-
 class CameraRollPicker extends Component {
   constructor(props) {
     super(props);
@@ -64,7 +63,7 @@ class CameraRollPicker extends Component {
       width = containerWidth;
     }
     this._imageSize = (width - (imagesPerRow + 1) * imageMargin) / imagesPerRow;
-
+    this.setupChangeHandling(this.props.currentAlbum);
     this.fetch();
 
     this.setState({
@@ -84,6 +83,7 @@ class CameraRollPicker extends Component {
   componentWillReceiveProps(nextProps) {
     this.setState({selected: nextProps.selected});
     if (nextProps.currentAlbum !== this.props.currentAlbum) {
+  //    this.unsubscribeFromAlbum();
       this.setState({
         noMore: false
       }, () => {
@@ -91,6 +91,32 @@ class CameraRollPicker extends Component {
         this.fetchRound = -1;
         this.startIndex = 0;
         this.fetch(true, true);
+      });
+    }
+  }
+
+  componentWillUnMount() {
+    this.unsubscribeFromAlbum();
+  }
+
+  unsubscribeFromAlbum() {
+    if(this.albumChangeHandler) {
+      this.albumChangeHandler();
+      if(this.props.currentAlbum) {
+        this.props.currentAlbum.stopTrackingAssets();
+      }
+    }
+  }
+
+  setupChangeHandling(album) {
+    if(album) {
+      this.albumChangeHandler = album.onChange((changeDetails, update, unsubscribe) => {
+        const updatedImagesArray = update(this.state.images);
+        this.setState({
+          images : updatedImagesArray,
+          dataSource : this.appendToState([], updatedImagesArray, this.props.imagesPerRow),
+          shouldUpdate : this.guid()
+        });
       });
     }
   }
@@ -117,7 +143,7 @@ class CameraRollPicker extends Component {
     };
 
     const fetchFromAlbum = this.props.currentAlbum;
-    this.props.currentAlbum.getAssets(fetchParams).then((data) => {
+    this.props.currentAlbum.getAssets(fetchParams, true).then((data) => {
       if (fetchFromAlbum === this.props.currentAlbum) {
         this.startIndex = (this.startIndex + (data.assets.length));
         if (this.fetchRound === 0) {
@@ -141,25 +167,21 @@ class CameraRollPicker extends Component {
   }
 
   _appendImages(data, resetState) {
-    var assets = data.assets;
-    var newState = {
-      dataSource: resetState === true ? [] :  this.state.dataSource || []
-    };
-    var firstFetch = false;
-    if (data.includesLastAsset) {
-      newState.noMore = true;
+    if (data.assets.length > 0) {
+      const dataSource = (resetState === true ? [] :  (this.state.dataSource || []));
+      this.setState({
+        images : this.state.images.concat(data.assets),
+        noMore : data.includesLastAsset,
+        dataSource : this.appendToState(dataSource, data.assets, this.props.imagesPerRow),
+        shouldUpdate : this.guid()
+      });
     }
-    if (assets.length > 0) {
-      newState.dataSource = this.appendToState(newState.dataSource, assets, this.props.imagesPerRow);
-      newState.shouldUpdate = this.guid();
-    }
-    this.setState(newState);
   }
 
   appendToState(dataSource, newAssets, imagesPerRow) {
     let columnsAdded = 0;
     const lastRow = dataSource[dataSource.length - 1];
-    if (lastRow && lastRow.rowData.length < this.props.imagesPerRow) {
+    if (lastRow && lastRow.rowData.length < imagesPerRow) {
       for (let i = (lastRow.rowData.length); i < imagesPerRow; i++) {
         lastRow.rowData.push(newAssets[columnsAdded]);
         columnsAdded++;

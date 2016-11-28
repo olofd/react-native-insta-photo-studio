@@ -15,6 +15,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import Camera from 'react-native-camera';
 import BlockView from 'react-native-scroll-block-view';
+import photoFrameworkService from '../../services/camera-roll-service';
 const TRIGGER_BUTTON_WIDTH = 80;
 const TRIGGER_BUTTON_BORDER = 14;
 const TRIGGER_RETENTION = {
@@ -35,7 +36,7 @@ export default class PhotoCamera extends Component {
     super();
     const {auto, on, off} = Camera.constants.FlashMode;
     this.state = {
-      type : Camera.constants.Type.back,
+      type: Camera.constants.Type.back,
       flashMode: auto,
       renderCamera: true,
       triggerAnim: new Animated.Value(0)
@@ -95,7 +96,9 @@ export default class PhotoCamera extends Component {
   onChangeCamera() {
     const {front, back} = Camera.constants.Type;
     this.setState({
-      type : this.state.type === back ? front : back
+      type: this.state.type === back
+        ? front
+        : back
     });
   }
 
@@ -183,8 +186,8 @@ export default class PhotoCamera extends Component {
         }
       ]}
         source={{
-        uri: this.props.pendingMedia.path
-      }}></Image>
+          uri : this.props.pendingMedia.path
+        }}></Image>
     );
   }
 
@@ -202,6 +205,7 @@ export default class PhotoCamera extends Component {
     }
     return (
       <Camera
+        mirrorImage={true}
         type={this.state.type}
         captureAudio={false}
         onZoomChanged={() => {}}
@@ -214,6 +218,11 @@ export default class PhotoCamera extends Component {
         aspect={Camera.constants.Aspect.fill}></Camera>
     );
   }
+
+  /*
+  captureTarget={Camera.constants.CaptureTarget.temp}
+
+  */
 
   render() {
     const squareImageStyle = {
@@ -258,23 +267,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1
   },
-  leftSettingsContainer : {
-    flex : 1,
-    alignItems : 'flex-start',
-    justifyContent : 'center',
-    paddingHorizontal : 15
+  leftSettingsContainer: {
+    flex: 1,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    paddingHorizontal: 15
   },
-  rightSettingsContainer : {
-    flex : 1,
-    alignItems : 'flex-end',
-    justifyContent : 'center',
-    paddingHorizontal : 15
+  rightSettingsContainer: {
+    flex: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    paddingHorizontal: 15
   },
   changeCameraContainer: {
     width: 30,
     height: 30,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   flashContainer: {
     right: 0,
