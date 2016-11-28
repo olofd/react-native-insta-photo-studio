@@ -83,10 +83,12 @@ class CameraRollPicker extends Component {
   componentWillReceiveProps(nextProps) {
     this.setState({selected: nextProps.selected});
     if (nextProps.currentAlbum !== this.props.currentAlbum) {
-  //    this.unsubscribeFromAlbum();
+      this.unsubscribeFromAlbum();
       this.setState({
+        images : [],
         noMore: false
       }, () => {
+        this.setupChangeHandling(nextProps.currentAlbum);
         this.scrollToRow(0, undefined, false);
         this.fetchRound = -1;
         this.startIndex = 0;
@@ -103,6 +105,7 @@ class CameraRollPicker extends Component {
     if(this.albumChangeHandler) {
       this.albumChangeHandler();
       if(this.props.currentAlbum) {
+        console.log('STOP TRACKING', this.props.currentAlbum.title);
         this.props.currentAlbum.stopTrackingAssets();
       }
     }
@@ -110,8 +113,13 @@ class CameraRollPicker extends Component {
 
   setupChangeHandling(album) {
     if(album) {
+      console.log('setup change tracking for', album.title);
       this.albumChangeHandler = album.onChange((changeDetails, update, unsubscribe) => {
+        console.log('Album Change', changeDetails, album.title);
         const updatedImagesArray = update(this.state.images);
+        if(this.state.selected) {
+          
+        }
         this.setState({
           images : updatedImagesArray,
           dataSource : this.appendToState([], updatedImagesArray, this.props.imagesPerRow),

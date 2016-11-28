@@ -91,6 +91,7 @@ class CameraRollService extends EventEmitter {
       previewAssets: 2
     }, true).then((queryResult) => {
       queryResult.onChange((changeDetails, update, unsubscribe) => {
+        console.log('QueryResult Changed', changeDetails);
         const newQueryResult = update();
         this.setCurrentAlbums(this.filterAlbums(newQueryResult));
       });
