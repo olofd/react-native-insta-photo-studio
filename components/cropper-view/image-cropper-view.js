@@ -24,6 +24,7 @@ export default class ImageCropperView extends Component {
   constructor(props) {
     super(props);
     this.lastPress = 0;
+    this.zommToImageHasBeenRun = false;
     this.state = {
       imageReady: false,
       currentImageDimensions: null,
@@ -134,10 +135,6 @@ export default class ImageCropperView extends Component {
     return preview;
   }
 
-  componentWillMount() {
-    this.getImageDimensions(this.props.image);
-  }
-
   getImageDimensions(image) {
     if (image) {
       if (typeof image !== 'string' && image.width && image.height) {
@@ -174,8 +171,13 @@ export default class ImageCropperView extends Component {
     });
   }
 
+  componentWillMount() {
+    this.getImageDimensions(this.props.image);
+  }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.image !== this.props.image) {
+      this.zommToImageHasBeenRun = false;
       this.viewPortZoomIsZoomedOut = false;
       this.setState({imageReady: false});
       //We must reset zoom if there is a new image.
@@ -184,8 +186,16 @@ export default class ImageCropperView extends Component {
     }
   }
 
+  initalZoomToImage(cb) {
+    if(!this.zommToImageHasBeenRun) {
+      return this.zoomToImage(cb);
+    }
+    cb && cb();
+  }
+
   zoomToImage(cb, animated) {
     if (this.state.currentImageDimensions) {
+      this.zommToImageHasBeenRun = true;
       const {width, height} = this.getMainPreviewImageDiemensions();
       const fixedSize = height > width
         ? width
@@ -243,9 +253,10 @@ export default class ImageCropperView extends Component {
   renderPlainImage(currentImageDimensions, previewImageDimensions) {
     return (
       <Image
+        onError={this.props.onError}
         onProgress={this.props.onProgress}
-        onPartialLoad={this.zoomToImage.bind(this, this.props.onPartialLoad)}
-        onLoadEnd={this.props.onLoad}
+        onPartialLoad={this.initalZoomToImage.bind(this, this.props.onPartialLoad)}
+        onLoadEnd={this.initalZoomToImage.bind(this, this.props.onLoad)}
         source={{
         uri: this.state.currentImage,
         width: previewImageDimensions.width,

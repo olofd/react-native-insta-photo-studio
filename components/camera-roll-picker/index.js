@@ -117,8 +117,24 @@ class CameraRollPicker extends Component {
       this.albumChangeHandler = album.onChange((changeDetails, update, unsubscribe) => {
         console.log('Album Change', changeDetails, album.title);
         const updatedImagesArray = update(this.state.images);
-        if(this.state.selected) {
-          
+        if(this.state.selected && this.state.selected.length) {
+          const selectedImagesToRemove = [];
+          const newSelectedImages = this.state.selected.filter((selected, index) => {
+            return updatedImagesArray.some(asset => asset.localIdentifier === selected.localIdentifier);
+          });
+
+          if(!newSelectedImages.length) {
+            if(updatedImagesArray.length) {
+              const imageToSelect = updatedImagesArray[0];
+              newSelectedImages.push(imageToSelect);
+              this.props.onSelectedImagesChanged(newSelectedImages, undefined);
+            }else {
+
+            }
+          }
+          this.setState({
+            selected : newSelectedImages
+          });
         }
         this.setState({
           images : updatedImagesArray,

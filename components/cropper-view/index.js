@@ -54,7 +54,9 @@ export default class CropperViewContainer extends Component {
           loaded: false,
           image: nextProps.image
         };
-        this.startLoadingTimer(this.state.images.length === 1);
+        if (nextProps.image && nextProps.image.uri) {
+          this.startLoadingTimer(this.state.images.length === 1);
+        }
       }
       this.loadCircle && this.loadCircle.setAnimationValue(0);
       this.setState({currentImageIndex: nextPushIndex, isLoading: false});
@@ -112,9 +114,14 @@ export default class CropperViewContainer extends Component {
         this.animateLoadingView(0, undefined, true);
       }, 100);
     }
+    this._setLoadedForImageObj(imageObj);
   }
 
   onPartialLoad(imageObj) {
+    this._setLoadedForImageObj(imageObj);
+  }
+
+  _setLoadedForImageObj(imageObj) {
     if (!imageObj.loaded) {
       this.state.images.forEach(i => i.loaded = false);
       imageObj.loaded = true;
@@ -151,6 +158,7 @@ export default class CropperViewContainer extends Component {
         : INACTIVE_POINTER}
         onProgress={this.onProgress.bind(this)}
         onLoad={this.onLoad.bind(this, imageObj, this.currentLoadingGuid)}
+        onError={() => alert('error')}
         onPartialLoad={this.onPartialLoad.bind(this, imageObj, this.currentLoadingGuid)}
         style={style}
         image={imageObj.image}/>);
