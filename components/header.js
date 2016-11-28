@@ -11,12 +11,39 @@ import React, {Component} from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 export default class PhotoManagerHeader extends Component {
 
+  constructor() {
+    super();
+    this.state = {};
+  }
   static defaultProps = {
+    height : 45,
     styles : StyleSheet.create({
        fontStyle : {
         fontFamily: 'Arial'
       }
     })
+  }
+
+  componentWillMount() {
+    this.setupStyleObjs(this.props);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setupStyleObjs(nextProps);
+  }
+
+  setupStyleObjs(props) {
+    if(!this.state.headerStyles || props.height !== this.state.height) {
+      const dStyles =  StyleSheet.create({
+        buttonArea : {
+          height : props.height
+        }
+      });
+      this.setState({
+        height : props.height,
+        buttonArea : [styles.buttonArea, dStyles.buttonArea]
+      });
+    }
   }
 
   onTitleButtonPressed() {
@@ -31,7 +58,7 @@ export default class PhotoManagerHeader extends Component {
         : 0
     }}>
       <TouchableOpacity
-        style={[styles.buttonArea, styles.rightButtonArea]}
+        style={[this.state.buttonArea, styles.rightButtonArea]}
         onPress={this.props.onCreateLocationPress}>
         <Text style={[styles.linkButton, this.props.styles.fontStyle]}>Nästa</Text>
       </TouchableOpacity>
@@ -41,7 +68,7 @@ export default class PhotoManagerHeader extends Component {
   _renderExitMenu() {
     return (
       <TouchableOpacity
-        style={[styles.buttonArea, styles.exitButton]}
+        style={[this.state.buttonArea, styles.exitButton]}
         onPress={this.props.onCancelAction}>
         <Icon name='ios-close' style={styles.exitIcon}></Icon>
       </TouchableOpacity>
@@ -51,7 +78,7 @@ export default class PhotoManagerHeader extends Component {
   _renderLeftButton() {
     return (
       <TouchableOpacity
-        style={[styles.buttonArea, styles.leftButtonArea]}
+        style={[this.state.buttonArea, styles.leftButtonArea]}
         onPress={this.props.onCancelAction}>
         <Text style={[styles.cancelButton, this.props.styles.fontStyle]}>Avbryt</Text>
       </TouchableOpacity>
@@ -82,7 +109,7 @@ export default class PhotoManagerHeader extends Component {
   _renderAlbumsDropDown() {
     const hasAlbum = !!this.props.currentAlbum;
     return (
-      <View style={[styles.buttonArea, styles.centerButton]}>
+      <View style={[this.state.buttonArea, styles.centerButton]}>
         <TouchableOpacity
           disabled={!hasAlbum}
           style={styles.centerContainer}
@@ -106,7 +133,7 @@ export default class PhotoManagerHeader extends Component {
       return this._renderAlbumsDropDown();
     }
     return (
-      <View style={[styles.buttonArea, styles.centerButton]}>
+      <View style={[this.state.buttonArea, styles.centerButton]}>
         <Text style={[styles.title, this.props.styles.fontStyle]}>
           {this.props.headerTitle}
         </Text>
@@ -171,8 +198,7 @@ const styles = StyleSheet.create({
   },
   buttonArea: {
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical : 10
+    justifyContent: 'center'
   },
   cancelButton: {
     color: 'black',
