@@ -82,7 +82,11 @@ export default class PhotoManager extends Component {
     this.setState({headerTitle, headerHasNextButton});
   }
 
-  onPhotoTaken(photo) {}
+  onPhotoTaken(photo) {
+    this.setState({
+      currentCameraImage : photo
+    });
+  }
 
   onCancelAction() {
     this.props.onClose && this.props.onClose();
@@ -338,11 +342,11 @@ export default class PhotoManager extends Component {
           ref={swiper => this.swiper = swiper}>
           {this._renderLibraryPicker(animationStyle)}
           <PhotoCamera
-            style={[
-            styles.photoCamera, {
-              top: this.props.topBarHeight
-            }
-          ]}
+            pendingMedia={this.state.currentCameraImage}
+            style={{
+              paddingTop : this.props.topBarHeight,
+              paddingBottom : this.props.footerHeight
+            }}
             onPhotoTaken={this.onPhotoTaken.bind(this)}
             window={this.props.window}></PhotoCamera>
         </Swiper>
@@ -392,7 +396,6 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0
   },
-  photoCamera: {},
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
