@@ -336,6 +336,7 @@ export default class PhotoManager extends Component {
       <View style={styles.container}>
         <StatusBar hidden={true}></StatusBar>
         <Swiper
+          topBarHeight={this.props.topBarHeight}
           pageWillChange={this.onSelectedPageChanged.bind(this)}
           selectedPageChanged={this.onSelectedPageChanged.bind(this)}
           window={this.props.window}

@@ -23,16 +23,19 @@ export default class Swiper extends Component {
 
   onSwiperTouchEnd(e) {
     //No idea why I need to subract 10 here, please enlighten me!:
-    let distance = ((this.lastX - e.nativeEvent.pageX) - 10);
-    let newPage = this.lastSelectedPage + (distance > 0
-      ? 1
-      : -1);
-    if (distance < 0) {
-      distance = distance * -1;
-    }
-    if (distance > (this.props.window.width / 2)) {
-      //transision will happen
-      this.props.pageWillChange && this.props.pageWillChange(newPage, this.lastSelectedPage);
+    const topBoundary = this.props.window.width + this.props.topBarHeight;
+    if(e.nativeEvent.pageY > topBoundary) {
+      let distance = ((this.lastX - e.nativeEvent.pageX) - 10);
+      let newPage = this.lastSelectedPage + (distance > 0
+        ? 1
+        : -1);
+      if (distance < 0) {
+        distance = distance * -1;
+      }
+      if (distance > (this.props.window.width / 2)) {
+        //transision will happen
+        this.props.pageWillChange && this.props.pageWillChange(newPage, this.lastSelectedPage);
+      }
     }
   }
 

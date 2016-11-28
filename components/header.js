@@ -202,7 +202,12 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     color: 'black',
-    fontSize: 15
+    fontSize: 16
+  },
+  linkButton: {
+    color: '#3897f0',
+    fontSize: 16,
+    fontWeight : '500'
   },
   leftButtonArea: {
     alignItems: 'center',
@@ -220,10 +225,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexGrow: 1
   },
-  linkButton: {
-    color: '#3897f0',
-    fontSize: 15
-  },
+
   centerContainer: {
     flex: 1,
     flexDirection: 'row',
