@@ -86,6 +86,8 @@ class CameraRollService extends EventEmitter {
 
   async _getAlbums() {
     return await RNPhotosFramework.getAlbumsCommon({
+      trackInsertsAndDeletes : true,
+      trackChanges : true,
       assetCount: 'exact',
       includeMetaData: false,
       previewAssets: 2

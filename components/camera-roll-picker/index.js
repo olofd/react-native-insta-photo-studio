@@ -106,7 +106,7 @@ class CameraRollPicker extends Component {
       this.albumChangeHandler();
       if(this.props.currentAlbum) {
         console.log('STOP TRACKING', this.props.currentAlbum.title);
-        this.props.currentAlbum.stopTrackingAssets();
+        this.props.currentAlbum.stopTracking();
       }
     }
   }
@@ -114,8 +114,7 @@ class CameraRollPicker extends Component {
   setupChangeHandling(album) {
     if(album) {
       console.log('setup change tracking for', album.title);
-      this.albumChangeHandler = album.onChange((changeDetails, update, unsubscribe) => {
-        console.log('Album Change', changeDetails, album.title);
+      this.albumChangeHandler = album.onChange((changeDetails, update) => {
         const updatedImagesArray = update(this.state.images);
         if(this.state.selected && this.state.selected.length) {
           const selectedImagesToRemove = [];
@@ -132,6 +131,8 @@ class CameraRollPicker extends Component {
 
             }
           }
+          console.log('Album Change', changeDetails, album.title,newSelectedImages);
+
           this.setState({
             selected : newSelectedImages
           });
@@ -162,12 +163,14 @@ class CameraRollPicker extends Component {
       : (fetchNum * (this.fetchRound + 1)) * 3;
 
     var fetchParams = {
+      trackInsertsAndDeletes : true,
+      trackChanges : false,
       startIndex: this.startIndex,
       endIndex: this.startIndex + fetchNumber
     };
 
     const fetchFromAlbum = this.props.currentAlbum;
-    this.props.currentAlbum.getAssets(fetchParams, true).then((data) => {
+    this.props.currentAlbum.getAssets(fetchParams).then((data) => {
       if (fetchFromAlbum === this.props.currentAlbum) {
         this.startIndex = (this.startIndex + (data.assets.length));
         if (this.fetchRound === 0) {
