@@ -3,9 +3,15 @@ import React, { Component } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 export default class PhotoManagerHeader extends Component {
 
-  render() {
-    const fontStyle = {fontFamily : this.props.font || 'Helvetica'};
+  static defaultProps = {
+    styles : StyleSheet.create({
+       fontStyle : {
+        fontFamily: 'Arial'
+      }
+    })
+  }
 
+  render() {
     return (
       <View style={[styles.topBar, this.props.style, {
         height: this.props.height
@@ -15,7 +21,7 @@ export default class PhotoManagerHeader extends Component {
           onPress={() => this.props.onPress('library')}>
           <Text
             style={[
-            styles.button, fontStyle, this.props.selectedTab === 'library'
+            styles.button, this.props.styles.fontStyle, this.props.selectedTab === 'library'
               ? styles.buttonSelected
               : null
           ]}>{this.props.libraryDisplayName}</Text>
@@ -26,7 +32,7 @@ export default class PhotoManagerHeader extends Component {
           onPress={() => this.props.onPress('photo')}>
           <Text
             style={[
-            styles.button, fontStyle, this.props.selectedTab === 'photo'
+            styles.button, this.props.styles.fontStyle, this.props.selectedTab === 'photo'
               ? styles.buttonSelected
               : null
           ]}>{this.props.photoDisplayName}</Text>
@@ -46,7 +52,7 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     textAlign: 'center',
     margin: 10
   },
@@ -56,22 +62,16 @@ const styles = StyleSheet.create({
   },
   button: {
     color: '#999999',
-    fontSize: 15,
-    textAlign: 'center'
+    fontSize: 16,
+    textAlign: 'center',
+    fontWeight : '600'
   },
   buttonSelected: {
     color: 'black',
-    fontWeight : 'bold'
   },
   buttonArea: {
     height : 45,
     paddingHorizontal: 15,
     justifyContent: 'center'
-  },
-  leftButtonArea: {
-  //  flex: 1
-  },
-  centerButton: {
-    //  flex: 1
   }
 });

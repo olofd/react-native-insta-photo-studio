@@ -46,7 +46,7 @@ export default class CropperViewContainer extends Component {
     if (!currentImage || currentImage.image !== nextProps.image) {
       const nextPushIndex = this.getNextPushIndex();
       const cropperImageObj = this.state.images[nextPushIndex];
-      if (cropperImageObj && cropperImageObj.image === nextProps.image) {
+      if (cropperImageObj && (cropperImageObj.image === nextProps.image || cropperImageObj.image.uri === nextProps.image.uri)) {
         this.onPartialLoad(this.state.images[nextPushIndex], this.currentLoadingGuid);
         this.onLoad(this.state.images[nextPushIndex], this.currentLoadingGuid);
       } else {
@@ -54,7 +54,9 @@ export default class CropperViewContainer extends Component {
           loaded: false,
           image: nextProps.image
         };
-        this.startLoadingTimer(this.state.images.length === 1);
+        if (nextProps.image && nextProps.image.uri) {
+          this.startLoadingTimer(this.state.images.length === 1);
+        }
       }
       this.loadCircle && this.loadCircle.setAnimationValue(0);
       this.setState({currentImageIndex: nextPushIndex, isLoading: false});
@@ -112,9 +114,14 @@ export default class CropperViewContainer extends Component {
         this.animateLoadingView(0, undefined, true);
       }, 100);
     }
+    this._setLoadedForImageObj(imageObj);
   }
 
   onPartialLoad(imageObj) {
+    this._setLoadedForImageObj(imageObj);
+  }
+
+  _setLoadedForImageObj(imageObj) {
     if (!imageObj.loaded) {
       this.state.images.forEach(i => i.loaded = false);
       imageObj.loaded = true;
@@ -124,7 +131,6 @@ export default class CropperViewContainer extends Component {
 
   onProgress(e) {
     const p = Math.round((e.nativeEvent.loaded / e.nativeEvent.total) * 100);
-    console.log('progress', p);
     this.loadCircle && this.loadCircle.animateFill(p, undefined, false);
   }
 
@@ -140,7 +146,6 @@ export default class CropperViewContainer extends Component {
       ];
       cropperViews.push(<ImageCopperView
         key={j}
-        top={this.props.top}
         magnification={this.props.magnification}
         window={this.props.window}
         willStartAnimating={this.props.willStartAnimating}
@@ -153,6 +158,7 @@ export default class CropperViewContainer extends Component {
         : INACTIVE_POINTER}
         onProgress={this.onProgress.bind(this)}
         onLoad={this.onLoad.bind(this, imageObj, this.currentLoadingGuid)}
+        onError={() => alert('error')}
         onPartialLoad={this.onPartialLoad.bind(this, imageObj, this.currentLoadingGuid)}
         style={style}
         image={imageObj.image}/>);
@@ -207,7 +213,7 @@ export default class CropperViewContainer extends Component {
             inputRange: [
               0, 1
             ],
-            outputRange: [0, 0.55]
+            outputRange: [0, 0.65]
           }),
           transform: [
             {

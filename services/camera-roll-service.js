@@ -1,71 +1,109 @@
-import {CameraRoll} from 'react-native';
+import {CameraRoll, Linking} from 'react-native';
 import RNPhotosFramework from 'react-native-photos-framework';
+import EventEmitter from '../../react-native/Libraries/EventEmitter/EventEmitter';
 
-class CameraRollService {
+class CameraRollService extends EventEmitter {
 
   constructor() {
-    this.albumFetchPromise = RNPhotosFramework
-      .requestAuthorization().then((status) => {
-        if(!status.isAuthorized) {
-          throw new Error('Unauthorized');
-        }
-        return RNPhotosFramework.getAlbumsCommon({
-          assetCount: 'exact',
-          includeMetaData: true,
-          previewAssets: 2
-        }, true);
-      });
+    super();
   }
 
-  getPhotos(fetchParams) {
-    return CameraRoll.getPhotos(fetchParams).then((data) => {
-      return {
-        images: data.edges.map(edge => edge.node.image),
-        page_info: data.page_info
-      };
+  async saveTmpImage(tmpImage) {
+    return RNPhotosFramework.createImageAsset({
+      uri : tmpImage.path
     });
   }
 
-  async getCurrentAlbum() {
-    if(!this.currentAlbum) {
-      this.currentAlbum = await this.getAllPhotosAlbum();
-      if(!this.currentAlbum) {
-        throw new Error('Could not find default album');
-      }
+  openSettings() {
+    Linking.openURL('app-settings:');
+  }
+
+  onAuthorizationChanged(cb) {
+    this.addListener('onAuthorizationChanged', cb);
+    return () => this.removeListener('onAuthorizationChanged', cb);
+  }
+
+  onCurrentAlbumsChanged(cb) {
+    this.addListener('onCurrentAlbumsChanged', cb);
+    return () => this.removeListener('onCurrentAlbumsChanged', cb);
+  }
+
+  onCurrentAlbumChanged(cb) {
+    this.addListener('onCurrentAlbumChanged', cb);
+    return () => this.removeListener('onCurrentAlbumChanged', cb);
+  }
+
+  async authorize() {
+    const authStatus = await RNPhotosFramework.requestAuthorization();
+    if (authStatus.isAuthorized !== this.isAuthorized) {
+      this.emit('onAuthorizationChanged', authStatus);
+      this.isAuthorized = authStatus.isAuthorized;
+    }
+    return authStatus;
+  }
+
+  async fetchAlbums() {
+    await this.fetchCurrentAlbums();
+    await this.fetchCurrentAlbum();
+  }
+
+  async fetchCurrentAlbums() {
+    const albums = await this._getAlbums();
+    return this.setCurrentAlbums(albums);
+  }
+
+  setCurrentAlbums(albums) {
+    if (albums !== this.currentAlbums) {
+      this.currentAlbums = albums;
+      this.emit('onCurrentAlbumsChanged', albums);
+    }
+    return this.currentAlbums;
+  }
+
+  async fetchCurrentAlbum() {
+    const allAlbum = await this.getAllPhotosAlbum();
+    if (!allAlbum) {
+      console.log('Could not find default album');
+    }
+    return this.setCurrentAlbum(allAlbum);
+  }
+
+  setCurrentAlbum(album) {
+    if (album !== this.currentAlbum) {
+      this.currentAlbum = album;
+      this.emit('onCurrentAlbumChanged', album);
     }
     return this.currentAlbum;
   }
 
-  getAllPhotosAlbum() {
-    return this.albumFetchPromise.then((queryResult) => {
-      return queryResult.albums.find(album =>
-        album.type === 'smartAlbum' &&
-        album.subType === 'smartAlbumUserLibrary');
+  filterAlbums(queryResult) {
+    const smartAlbumExludeList = ['smartAlbumVideos', 'smartAlbumSlomoVideos', 'smartAlbumTimelapses'];
+    return queryResult.instagramAppAlbumSort().filter(album => {
+      const notExludedSubType = (smartAlbumExludeList.indexOf(album.subType) === -1);
+      return notExludedSubType && album.assetCount > 0;
     });
   }
 
-  getPhotosPhotoKit(fetchParams) {
-    return this.getCurrentAlbum().then((currentAlbum) => {
-      return RNPhotosFramework.getAssets({
-        ...fetchParams,
-        includeMetaData : true,
-        fetchOptions: {
-          sortDescriptors: [
-            {
-              key: 'creationDate',
-              ascending: true
-            }
-          ]
-        }
-      }).then((data) => {
-        return {
-          images: data.assets,
-          page_info: {
-            has_next_page: data.includesLastAsset
-          }
-        };
+  async _getAlbums() {
+    return await RNPhotosFramework.getAlbumsCommon({
+      trackInsertsAndDeletes : true,
+      trackChanges : true,
+      assetCount: 'exact',
+      includeMetaData: false,
+      previewAssets: 2
+    }, true).then((queryResult) => {
+      queryResult.onChange((changeDetails, update, unsubscribe) => {
+        console.log('QueryResult Changed', changeDetails);
+        const newQueryResult = update();
+        this.setCurrentAlbums(this.filterAlbums(newQueryResult));
       });
+
+      return this.filterAlbums(queryResult);
     });
+  }
+
+  async getAllPhotosAlbum() {
+    return this.currentAlbums.find(album => album.type === 'smartAlbum' && album.subType === 'smartAlbumUserLibrary');
   }
 }
 
