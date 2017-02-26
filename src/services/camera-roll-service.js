@@ -1,11 +1,11 @@
 import {CameraRoll, Linking} from 'react-native';
-import RNPhotosFramework from 'react-native-photos-framework';
-import EventEmitter from '../../react-native/Libraries/EventEmitter/EventEmitter';
+import RNPhotosFramework from '../../react-native-photos-framework';
+import EventEmitter from '../../event-emitter';
 
 class CameraRollService extends EventEmitter {
 
   constructor() {
-    super();
+    super(); 
   }
 
   async saveTmpImage(tmpImage) {

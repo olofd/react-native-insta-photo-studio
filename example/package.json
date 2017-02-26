@@ -1,24 +1,26 @@
 {
-	"name": "example",
-	"version": "0.0.1",
-	"private": true,
-	"scripts": {
-		"start": "node node_modules/react-native/local-cli/cli.js start",
-		"test": "jest",
-		"link-all": "wml add ~/react-native-photos-framework/src ~/react-native-insta-photo-studio/example/react-native-photos-framework/src && wml add ~/react-native-insta-photo-studio/src ~/react-native-insta-photo-studio/example/react-native-insta-photo-studio/src && wml start"
-	},
-	"dependencies": {
-		"react": "~15.4.0",
-		"react-native": "0.41.2",
-		"react-native-insta-photo-studio": "git://github.com/olofd/react-native-insta-photo-studio.git"
-	},
-	"devDependencies": {
-		"babel-jest": "19.0.0",
-		"babel-preset-react-native": "1.9.1",
-		"jest": "19.0.2",
-		"react-test-renderer": "~15.4.0"
-	},
-	"jest": {
-		"preset": "react-native"
-	}
+  "name": "example",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "test": "jest",
+    "link-all": "wml add ~/react-native-photos-framework/src ~/react-native-insta-photo-studio/example/react-native-photos-framework/src && wml add ~/react-native-insta-photo-studio/src ~/react-native-insta-photo-studio/example/react-native-insta-photo-studio/src && wml start",
+    "flatlist": "../flatlist.bash"
+  },
+  "dependencies": {
+    "react": "~15.4.0",
+    "react-native": "0.41.2",
+    "react-native-insta-photo-studio": "git://github.com/olofd/react-native-insta-photo-studio.git",
+    "react-native-scroll-block-view": "0.0.7"
+  },
+  "devDependencies": {
+    "babel-jest": "19.0.0",
+    "babel-preset-react-native": "1.9.1",
+    "jest": "19.0.2",
+    "react-test-renderer": "~15.4.0"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
 }

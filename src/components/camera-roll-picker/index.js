@@ -15,7 +15,7 @@ import {
   PanResponder,
   TouchableWithoutFeedback
 } from 'react-native';
-import WindowedListView from '../../../react-native/Libraries/Experimental/WindowedListView';
+//import WindowedListView from '../../../react-native/Libraries/Experimental/WindowedListView';
 import debounce from 'debounce';
 import {ScrollViewPanDelegator, BoundarySwipeDelgator, ContentOffsetDelegator, swipeUpDetector, swipeDownDetector} from '../../pan-delegator/scroll-view-pan-delegator';
 import cameraRollService from '../../services/camera-roll-service';

@@ -11,6 +11,7 @@ import {
   Text,
   View
 } from 'react-native';
+import RNIPS from './react-native-insta-photo-studio';
 
 export default class example extends Component {
   render() {
