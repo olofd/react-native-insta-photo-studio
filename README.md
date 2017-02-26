@@ -2,7 +2,7 @@
 
 `npm i react-native-insta-photo-studio --save`
 
-~~~~
+~~~js
 import React, { Component } from 'react';
 import {
   AppRegistry,
@@ -40,4 +40,4 @@ const styles = StyleSheet.create({
 });
 
 AppRegistry.registerComponent('HelloRN', () => HelloRN);
-~~~~
+~~~
