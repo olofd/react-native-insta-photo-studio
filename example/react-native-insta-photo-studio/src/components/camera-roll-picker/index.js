@@ -15,7 +15,7 @@ import {
   PanResponder,
   TouchableWithoutFeedback
 } from 'react-native';
-//import WindowedListView from '../../../react-native/Libraries/Experimental/WindowedListView';
+import WindowedListView from 'react-native/Libraries/Experimental/WindowedListView';
 import debounce from 'debounce';
 import {ScrollViewPanDelegator, BoundarySwipeDelgator, ContentOffsetDelegator, swipeUpDetector, swipeDownDetector} from '../../pan-delegator/scroll-view-pan-delegator';
 import cameraRollService from '../../services/camera-roll-service';
@@ -56,13 +56,13 @@ class CameraRollPicker extends Component {
   }
 
   componentWillMount() {
-    var {width} = Dimensions.get('window');
-    var {imageMargin, imagesPerRow, containerWidth} = this.props;
+    let {width} = Dimensions.get('window');
+    let {imageMargin, imagesPerRow, containerWidth} = this.props;
 
     if (typeof containerWidth != "undefined") {
       width = containerWidth;
     }
-    this._imageSize = (width - (imagesPerRow + 1) * imageMargin) / imagesPerRow;
+    this._imageSize = (width / imagesPerRow) - ((imageMargin * (imagesPerRow - 1)) / imagesPerRow);
     this.setupChangeHandling(this.props.currentAlbum);
     this.fetch();
 
@@ -73,8 +73,8 @@ class CameraRollPicker extends Component {
           width: this._imageSize
         },
         cellMargin: {
-          marginBottom: this.props.imageMargin,
-          marginRight: this.props.imageMargin
+          paddingTop: imageMargin,
+          paddingRight: imageMargin
         }
       })
     });
@@ -295,7 +295,6 @@ class CameraRollPicker extends Component {
         styles.wrapper, {
           padding: imageMargin,
           paddingRight: 0,
-          backgroundColor: 'white',
           width: this.props.window.width
         },
         this.props.style
@@ -306,19 +305,22 @@ class CameraRollPicker extends Component {
   }
 
   _renderImage(item, rowIndex, rowColumn, rowData) {
-    var isSelected = false;
-    for (var i = 0; i < this.state.selected.length; i++) {
+    let isSelected = false;
+    for (let i = 0; i < this.state.selected.length; i++) {
       if (this.state.selected[i].uri === item.uri) {
         isSelected = true;
         break;
       }
     }
-    var cellStyles = this.state.cellStyles;
+    let cellStyles = this.state.cellStyles;
+    let lastItemInRow = (rowColumn % this.props.imagesPerRow) === this.props.imagesPerRow -1;
     return (
       <TouchableOpacity
         activeOpacity={1.0}
         key={item.uri}
-        style={cellStyles.cellMargin}
+        style={[cellStyles.cellMargin, {
+          paddingRight : lastItemInRow ? 0 : this.props.imageMargin
+        }]}
         onPress={() => this._selectImage(item, rowIndex, rowData)}>
         <Image source={item.image} style={cellStyles.imageSize}>
           {isSelected

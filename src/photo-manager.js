@@ -13,7 +13,7 @@ import {
   ActivityIndicator
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import Header from './components/header';
 import Footer from './components/footer';
 import CameraRollPicker from './components/camera-roll-picker';
@@ -28,9 +28,9 @@ const SCROLLVIEW_REF = "SCROLLVIEW_REF";
 export default class PhotoManager extends Component {
 
   static defaultProps = {
-    finnishCropperAnimationDuration : 200,
-    topBarHeight : 45,
-    footerHeight : 45,
+    finnishCropperAnimationDuration: 200,
+    topBarHeight: 45,
+    footerHeight: 45,
     window: Dimensions.get('window'),
     libraryDisplayName: 'Library',
     photoDisplayName: 'Photo'
@@ -79,13 +79,13 @@ export default class PhotoManager extends Component {
         break;
       default:
     }
-    this.setState({headerTitle, headerHasNextButton});
+    this.setState({ headerTitle, headerHasNextButton });
   }
 
   onPhotoTaken(photo) {
 
     this.setState({
-      currentCameraImage : photo
+      currentCameraImage: photo
     });
   }
 
@@ -121,7 +121,7 @@ export default class PhotoManager extends Component {
     if (valueObj !== undefined) {
       this.state.anim.setValue(valueObj.fixedValue);
       if (valueObj.inputValue > 0 && this.state.smallCameraRollContainer) {
-        this.setState({smallCameraRollContainer: false});
+        this.setState({ smallCameraRollContainer: false });
       }
     }
   }
@@ -144,12 +144,12 @@ export default class PhotoManager extends Component {
             : 0;
           const isRetracted = this.isRetracted();
           if (!isRetracted && !this.state.smallCameraRollContainer) {
-            this.setState({smallCameraRollContainer: true});
+            this.setState({ smallCameraRollContainer: true });
           }
         }
       });
     });
-    this.setState({isRetracted: finnishRetracted});
+    this.setState({ isRetracted: finnishRetracted });
   }
 
   isRetracted() {
@@ -161,7 +161,7 @@ export default class PhotoManager extends Component {
   }
 
   onSelectedImagesChanged(selectedImages, image) {
-    this.setState({currentLibraryImage: image});
+    this.setState({ currentLibraryImage: image });
     if (this.isRetracted()) {
       this.finnishAnimation(false);
     }
@@ -169,7 +169,7 @@ export default class PhotoManager extends Component {
 
   onSelectedPageChanged(newPageIndex, lastPageIndex) {
     if (newPageIndex !== this.state.currentSwiperIndex) {
-      this.setState({currentSwiperIndex: newPageIndex, swiperIndexHasChangedAtSomePoint: true});
+      this.setState({ currentSwiperIndex: newPageIndex, swiperIndexHasChangedAtSomePoint: true });
       this.updateHeader(newPageIndex === 0
         ? 'library'
         : 'photo');
@@ -204,13 +204,14 @@ export default class PhotoManager extends Component {
       resetAnimation={this.resetAnimation.bind(this)}
       image={this.state.currentLibraryImage}
       magnification={this.props.cropperMagnification}
-      window={this.props.window}/>);
+      window={this.props.window} />);
   }
 
   _renderPicker() {
     if (!this.props.currentAlbum) {
       return null;
     }
+    const imageMargin = 2;
     const cameraRollPickerView = {
       marginTop: this.props.window.width,
       paddingBottom: this.props.footerHeight + this.props.topBarHeight
@@ -222,7 +223,8 @@ export default class PhotoManager extends Component {
       position: 'absolute',
       height: this.state.smallCameraRollContainer
         ? (mainAreaHeight - this.props.window.width)
-        : mainAreaHeight
+        : mainAreaHeight,
+      width : this.props.window.width
     };
 
     return (
@@ -234,8 +236,8 @@ export default class PhotoManager extends Component {
         replaceSelection={true}
         initalSelectedImageIndex={0}
         top={this.state.isRetracted
-        ? 50
-        : (this.props.window.width + this.props.topBarHeight)}
+          ? 50
+          : (this.props.window.width + this.props.topBarHeight)}
         willStartAnimating={this.willStartAnimating.bind(this)}
         finnishAnimation={this.finnishAnimation.bind(this)}
         getAnimationValue={this.getAnimationValue.bind(this)}
@@ -244,7 +246,7 @@ export default class PhotoManager extends Component {
         style={cameraRollPickerView}
         maximum={1}
         window={this.props.window}
-        imageMargin={2}
+        imageMargin={imageMargin}
         imagesPerRow={4}></CameraRollPicker>
     );
   }
@@ -253,10 +255,10 @@ export default class PhotoManager extends Component {
     return (
       <View
         style={[
-        styles.loadingContainer, {
-          width: this.props.window.width
-        }
-      ]}>
+          styles.loadingContainer, {
+            width: this.props.window.width
+          }
+        ]}>
         <ActivityIndicator></ActivityIndicator>
       </View>
     );
@@ -267,9 +269,9 @@ export default class PhotoManager extends Component {
       return (
         <Unauthorized
           style={{
-          width: this.props.window.width,
-          paddingBottom: this.props.footerHeight
-        }}
+            width: this.props.window.width,
+            paddingBottom: this.props.footerHeight
+          }}
           {...this.props}></Unauthorized>
       );
     }
@@ -324,7 +326,36 @@ export default class PhotoManager extends Component {
       </Animated.View>
     );
   }
-
+  _render() {
+    console.log('RENDER OUTER');
+    if (!this.props.currentAlbum) {
+      return null;
+    }
+    const animationStyle = {
+      transform: [
+        {
+          translateY: this.state.anim
+        }
+      ]
+    };
+    return (
+      <CameraRollPicker
+        currentAlbum={this.props.currentAlbum}
+        scrollToRowOnSelection={this.state.isRetracted}
+        onSelectedImagesChanged={this.onSelectedImagesChanged.bind(this)}
+        replaceSelection={true}
+        initalSelectedImageIndex={0}
+        top={0}
+        willStartAnimating={this.willStartAnimating.bind(this)}
+        finnishAnimation={this.finnishAnimation.bind(this)}
+        getAnimationValue={this.getAnimationValue.bind(this)}
+        animate={this.animate.bind(this)}
+        resetAnimation={this.resetAnimation.bind(this)}
+        maximum={1}
+        window={this.props.window}
+        imageMargin={2}
+        imagesPerRow={4}></CameraRollPicker>);
+  }
   render() {
     const animationStyle = {
       transform: [
@@ -346,8 +377,8 @@ export default class PhotoManager extends Component {
           <PhotoCamera
             pendingMedia={this.state.currentCameraImage}
             style={{
-              paddingTop : this.props.topBarHeight,
-              paddingBottom : this.props.footerHeight
+              paddingTop: this.props.topBarHeight,
+              paddingBottom: this.props.footerHeight
             }}
             onPhotoTaken={this.onPhotoTaken.bind(this)}
             window={this.props.window}></PhotoCamera>
@@ -360,8 +391,8 @@ export default class PhotoManager extends Component {
           style={styles.footer}
           styles={this.props.styles}
           selectedTab={this.state.currentSwiperIndex === 0
-          ? 'library'
-          : 'photo'}
+            ? 'library'
+            : 'photo'}
           height={this.props.footerHeight}></Footer>
       </View>
     );
