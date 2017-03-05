@@ -1,6 +1,8 @@
 import {View, Text, StyleSheet, PixelRatio, TouchableOpacity} from 'react-native';
 import React, { Component } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
+import I18n from 'react-native-i18n';
+
 export default class PhotoManagerHeader extends Component {
 
   static defaultProps = {
@@ -24,7 +26,7 @@ export default class PhotoManagerHeader extends Component {
             styles.button, this.props.styles.fontStyle, this.props.selectedTab === 'library'
               ? styles.buttonSelected
               : null
-          ]}>{this.props.libraryDisplayName}</Text>
+          ]}>{I18n.t('library')}</Text>
         </TouchableOpacity>
         <View style={{flex : 1}}></View>
         <TouchableOpacity
@@ -35,7 +37,7 @@ export default class PhotoManagerHeader extends Component {
             styles.button, this.props.styles.fontStyle, this.props.selectedTab === 'photo'
               ? styles.buttonSelected
               : null
-          ]}>{this.props.photoDisplayName}</Text>
+          ]}>{I18n.t('photo')}</Text>
         </TouchableOpacity>
       </View>
     );

@@ -8,7 +8,9 @@ import {
   Easing
 } from 'react-native';
 import React, {Component} from 'react';
-import Icon from 'react-native-vector-icons/Ionicons';
+import Icon from 'react-native-vector-icons/Ionicons'; 
+import I18n from 'react-native-i18n';
+
 export default class PhotoManagerHeader extends Component {
 
   constructor() {
@@ -60,7 +62,7 @@ export default class PhotoManagerHeader extends Component {
       <TouchableOpacity
         style={[this.state.buttonArea, styles.rightButtonArea]}
         onPress={this.props.onCreateLocationPress}>
-        <Text style={[styles.linkButton, this.props.styles.fontStyle]}>Nästa</Text>
+        <Text style={[styles.linkButton, this.props.styles.fontStyle]}>{I18n.t('next')}</Text>
       </TouchableOpacity>
     </View>;
   }
@@ -80,7 +82,7 @@ export default class PhotoManagerHeader extends Component {
       <TouchableOpacity
         style={[this.state.buttonArea, styles.leftButtonArea]}
         onPress={this.props.onCancelAction}>
-        <Text style={[styles.cancelButton, this.props.styles.fontStyle]}>Avbryt</Text>
+        <Text style={[styles.cancelButton, this.props.styles.fontStyle]}>{I18n.t('cancel')}</Text>
       </TouchableOpacity>
     );
   }
@@ -178,7 +180,6 @@ export default class PhotoManagerHeader extends Component {
     );
   }
 }
-
 const styles = StyleSheet.create({
   topBar: {
     borderBottomWidth: 1 / PixelRatio.get(),

@@ -3,6 +3,7 @@ import React, {Component} from 'react';
 import {View, StyleSheet, Animated, Dimensions, Easing} from 'react-native';
 import photoFrameworkService from './services/camera-roll-service';
 import AlbumList from './components/album-list';
+import I18N from './I18n';
 export default class InstaPhotoStudio extends Component {
 
   static defaultProps = {
@@ -63,6 +64,7 @@ export default class InstaPhotoStudio extends Component {
   }
 
   componentWillMount() {
+    I18N(this.props.translations);
     this.setupStyleObjs(this.props);
     this.ch.push(photoFrameworkService.onCurrentAlbumsChanged((currentAlbums) => {
       this.setState({currentAlbums: currentAlbums});

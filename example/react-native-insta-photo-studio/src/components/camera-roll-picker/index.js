@@ -1,4 +1,4 @@
-import React, {Component} from 'react'
+import React, { Component } from 'react'
 import {
   ActivityIndicator,
   CameraRoll,
@@ -17,17 +17,17 @@ import {
 } from 'react-native';
 import WindowedListView from 'react-native/Libraries/Experimental/WindowedListView';
 import debounce from 'debounce';
-import {ScrollViewPanDelegator, BoundarySwipeDelgator, ContentOffsetDelegator, swipeUpDetector, swipeDownDetector} from '../../pan-delegator/scroll-view-pan-delegator';
+import { ScrollViewPanDelegator, BoundarySwipeDelgator, ContentOffsetDelegator, swipeUpDetector, swipeDownDetector } from '../../pan-delegator/scroll-view-pan-delegator';
 import cameraRollService from '../../services/camera-roll-service';
 class CameraRollPicker extends Component {
   constructor(props) {
     super(props);
+    this.newAlbumAssetService = false;
     this.state = {
-      images: [],
-      selected: this.props.selected,
       noMore: false,
       shouldUpdate: this.guid(),
-      bounces: true
+      bounces: true,
+      selectedImages: []
     };
     this._onEndReachedDebounce = debounce(this._onEndReached, 200).bind(this);
     this.setupScrollViewPanDelegator(props);
@@ -36,6 +36,7 @@ class CameraRollPicker extends Component {
       x: 0
     };
     this.startIndex = 0;
+    this.albumAssetServiceListeners = [];
   }
 
   setupScrollViewPanDelegator(props) {
@@ -43,7 +44,7 @@ class CameraRollPicker extends Component {
       new BoundarySwipeDelgator(swipeUpDetector, props.top, this.props),
       new ContentOffsetDelegator(swipeDownDetector, this.props, {
         setBounce: (bounces) => {
-          this.setState({bounces: bounces});
+          this.setState({ bounces: bounces });
         }
       })
     ]);
@@ -56,16 +57,13 @@ class CameraRollPicker extends Component {
   }
 
   componentWillMount() {
-    let {width} = Dimensions.get('window');
-    let {imageMargin, imagesPerRow, containerWidth} = this.props;
+    let { width } = Dimensions.get('window');
+    let { imageMargin, imagesPerRow, containerWidth } = this.props;
 
     if (typeof containerWidth != "undefined") {
       width = containerWidth;
     }
     this._imageSize = (width / imagesPerRow) - ((imageMargin * (imagesPerRow - 1)) / imagesPerRow);
-    this.setupChangeHandling(this.props.currentAlbum);
-    this.fetch();
-
     this.setState({
       cellStyles: StyleSheet.create({
         imageSize: {
@@ -78,160 +76,58 @@ class CameraRollPicker extends Component {
         }
       })
     });
-  }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({selected: nextProps.selected});
-    if (nextProps.currentAlbum !== this.props.currentAlbum) {
-      this.unsubscribeFromAlbum();
-      this.setState({
-        images : [],
-        noMore: false
-      }, () => {
-        this.setupChangeHandling(nextProps.currentAlbum);
-        this.scrollToRow(0, undefined, false);
-        this.fetchRound = -1;
-        this.startIndex = 0;
-        this.fetch(true, true);
-      });
-    }
-  }
-
-  componentWillUnMount() {
-    this.unsubscribeFromAlbum();
-  }
-
-  unsubscribeFromAlbum() {
-    if(this.albumChangeHandler) {
-      this.albumChangeHandler();
-      if(this.props.currentAlbum) {
-        console.log('STOP TRACKING', this.props.currentAlbum.title);
-        this.props.currentAlbum.stopTracking();
-      }
-    }
-  }
-
-  setupChangeHandling(album) {
-    if(album) {
-      console.log('setup change tracking for', album.title);
-      this.albumChangeHandler = album.onChange((changeDetails, update) => {
-        const updatedImagesArray = update(this.state.images);
-        if(this.state.selected && this.state.selected.length) {
-          const selectedImagesToRemove = [];
-          const newSelectedImages = this.state.selected.filter((selected, index) => {
-            return updatedImagesArray.some(asset => asset.localIdentifier === selected.localIdentifier);
-          });
-
-          if(!newSelectedImages.length) {
-            if(updatedImagesArray.length) {
-              const imageToSelect = updatedImagesArray[0];
-              newSelectedImages.push(imageToSelect);
-              this.props.onSelectedImagesChanged(newSelectedImages, undefined);
-            }else {
-
-            }
-          }
-          console.log('Album Change', changeDetails, album.title,newSelectedImages);
-
-          this.setState({
-            selected : newSelectedImages
-          });
-        }
+    this.cameraRollServiceListener = cameraRollService.onAlbumAssetServiceChanged((albumAssetService) => {
+      this.scrollToRow(0, undefined, false);
+      this.newAlbumAssetService = true;
+      this.unregisterFromAlbumAssetService();
+      this.albumAssetService = albumAssetService;
+      this.albumAssetServiceListeners.push(this.albumAssetService.onNewAssetsRecived((columnsSplittedData, newData) => {
         this.setState({
-          images : updatedImagesArray,
-          dataSource : this.appendToState([], updatedImagesArray, this.props.imagesPerRow),
-          shouldUpdate : this.guid()
+          dataSource: columnsSplittedData,
+          shouldUpdate: this.guid()
         });
-      });
-    }
-  }
-
-  fetch(force, resetState) {
-    if (this.fetchInProgress && !force) {
-      return;
-    }
-    this.fetchInProgress = true;
-    if (this.fetchRound === undefined) {
-      this.fetchRound = -1;
-    }
-    this.fetchRound++;
-    var {groupTypes, assetType} = this.props;
-
-    const fetchNum = 12;
-    const fetchNumber = this.fetchRound === 0
-      ? fetchNum
-      : (fetchNum * (this.fetchRound + 1)) * 3;
-
-    var fetchParams = {
-      trackInsertsAndDeletes : true,
-      trackChanges : false,
-      startIndex: this.startIndex,
-      endIndex: this.startIndex + fetchNumber
-    };
-
-    const fetchFromAlbum = this.props.currentAlbum;
-    this.props.currentAlbum.getAssets(fetchParams).then((data) => {
-      if (fetchFromAlbum === this.props.currentAlbum) {
-        this.startIndex = (this.startIndex + (data.assets.length));
-        if (this.fetchRound === 0) {
-          this.setInitalSelection(data.assets);
+        if (this.newAlbumAssetService && newData.length) {
+          this.newAlbumAssetService = false;
+          this.setInitalSelection(newData);
         }
-        this._appendImages(data, resetState);
-        this.fetchInProgress = false;
-        if (this.fetchRound === 0 || this.fetchRound === 1) {
-          this.fetch(true);
+      }));
+
+      this.albumAssetServiceListeners.push(this.albumAssetService.onSelectionChanged((selectedImages, rowIndexToScrollTo, columnsSplittedData) => {
+        this.setState({
+          selectedImages: selectedImages,
+          dataSource: columnsSplittedData,
+          shouldUpdate: this.guid()
+        });
+        if (rowIndexToScrollTo !== -1) {
+          console.log(rowIndexToScrollTo);
+          this.onScrollAdjustmentOnSelect(rowIndexToScrollTo);
         }
-      }
-    }, (e) => console.log(e));
+      }));
+    }, true);
   }
 
   setInitalSelection(assets) {
     if (this.props.initalSelectedImageIndex !== undefined) {
       const image = assets[this.props.initalSelectedImageIndex];
-      this.state.selected.push(image);
-      this.props.onSelectedImagesChanged(this.state.selected, image);
+      if (image) {
+        cameraRollService.selectionRequested(this.albumAssetService, image);
+      }
     }
   }
-
-  _appendImages(data, resetState) {
-    if (data.assets.length > 0) {
-      const dataSource = (resetState === true ? [] :  (this.state.dataSource || []));
-      this.setState({
-        images : this.state.images.concat(data.assets),
-        noMore : data.includesLastAsset,
-        dataSource : this.appendToState(dataSource, data.assets, this.props.imagesPerRow),
-        shouldUpdate : this.guid()
-      });
+  
+  componentWillUnMount() {
+    if (this.cameraRollServiceListener) {
+      this.cameraRollServiceListener();
     }
+    this.unregisterFromAlbumAssetService();
   }
 
-  appendToState(dataSource, newAssets, imagesPerRow) {
-    let columnsAdded = 0;
-    const lastRow = dataSource[dataSource.length - 1];
-    if (lastRow && lastRow.rowData.length < imagesPerRow) {
-      for (let i = (lastRow.rowData.length); i < imagesPerRow; i++) {
-        lastRow.rowData.push(newAssets[columnsAdded]);
-        columnsAdded++;
-      }
-      lastRow.rowData = [...lastRow.rowData];
+  unregisterFromAlbumAssetService() {
+    if (this.albumAssetServiceListeners) {
+      this.albumAssetServiceListeners.forEach(listener => listener());
+      this.albumAssetServiceListeners = [];
     }
-    const previousLength = (dataSource && dataSource.length) || 0;
-    const newRows = newAssets.filter((item, index) => index >= columnsAdded).reduce((newRows, image, index) => {
-      if (index % imagesPerRow == 0 && index !== 0) {
-        newRows.push({
-          rowKey: newRows.length + previousLength,
-          rowData: []
-        });
-      };
-      newRows[newRows.length - 1].rowData.push(image);
-      return newRows;
-    }, [
-      {
-        rowKey: previousLength,
-        rowData: []
-      }
-    ]);
-    return dataSource.concat(newRows);
   }
 
   guid() {
@@ -264,7 +160,7 @@ class CameraRollPicker extends Component {
 
   renderListView() {
     if (!this.state.dataSource) {
-      return <ActivityIndicator style={styles.spinner}/>;
+      return <ActivityIndicator style={styles.spinner} />;
     }
     return (
       <WindowedListView
@@ -278,27 +174,27 @@ class CameraRollPicker extends Component {
         maxNumToRender={500}
         shouldUpdateToken={this.state.shouldUpdate}
         onViewableRowsChanged={(e) => {
-        if (e[e.length - 1] >= (this.state.dataSource.length - 60)) {
-          this._onEndReachedDebounce();
-        }
-      }}
+          if (e[e.length - 1] >= (this.state.dataSource.length - 60)) {
+            this._onEndReachedDebounce();
+          }
+        }}
         data={this.state.dataSource}
         renderRow={this._renderRow.bind(this)}></WindowedListView>
     );
   }
 
   render() {
-    const {imageMargin, backgroundColor} = this.props;
+    const { imageMargin, backgroundColor } = this.props;
     return (
       <View
         style={[
-        styles.wrapper, {
-          padding: imageMargin,
-          paddingRight: 0,
-          width: this.props.window.width
-        },
-        this.props.style
-      ]}>
+          styles.wrapper, {
+            padding: imageMargin,
+            paddingRight: 0,
+            width: this.props.window.width
+          },
+          this.props.style
+        ]}>
         {this.renderListView()}
       </View>
     );
@@ -306,20 +202,20 @@ class CameraRollPicker extends Component {
 
   _renderImage(item, rowIndex, rowColumn, rowData) {
     let isSelected = false;
-    for (let i = 0; i < this.state.selected.length; i++) {
-      if (this.state.selected[i].uri === item.uri) {
+    for (let i = 0; i < this.state.selectedImages.length; i++) {
+      if (item.uri.indexOf(this.state.selectedImages[i].uri) !== -1) {
         isSelected = true;
         break;
       }
     }
     let cellStyles = this.state.cellStyles;
-    let lastItemInRow = (rowColumn % this.props.imagesPerRow) === this.props.imagesPerRow -1;
+    let lastItemInRow = (rowColumn % this.props.imagesPerRow) === this.props.imagesPerRow - 1;
     return (
       <TouchableOpacity
         activeOpacity={1.0}
         key={item.uri}
         style={[cellStyles.cellMargin, {
-          paddingRight : lastItemInRow ? 0 : this.props.imageMargin
+          paddingRight: lastItemInRow ? 0 : this.props.imageMargin
         }]}
         onPress={() => this._selectImage(item, rowIndex, rowData)}>
         <Image source={item.image} style={cellStyles.imageSize}>
@@ -344,48 +240,13 @@ class CameraRollPicker extends Component {
   }
 
   _onEndReached() {
-    if (!this.state.noMore) {
-      this.fetch();
+    if (this.albumAssetService) {
+      this.albumAssetService.requestAssets();
     }
   }
 
   _selectImage(image, rowIndex, rowData) {
-    var {maximum, imagesPerRow, onSelectedImagesChanged} = this.props;
-
-    var selected = this.state.selected,
-      index = this._arrayObjectIndexOf(selected, 'uri', image.uri);
-
-    if (index >= 0 && !this.props.replaceSelection) {
-      selected.splice(index, 1);
-    } else {
-      if (selected.length < maximum) {
-        selected.push(image);
-        image.selected = true;
-      } else if (this.props.replaceSelection) {
-        const itemToRemove = selected[0];
-        selected.splice(0, 1);
-        for (var i = 0; i < this.state.dataSource.length; i++) {
-          const row = this.state.dataSource[i];
-          let rowFound = false;
-          for (var j = 0; j < row.rowData.length; j++) {
-            const item = row.rowData[j];
-            if (item === itemToRemove) {
-              this.markRowForRerender(i);
-              rowFound = true;
-              break;
-            }
-          }
-          if (rowFound) {
-            break;
-          }
-        }
-        this._selectImage(image, rowIndex, rowData);
-      }
-    }
-    this.markRowForRerender(rowIndex);
-    this.setState({selected: selected, shouldUpdate: this.guid()});
-    onSelectedImagesChanged(this.state.selected, image);
-    this.onScrollAdjustmentOnSelect(rowIndex);
+    cameraRollService.selectionRequested(this.albumAssetService, image);
   }
 
   onScrollAdjustmentOnSelect(rowIndex) {
@@ -409,7 +270,7 @@ class CameraRollPicker extends Component {
   }
 
   getImageWithMarginHeight() {
-    const {imageMargin} = this.props;
+    const { imageMargin } = this.props;
     return ((this._imageSize) + imageMargin);
   }
 
@@ -431,17 +292,6 @@ class CameraRollPicker extends Component {
       });
     }
   }
-
-  markRowForRerender(rowIndex) {
-    this.state.dataSource[rowIndex].rowData = [...this.state.dataSource[rowIndex].rowData];
-  }
-
-  _arrayObjectIndexOf(array, property, value) {
-    return array.map((o) => {
-      return o[property];
-    }).indexOf(value);
-  }
-
 }
 
 const styles = StyleSheet.create({
@@ -466,8 +316,8 @@ const styles = StyleSheet.create({
   selectedImage: {
     backgroundColor: 'rgba(255, 255, 255, 0.65)'
   },
-  activityIndicator : {
-    marginTop : 20
+  activityIndicator: {
+    marginTop: 20
   }
 })
 

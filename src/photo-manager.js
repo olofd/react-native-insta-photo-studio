@@ -22,7 +22,8 @@ import CropperView from './components/cropper-view';
 import Swiper from './components/swiper';
 import clamp from 'clamp';
 import Unauthorized from './components/unauthorized';
-
+import I18n from 'react-native-i18n';
+//import mediaStore from '../services/mediaStore';
 const SCROLLVIEW_REF = "SCROLLVIEW_REF";
 
 export default class PhotoManager extends Component {
@@ -31,9 +32,7 @@ export default class PhotoManager extends Component {
     finnishCropperAnimationDuration: 200,
     topBarHeight: 45,
     footerHeight: 45,
-    window: Dimensions.get('window'),
-    libraryDisplayName: 'Library',
-    photoDisplayName: 'Photo'
+    window: Dimensions.get('window')
   };
 
   constructor(props) {
@@ -71,11 +70,11 @@ export default class PhotoManager extends Component {
     switch (action) {
       case 'library':
         headerHasNextButton = this.state.currentLibraryImage;
-        headerTitle = this.props.libraryDisplayName;
+        headerTitle = I18n.t('library');
         break;
       case 'photo':
         headerHasNextButton = false;
-        headerTitle = this.props.photoDisplayName;
+        headerTitle = I18n.t('photo');
         break;
       default:
     }
@@ -136,7 +135,7 @@ export default class PhotoManager extends Component {
           : 0,
         duration: this.props.finnishCropperAnimationDuration,
         easing: Easing.inOut(Easing.ease),
-        //  useNativeDriver : true
+        //useNativeDriver : true
       }).start((e) => {
         if (e.finished) {
           this.startValue = finnishRetracted
@@ -327,7 +326,6 @@ export default class PhotoManager extends Component {
     );
   }
   _render() {
-    console.log('RENDER OUTER');
     if (!this.props.currentAlbum) {
       return null;
     }
@@ -385,8 +383,6 @@ export default class PhotoManager extends Component {
         </Swiper>
         {this._renderHeader(animationStyle)}
         <Footer
-          libraryDisplayName={this.props.libraryDisplayName}
-          photoDisplayName={this.props.photoDisplayName}
           onPress={this.onFooterPress.bind(this)}
           style={styles.footer}
           styles={this.props.styles}

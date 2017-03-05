@@ -1,21 +1,69 @@
-import {CameraRoll, Linking} from 'react-native';
+import {
+  CameraRoll,
+  Linking,
+  Dimensions
+} from 'react-native';
 import RNPhotosFramework from '../../react-native-photos-framework';
 import EventEmitter from '../../event-emitter';
-
+import AlbumService from './album-service';
+import AlbumAssetsService from './asset-loader/album-asset-service';
+import MediaStore from './media-store';
 class CameraRollService extends EventEmitter {
 
   constructor() {
-    super(); 
+    super();
+    this.albumAssetServices = [];
+    this.albumService = new AlbumService(this);
+    this.mediaStore = new MediaStore(this, 2, Dimensions.get('window'));
+    this.setupAlbumAssetService();
   }
 
-  async saveTmpImage(tmpImage) {
-    return RNPhotosFramework.createImageAsset({
-      uri : tmpImage.path
-    });
+  selectionRequested(albumAssetService, asset) {
+    this.mediaStore.selectionRequested(albumAssetService, asset);
+  }
+
+  setCurrentAlbum(album) {
+    return this.albumService.setCurrentAlbum(album);
+  }
+
+  fetchAlbums() {
+    return this.albumService.fetchAlbums();
   }
 
   openSettings() {
     Linking.openURL('app-settings:');
+  }
+
+  setupAlbumAssetService() {
+    this.onCurrentAlbumChanged((currentAlbum) => {
+      let albumAssetService = this.albumAssetServices.find(assetService => assetService.album.localIdentifier === currentAlbum.localIdentifier);
+      if (albumAssetService === undefined) {
+        albumAssetService = new AlbumAssetsService(this, currentAlbum);
+        this.albumAssetServices.push(albumAssetService);
+      }
+      if (albumAssetService !== this.currentAlbumAssetService) {
+        this.currentAlbumAssetService = albumAssetService;
+        this.emit('albumAssetServiceChanged', this.currentAlbumAssetService);
+      }
+    });
+  }
+
+  onAlbumAssetServiceChanged(cb, initalCallback) {
+    if (initalCallback && this.currentAlbumAssetService) {
+      cb && cb(this.currentAlbumAssetService);
+    }
+    this.addListener('albumAssetServiceChanged', cb);
+    return () => this.removeListener('albumAssetServiceChanged', cb);
+  }
+
+  onSelectionChanged(cb) {
+    this.addListener('onSelectionChanged', cb);
+    return () => this.removeListener('onSelectionChanged', cb);
+  }
+
+  onListSelectionChanged(cb) {
+    this.addListener('onListSelectionChanged', cb);
+    return () => this.removeListener('onListSelectionChanged', cb);
   }
 
   onAuthorizationChanged(cb) {
@@ -40,70 +88,6 @@ class CameraRollService extends EventEmitter {
       this.isAuthorized = authStatus.isAuthorized;
     }
     return authStatus;
-  }
-
-  async fetchAlbums() {
-    await this.fetchCurrentAlbums();
-    await this.fetchCurrentAlbum();
-  }
-
-  async fetchCurrentAlbums() {
-    const albums = await this._getAlbums();
-    return this.setCurrentAlbums(albums);
-  }
-
-  setCurrentAlbums(albums) {
-    if (albums !== this.currentAlbums) {
-      this.currentAlbums = albums;
-      this.emit('onCurrentAlbumsChanged', albums);
-    }
-    return this.currentAlbums;
-  }
-
-  async fetchCurrentAlbum() {
-    const allAlbum = await this.getAllPhotosAlbum();
-    if (!allAlbum) {
-      console.log('Could not find default album');
-    }
-    return this.setCurrentAlbum(allAlbum);
-  }
-
-  setCurrentAlbum(album) {
-    if (album !== this.currentAlbum) {
-      this.currentAlbum = album;
-      this.emit('onCurrentAlbumChanged', album);
-    }
-    return this.currentAlbum;
-  }
-
-  filterAlbums(queryResult) {
-    const smartAlbumExludeList = ['smartAlbumVideos', 'smartAlbumSlomoVideos', 'smartAlbumTimelapses'];
-    return queryResult.instagramAppAlbumSort().filter(album => {
-      const notExludedSubType = (smartAlbumExludeList.indexOf(album.subType) === -1);
-      return notExludedSubType && album.assetCount > 0;
-    });
-  }
-
-  async _getAlbums() {
-    return await RNPhotosFramework.getAlbumsCommon({
-      trackInsertsAndDeletes : true,
-      trackChanges : true,
-      assetCount: 'exact',
-      includeMetaData: false,
-      previewAssets: 2
-    }, true).then((queryResult) => {
-      queryResult.onChange((changeDetails, update, unsubscribe) => {
-        console.log('QueryResult Changed', changeDetails);
-        const newQueryResult = update();
-        this.setCurrentAlbums(this.filterAlbums(newQueryResult));
-      });
-
-      return this.filterAlbums(queryResult);
-    });
-  }
-
-  async getAllPhotosAlbum() {
-    return this.currentAlbums.find(album => album.type === 'smartAlbum' && album.subType === 'smartAlbumUserLibrary');
   }
 }
 

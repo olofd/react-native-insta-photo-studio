@@ -14,6 +14,7 @@ import ImageCopperView from './image-cropper-view';
 import BlockView from 'react-native-scroll-block-view';
 import {BlurView} from 'react-native-blur';
 import {AnimatedCircularProgress} from '../../react-native-circular-progress';
+import ToolBar from './tool-bar';
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 const loadingViewScale = {
@@ -199,6 +200,13 @@ export default class CropperViewContainer extends Component {
         {this.renderLoadingView(widthHeightStyle)}
       </BlockView>
     );
+  }
+/*
+        {this.renderToolbar()}
+
+*/
+  renderToolbar() {
+    return (<ToolBar></ToolBar>);
   }
 
   renderLoadingView(widthHeightStyle) {

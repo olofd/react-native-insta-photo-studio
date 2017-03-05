@@ -23,20 +23,23 @@
   "dependencies": {
     "clamp": "^1.0.1",
     "debounce": "^1.0.0",
+    "deepmerge": "^1.3.2",
     "gl-react": "^2.2.9",
     "gl-react-blur": "~1.3.0",
     "gl-react-color-matrix": "~1.1.0",
     "gl-react-contrast-saturation-brightness": "~1.1.0",
     "gl-react-hue-rotate": "~1.1.0",
     "gl-react-image": "0.0.2",
-    "gl-react-native": "^2.40.2",
+    "gl-react-native": "^2.42.0",
     "gl-react-negative": "~1.1.0",
+    "promise-queue": "^2.2.3",
     "react-native-blur": "^2.0.0",
     "react-native-camera": "git+https://github.com/lwansbrough/react-native-camera.git",
     "react-native-circular-progress": "0.0.8",
+    "react-native-i18n": "^1.0.0",
     "react-native-image-resizer": "0.1.0",
-    "react-native-vector-icons": "^4.0.0",
-    "react-native-scroll-block-view" : "1.0.0"
+    "react-native-scroll-block-view": "1.0.0",
+    "react-native-vector-icons": "^4.0.0"
   },
   "scripts": {
     "update": "git add . && git commit -m \"Updated\" && npm version patch && git push --tags && git push origin master && npm publish",
