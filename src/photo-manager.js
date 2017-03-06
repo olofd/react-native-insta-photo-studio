@@ -23,6 +23,7 @@ import Swiper from './components/swiper';
 import clamp from 'clamp';
 import Unauthorized from './components/unauthorized';
 import I18n from 'react-native-i18n';
+import cameraRollService from './services/camera-roll-service';
 //import mediaStore from '../services/mediaStore';
 const SCROLLVIEW_REF = "SCROLLVIEW_REF";
 
@@ -51,10 +52,23 @@ export default class PhotoManager extends Component {
       swiperIndexHasChangedAtSomePoint: false
     };
     this.currentSwiperIndex = 0;
+    this.listeners = [];
   }
 
   componentWillMount() {
     this.updateHeader('library');
+    this.listeners.push(cameraRollService.onSelectionChanged((selectedImages, changedImages, newSelection) => {
+      this.setState({
+        currentLibraryImage: newSelection
+      });
+      if (this.isRetracted()) {
+        this.finnishAnimation(false);
+      }
+    }));
+  }
+
+  componentWillUnmount() {
+    this.listeners.forEach(cb => cb());
   }
 
   onFooterPress(action) {
@@ -82,7 +96,6 @@ export default class PhotoManager extends Component {
   }
 
   onPhotoTaken(photo) {
-
     this.setState({
       currentCameraImage: photo
     });
@@ -159,13 +172,6 @@ export default class PhotoManager extends Component {
     this.finnishAnimation(this.isRetracted());
   }
 
-  onSelectedImagesChanged(selectedImages, image) {
-    this.setState({ currentLibraryImage: image });
-    if (this.isRetracted()) {
-      this.finnishAnimation(false);
-    }
-  }
-
   onSelectedPageChanged(newPageIndex, lastPageIndex) {
     if (newPageIndex !== this.state.currentSwiperIndex) {
       this.setState({ currentSwiperIndex: newPageIndex, swiperIndexHasChangedAtSomePoint: true });
@@ -223,7 +229,7 @@ export default class PhotoManager extends Component {
       height: this.state.smallCameraRollContainer
         ? (mainAreaHeight - this.props.window.width)
         : mainAreaHeight,
-      width : this.props.window.width
+      width: this.props.window.width
     };
 
     return (
@@ -231,7 +237,6 @@ export default class PhotoManager extends Component {
         currentAlbum={this.props.currentAlbum}
         scrollViewStyle={scrollViewStyle}
         scrollToRowOnSelection={this.state.isRetracted}
-        onSelectedImagesChanged={this.onSelectedImagesChanged.bind(this)}
         replaceSelection={true}
         initalSelectedImageIndex={0}
         top={this.state.isRetracted

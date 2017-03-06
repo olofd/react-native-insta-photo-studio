@@ -33,9 +33,9 @@ export default class ColumnSplitter {
             const row = dataSource[i];
             for (var j = 0; j < row.rowData.length; j++) {
                 const item = row.rowData[j];
-                const uriFound = imageUris.find(uri => item.uri.indexOf(uri) !== -1);
+                const uriFound = imageUris.find(uri => item.uri === uri);
                 if (newSelectionRow === -1) {
-                    const selectionFoundInRow = item.uri.indexOf(newSelection.uri) !== -1;
+                    const selectionFoundInRow = item.uri === newSelection.uri;
                     if(selectionFoundInRow) {
                         newSelectionRow = i;
                     }

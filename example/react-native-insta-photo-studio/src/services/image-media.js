@@ -1,11 +1,32 @@
-import {Image} from 'react-native';
-export default class ImageMedia {
+import EventEmitter from '../../event-emitter';
+import {
+    Image
+} from 'react-native';
+export default class ImageMedia extends EventEmitter {
+
+    get image() {
+        return this.imageInfo.image;
+    }
+
+    get uri() {
+        return this.imageInfo.image.uri;
+    }
+
+    onRequestImageInfo(cb) {
+        if(this.imageDataLoaded) {
+            cb && cb(this.imageInfo);
+            return () => {};
+        }
+        this.addListener('onRequestImageInfo', cb);
+        return () => this.removeListener('onRequestImageInfo', cb);
+    }
 
     updateLastScrollEvent(scrollEvent) {
         this.lastScrollEvent = scrollEvent;
     }
 
     initWithAsset(image, magnification, window, cb) {
+        console.log('INITING IMAGE');
         this.getImage(image, (image, width, height) => {
             this.imageInfo = {
                 window,
@@ -23,13 +44,13 @@ export default class ImageMedia {
             this.maximumZoomLevel = maximumZoomLevel < 1 ? 1 : maximumZoomLevel;
             this.imageInfo.previewSurface = this.getMainPreviewImageDiemensions(this.imageInfo);
             this.imageInfo.zoomRect = this.getZoomRect(this.imageInfo);
+            this.imageDataLoaded = true;
+            this.emit('onRequestImageInfo', this.imageInfo);
             cb && cb(this.imageInfo);
         });
     }
 
     getImage(image, cb) {
-        this.image = image;
-        this.uri = image.uri;
         if (image.width !== undefined && image.height !== undefined) {
             let opportunisticImage = image;
             if (image.withOptions) {

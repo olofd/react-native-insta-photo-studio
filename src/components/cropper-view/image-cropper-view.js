@@ -19,12 +19,10 @@ import {
   swipeUpOrDownDetector
 } from '../../pan-delegator/scroll-view-pan-delegator';
 const performanceNow = global.nativePerformanceNow || fbjsPerformanceNow;
-import CropperService from '../../services/image-media';
 
 export default class ImageCropperView extends Component {
   constructor(props) {
     super(props);
-    this.cropperService = new CropperService();
     this.lastPress = 0;
     this.zommToImageHasBeenRun = false;
     this.state = {
@@ -35,6 +33,7 @@ export default class ImageCropperView extends Component {
     // rerenering in react:
     this.viewPortZoomIsZoomedOut = false;
     this.setupScrollViewPanDelegator(props);
+    this.listeners = [];
   }
 
   setupScrollViewPanDelegator(props) {
@@ -57,6 +56,10 @@ export default class ImageCropperView extends Component {
     }
   }
 
+  componentWillUnmount() {
+    this.listeners.forEach(cb => cb());
+  }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.image !== this.props.image) {
       this.zommToImageHasBeenRun = false;
@@ -70,16 +73,18 @@ export default class ImageCropperView extends Component {
 
   onScroll(e) {
     this.scrollViewPanDelegatorBound.onScroll(e);
-    this.cropperService.updateLastScrollEvent(e.nativeEvent);
+    if(this.props.image) {
+      this.props.image.updateLastScrollEvent(e.nativeEvent);
+    }
   }
 
   loadImage(image) {
     if (image) {
-      this.cropperService.initWithImage(image, this.props.magnification, this.props.window, (imageInfo) => {
+      this.listeners.push(image.onRequestImageInfo((imageInfo) => {
         this.setState({
           imageInfo: imageInfo
         });
-      });
+      }));
     }
   }
 

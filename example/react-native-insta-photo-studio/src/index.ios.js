@@ -4,6 +4,7 @@ import {View, StyleSheet, Animated, Dimensions, Easing} from 'react-native';
 import photoFrameworkService from './services/camera-roll-service';
 import AlbumList from './components/album-list';
 import I18N from './I18n';
+
 export default class InstaPhotoStudio extends Component {
 
   static defaultProps = {

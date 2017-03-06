@@ -228,6 +228,7 @@ class CameraRollPicker extends Component {
   }
 
   _renderRow(rowData, unknown, rowIndex) {
+    console.log('Render Row');
     if (rowData === undefined) {
       return null;
     }
