@@ -11,7 +11,7 @@ export default class MediaStore {
         this.markedForExportMedia = [];
 
         this.currentLoadedMedia = [];
-        this.multiExportMode = true;
+        this.multiExportMode = false;
         this.setupAutomaticSelection();
         this.setupMarkForExportMode();
     }

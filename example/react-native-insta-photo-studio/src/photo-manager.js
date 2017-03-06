@@ -26,7 +26,7 @@ import I18n from 'react-native-i18n';
 import cameraRollService from './services/camera-roll-service';
 //import mediaStore from '../services/mediaStore';
 const SCROLLVIEW_REF = "SCROLLVIEW_REF";
-
+const imageMargin = 2;
 export default class PhotoManager extends Component {
 
   static defaultProps = {
@@ -197,7 +197,7 @@ export default class PhotoManager extends Component {
 
   _renderCropper() {
     const cropperView = {
-      height: this.props.window.width
+      height: this.props.window.width + 2
     };
     return (<CropperView
       anim={this.state.anim}
@@ -216,9 +216,8 @@ export default class PhotoManager extends Component {
     if (!this.props.currentAlbum) {
       return null;
     }
-    const imageMargin = 2;
     const cameraRollPickerView = {
-      marginTop: this.props.window.width,
+      marginTop: this.props.window.width + imageMargin,
       paddingBottom: this.props.footerHeight + this.props.topBarHeight
     };
 
@@ -330,35 +329,7 @@ export default class PhotoManager extends Component {
       </Animated.View>
     );
   }
-  _render() {
-    if (!this.props.currentAlbum) {
-      return null;
-    }
-    const animationStyle = {
-      transform: [
-        {
-          translateY: this.state.anim
-        }
-      ]
-    };
-    return (
-      <CameraRollPicker
-        currentAlbum={this.props.currentAlbum}
-        scrollToRowOnSelection={this.state.isRetracted}
-        onSelectedImagesChanged={this.onSelectedImagesChanged.bind(this)}
-        replaceSelection={true}
-        initalSelectedImageIndex={0}
-        top={0}
-        willStartAnimating={this.willStartAnimating.bind(this)}
-        finnishAnimation={this.finnishAnimation.bind(this)}
-        getAnimationValue={this.getAnimationValue.bind(this)}
-        animate={this.animate.bind(this)}
-        resetAnimation={this.resetAnimation.bind(this)}
-        maximum={1}
-        window={this.props.window}
-        imageMargin={2}
-        imagesPerRow={4}></CameraRollPicker>);
-  }
+
   render() {
     const animationStyle = {
       transform: [

@@ -36,14 +36,14 @@ export default class ColumnSplitter {
             for (var j = 0; j < row.rowData.length; j++) {
                 const item = row.rowData[j];
                 uriFound = imageUris.find(uri => item.uri === uri);
-                if (uriFound) {
-                    break;
-                }
                 if (newSelectionRow === -1) {
                     const selectionFoundInRow = item.uri === newSelection.uri;
                     if (selectionFoundInRow) {
                         newSelectionRow = i;
                     }
+                }
+                if (uriFound) {
+                    break;
                 }
             }
 
@@ -59,5 +59,5 @@ export default class ColumnSplitter {
         return newSelectionRow;
     }
 
-    markRowForRerender(dataSource, rowIndex) {}
+    markRowForRerender(dataSource, rowIndex) { }
 }

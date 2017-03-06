@@ -202,8 +202,6 @@ class CameraRollPicker extends Component {
       <View
         style={[
           styles.wrapper, {
-            padding: imageMargin,
-            paddingRight: 0,
             width: this.props.window.width
           },
           this.props.style
@@ -232,7 +230,8 @@ class CameraRollPicker extends Component {
         activeOpacity={1.0}
         key={item.uri}
         style={[cellStyles.cellMargin, {
-          paddingRight: lastItemInRow ? 0 : this.props.imageMargin
+          paddingRight: lastItemInRow ? 0 : this.props.imageMargin,
+          paddingTop : rowIndex === 0 ? 0 : this.props.imageMargin
         }]}
         onPress={() => this._selectImage(item, rowIndex, rowData)}>
         <Image source={item.image} style={cellStyles.imageSize}>

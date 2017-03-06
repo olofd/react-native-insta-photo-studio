@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "promise-queue": "^2.2.3",
-    "react": "~15.4.2",
-    "react-native": "0.42.0",
+    "react": "~16.0.0-alpha.3",
+    "react-native": "0.43.0-rc.1",
     "react-native-i18n": "^1.0.0",
     "react-native-insta-photo-studio": "git://github.com/olofd/react-native-insta-photo-studio.git",
     "react-native-scroll-block-view": "1.0.0"
