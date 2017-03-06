@@ -194,6 +194,7 @@ export default class CropperViewContainer extends Component {
           scrollEnabled={true}>
           {this.renderCroppers()}
         </ScrollView>
+                {this.renderToolbar()}
         <Animated.View
           pointerEvents={INACTIVE_POINTER}
           style={[styles.drawerContainer, styles.absoluteStyle, drawerContainer]}></Animated.View>
@@ -206,7 +207,7 @@ export default class CropperViewContainer extends Component {
 
 */
   renderToolbar() {
-    return (<ToolBar></ToolBar>);
+    return (<ToolBar image={this.props.image}></ToolBar>);
   }
 
   renderLoadingView(widthHeightStyle) {

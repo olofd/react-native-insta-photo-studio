@@ -29,25 +29,29 @@ export default class ColumnSplitter {
 
     static markRowsForRerender(dataSource, imageUris, newSelection) {
         let newSelectionRow = -1;
+        let rowsToRerender = [];
         for (var i = 0; i < dataSource.length; i++) {
             const row = dataSource[i];
+            let uriFound = '';
             for (var j = 0; j < row.rowData.length; j++) {
                 const item = row.rowData[j];
-                const uriFound = imageUris.find(uri => item.uri === uri);
+                uriFound = imageUris.find(uri => item.uri === uri);
+                if (uriFound) {
+                    break;
+                }
                 if (newSelectionRow === -1) {
                     const selectionFoundInRow = item.uri === newSelection.uri;
-                    if(selectionFoundInRow) {
+                    if (selectionFoundInRow) {
                         newSelectionRow = i;
                     }
                 }
-                if (uriFound) {
-                    dataSource[i].rowData = [...dataSource[i].rowData];
-                    imageUris = imageUris.filter(uri => uri !== uriFound);
-                    if (imageUris.length === 0) {
-                        break;
-                    }
-                }
             }
+
+            if (uriFound) {
+                imageUris = imageUris.filter(uri => uri !== uriFound);
+                dataSource[i].rowData = [...dataSource[i].rowData];
+            }
+
             if (imageUris.length === 0) {
                 break;
             }

@@ -10,7 +10,6 @@ import {
   ImageEditor
 } from 'react-native';
 import OverlayGrid from '../overlay-grid';
-import Icon from 'react-native-vector-icons/Ionicons';
 import fbjsPerformanceNow from 'fbjs/lib/performanceNow';
 import {
   ScrollViewPanDelegator,
@@ -57,11 +56,16 @@ export default class ImageCropperView extends Component {
   }
 
   componentWillUnmount() {
+    this.unregisterFromImage();
+  }
+
+  unregisterFromImage() {
     this.listeners.forEach(cb => cb());
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.image !== this.props.image) {
+      this.unregisterFromImage();
       this.zommToImageHasBeenRun = false;
       this.viewPortZoomIsZoomedOut = false;
       this.setState({ imageReady: false });
@@ -73,7 +77,7 @@ export default class ImageCropperView extends Component {
 
   onScroll(e) {
     this.scrollViewPanDelegatorBound.onScroll(e);
-    if(this.props.image) {
+    if (this.props.image) {
       this.props.image.updateLastScrollEvent(e.nativeEvent);
     }
   }
@@ -84,6 +88,10 @@ export default class ImageCropperView extends Component {
         this.setState({
           imageInfo: imageInfo
         });
+      }));
+
+      this.listeners.push(image.onToogleViewportZoom(() => {
+        this.toogleViewportZoom();
       }));
     }
   }
@@ -115,10 +123,6 @@ export default class ImageCropperView extends Component {
       this.zoomToImage(undefined, true);
     }
     this.viewPortZoomIsZoomedOut = !this.viewPortZoomIsZoomedOut;
-  }
-
-  toggleSelectMultiple() {
-
   }
 
   renderMainImage(imageInfo) {
@@ -247,61 +251,5 @@ const styles = StyleSheet.create({
   },
   firstPreviewItem: {
     marginLeft: 5
-  },
-  toolBarContainer: {
-    flex: 1,
-    position: 'absolute',
-    bottom: 12,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    justifyContent: 'flex-end'
-  },
-  leftToolbarColumn: {
-    flex: 1,
-    alignItems: 'flex-start'
-  },
-  rightToolbarColumn: {
-    flex: 1,
-    alignItems: 'flex-end'
-  },
-  zoomButtonContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 30,
-    width: 30,
-    backgroundColor: 'rgba(21, 21, 21, 0.6)',
-    borderRadius: 15,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
-    borderWidth: 1 / PixelRatio.get()
-  },
-  zoomButtonText: {
-    color: 'white',
-    fontSize: 13
-  },
-  zoomButtonRotationView: {
-    transform: [
-      {
-        rotate: '45deg'
-      }
-    ]
-  },
-  multipleButtonContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 30,
-    width: 30,
-    backgroundColor: 'rgba(21, 21, 21, 0.6)',
-    borderRadius: 15,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
-    borderWidth: 1 / PixelRatio.get(),
-  },
-  multipleButtonView: {
-
-  },
-  multipleButtonText: {
-    color: 'white',
-    fontSize: 18
   }
 });

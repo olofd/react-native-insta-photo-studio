@@ -57,7 +57,7 @@ export default class PhotoManager extends Component {
 
   componentWillMount() {
     this.updateHeader('library');
-    this.listeners.push(cameraRollService.onSelectionChanged((selectedImages, changedImages, newSelection) => {
+    this.listeners.push(cameraRollService.onSelectionChanged((newSelection) => {
       this.setState({
         currentLibraryImage: newSelection
       });

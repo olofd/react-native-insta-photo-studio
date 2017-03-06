@@ -13,7 +13,8 @@ import {
   InteractionManager,
   ScrollView,
   PanResponder,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  PixelRatio
 } from 'react-native';
 import WindowedListView from 'react-native/Libraries/Experimental/WindowedListView';
 import debounce from 'debounce';
@@ -22,12 +23,13 @@ import cameraRollService from '../../services/camera-roll-service';
 class CameraRollPicker extends Component {
   constructor(props) {
     super(props);
-    this.newAlbumAssetService = false;
     this.state = {
       noMore: false,
       shouldUpdate: this.guid(),
       bounces: true,
-      selectedImages: []
+      selectedImage: null,
+      markedForExport: [],
+      multiExportModeEnabled: true
     };
     this._onEndReachedDebounce = debounce(this._onEndReached, 200).bind(this);
     this.setupScrollViewPanDelegator(props);
@@ -37,6 +39,7 @@ class CameraRollPicker extends Component {
     };
     this.startIndex = 0;
     this.albumAssetServiceListeners = [];
+    this.cameraRollServiceListeners = [];
   }
 
   setupScrollViewPanDelegator(props) {
@@ -77,9 +80,15 @@ class CameraRollPicker extends Component {
       })
     });
 
-    this.cameraRollServiceListener = cameraRollService.onAlbumAssetServiceChanged((albumAssetService) => {
+    this.cameraRollServiceListeners.push(cameraRollService.onToogleMultiExportMode((multiExportModeEnabled) => {
+      this.markAllRowsForRerender();
+      this.setState({
+        multiExportModeEnabled: multiExportModeEnabled,
+        shouldUpdate: this.guid()
+      });
+    }, true));
+    this.cameraRollServiceListeners.push(cameraRollService.onAlbumAssetServiceChanged((albumAssetService) => {
       this.scrollToRow(0, undefined, false);
-      this.newAlbumAssetService = true;
       this.unregisterFromAlbumAssetService();
       this.albumAssetService = albumAssetService;
       this.albumAssetServiceListeners.push(this.albumAssetService.onNewAssetsRecived((columnsSplittedData, newData) => {
@@ -87,39 +96,42 @@ class CameraRollPicker extends Component {
           dataSource: columnsSplittedData,
           shouldUpdate: this.guid()
         });
-        if (this.newAlbumAssetService && newData.length) {
-          this.newAlbumAssetService = false;
-          this.setInitalSelection(newData);
-        }
       }));
 
-      this.albumAssetServiceListeners.push(this.albumAssetService.onSelectionChanged((selectedImages, rowIndexToScrollTo, columnsSplittedData) => {
+      this.albumAssetServiceListeners.push(this.albumAssetService.onSelectionChanged((selectedImage, rowIndexToScrollTo, columnsSplittedData) => {
         this.setState({
-          selectedImages: selectedImages,
+          selectedImage: selectedImage,
           dataSource: columnsSplittedData,
           shouldUpdate: this.guid()
         });
         if (rowIndexToScrollTo !== -1) {
-          console.log(rowIndexToScrollTo);
           this.onScrollAdjustmentOnSelect(rowIndexToScrollTo);
         }
       }));
-    }, true);
+
+      this.albumAssetServiceListeners.push(this.albumAssetService.onMarkedForExportMediaChanged((markedForExport, columnsSplittedData) => {
+        this.setState({
+          markedForExport: markedForExport,
+          columnsSplittedData: columnsSplittedData,
+          shouldUpdate: this.guid()
+        });
+      }));
+
+    }, true));
   }
 
-  setInitalSelection(assets) {
-    if (this.props.initalSelectedImageIndex !== undefined) {
-      const image = assets[this.props.initalSelectedImageIndex];
-      if (image) {
-        cameraRollService.selectionRequested(this.albumAssetService, image);
-      }
+  markAllRowsForRerender() {
+    const { dataSource } = this.state;
+    if (!dataSource)
+      return;
+    for (var i = 0; i < dataSource.length; i++) {
+      const row = dataSource[i];
+      dataSource[i].rowData = [...dataSource[i].rowData];
     }
   }
-  
+
   componentWillUnMount() {
-    if (this.cameraRollServiceListener) {
-      this.cameraRollServiceListener();
-    }
+    this.cameraRollServiceListeners.forEach(listener => listener());
     this.unregisterFromAlbumAssetService();
   }
 
@@ -184,6 +196,7 @@ class CameraRollPicker extends Component {
   }
 
   render() {
+    console.log('RENDER SCROLLVIEW');
     const { imageMargin, backgroundColor } = this.props;
     return (
       <View
@@ -201,13 +214,17 @@ class CameraRollPicker extends Component {
   }
 
   _renderImage(item, rowIndex, rowColumn, rowData) {
-    let isSelected = false;
-    for (let i = 0; i < this.state.selectedImages.length; i++) {
-      if (item.uri.indexOf(this.state.selectedImages[i].uri) !== -1) {
-        isSelected = true;
+    let isSelected = !!this.state.selectedImage && this.state.selectedImage.uri === item.uri;
+    let markedNumber = 0;
+    let markedForExport = false;
+    for (let i = 0; i < this.state.markedForExport.length; i++) {
+      if (item.uri === this.state.markedForExport[i].uri) {
+        markedForExport = true;
+        markedNumber = i + 1;
         break;
       }
     }
+
     let cellStyles = this.state.cellStyles;
     let lastItemInRow = (rowColumn % this.props.imagesPerRow) === this.props.imagesPerRow - 1;
     return (
@@ -222,13 +239,17 @@ class CameraRollPicker extends Component {
           {isSelected
             ? <View style={[cellStyles.imageSize, styles.selectedImage]}></View>
             : null}
+          {this.state.multiExportModeEnabled ?
+            <View style={[styles.markedForExportCircle, markedForExport ? styles.markedForExportCircleSelected : undefined]}>
+              {markedForExport ? <Text style={styles.markedForExportCircleText}>{markedNumber}</Text> : undefined}
+            </View>
+            : null}
         </Image>
       </TouchableOpacity>
     );
   }
 
   _renderRow(rowData, unknown, rowIndex) {
-    console.log('Render Row');
     if (rowData === undefined) {
       return null;
     }
@@ -319,6 +340,27 @@ const styles = StyleSheet.create({
   },
   activityIndicator: {
     marginTop: 20
+  },
+  markedForExportCircle: {
+    position: 'absolute',
+    right: 5,
+    top: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 20,
+    width: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderRadius: 10,
+    borderColor: '#FFFFFF',
+    borderWidth: 1,
+  },
+  markedForExportCircleSelected: {
+    backgroundColor: '#4F98EA',
+    borderWidth: 0
+  },
+  markedForExportCircleText: {
+    fontSize: 11,
+    color: '#FFFFFF'
   }
 })
 

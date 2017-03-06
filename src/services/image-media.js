@@ -13,7 +13,7 @@ export default class ImageMedia extends EventEmitter {
     }
 
     onRequestImageInfo(cb) {
-        if(this.imageDataLoaded) {
+        if (this.imageDataLoaded) {
             cb && cb(this.imageInfo);
             return () => {};
         }
@@ -21,12 +21,21 @@ export default class ImageMedia extends EventEmitter {
         return () => this.removeListener('onRequestImageInfo', cb);
     }
 
+
+    toogleViewportZoom() {
+        this.emit('onToogleViewportZoom');
+    }
+
+    onToogleViewportZoom(cb) {
+        this.addListener('onToogleViewportZoom', cb);
+        return () => this.removeListener('onToogleViewportZoom', cb);
+    }
+
     updateLastScrollEvent(scrollEvent) {
         this.lastScrollEvent = scrollEvent;
     }
 
     initWithAsset(image, magnification, window, cb) {
-        console.log('INITING IMAGE');
         this.getImage(image, (image, width, height) => {
             this.imageInfo = {
                 window,

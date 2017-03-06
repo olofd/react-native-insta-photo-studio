@@ -19,15 +19,28 @@ export default class AlbumAssetService extends EventEmitter {
         this.columns = 4;
         this.allAssetsLoaded = false;
         this.queue = new Queue(1, Infinity);
+        this.markedForExportMedia = [];
         this.loadInitCycles();
         this.setupSelectionRerendering();
+        this.setupChangeHandling();
     }
 
     setupSelectionRerendering() {
-        this.eventEmitter.addListener('onSelectionChanged', (selectedImages, imagesToRerender, newSelection, albumAssetService) => {
+        this.eventEmitter.onMarkedForExportMediaChanged((markedForExportMedia, affectedImage, affectedMedia) => {
+            if (affectedMedia && affectedMedia.length) {
+                columnSplitter.markRowsForRerender(this.columnSplittedAssets, affectedMedia.map(media => media.uri), affectedImage);
+            }
+            this.markedForExportMedia = markedForExportMedia;
+            this.emit('onMarkedForExportMediaChanged', markedForExportMedia, this.columnSplittedAssets);
+        }, true);
+        this.eventEmitter.addListener('onSelectionChanged', (newSelection, oldSelection, albumAssetService) => {
             if (albumAssetService === this) {
-                const rowIndexToScrollTo = columnSplitter.markRowsForRerender(this.columnSplittedAssets, imagesToRerender.map(image => image.uri), newSelection);
-                this.emit('onSelectionChanged', selectedImages, rowIndexToScrollTo, this.columnSplittedAssets);
+                const updateImages = [newSelection.uri];
+                if (oldSelection) {
+                    updateImages.push(oldSelection.uri);
+                }
+                const rowIndexToScrollTo = columnSplitter.markRowsForRerender(this.columnSplittedAssets, updateImages, newSelection);
+                this.emit('onSelectionChanged', newSelection, rowIndexToScrollTo, this.columnSplittedAssets);
             }
         });
     }
@@ -64,7 +77,6 @@ export default class AlbumAssetService extends EventEmitter {
             startIndex: this.startIndex,
             endIndex: this.startIndex + fetchNumber
         };
-        console.log('Loading assets');
 
         return this.album.getAssets(fetchParams).then((data) => {
             this.allAssetsLoaded = data.includesLastAsset;
@@ -75,6 +87,10 @@ export default class AlbumAssetService extends EventEmitter {
         });
     }
 
+    emitAssetUpdate() {
+
+    }
+
     onNewAssetsRecived(cb) {
         if (this.assets.length) {
             cb(this.columnSplittedAssets, this.assets, this.assets);
@@ -83,43 +99,31 @@ export default class AlbumAssetService extends EventEmitter {
         return () => this.removeListener('onNewAssetsRecived', cb);
     }
 
+    onMarkedForExportMediaChanged(cb) {
+        if (this.markedForExportMedia.length) {
+            cb(this.markedForExportMedia, this.columnSplittedAssets);
+        }
+        this.addListener('onMarkedForExportMediaChanged', cb);
+        return () => this.removeListener('onMarkedForExportMediaChanged', cb);
+    }
+
     onSelectionChanged(cb) {
         this.addListener('onSelectionChanged', cb);
         return () => this.removeListener('onSelectionChanged', cb);
     }
 
-    setupChangeHandling(album) {
-        if (album) {
-            console.log('setup change tracking for', album.title);
-            this.albumChangeHandler = album.onChange((changeDetails, update) => {
-                const updatedImagesArray = update(this.state.images);
-                if (this.state.selected && this.state.selected.length) {
-                    const selectedImagesToRemove = [];
-                    const newSelectedImages = this.state.selected.filter((selected, index) => {
-                        return updatedImagesArray.some(asset => asset.localIdentifier === selected.localIdentifier);
-                    });
-
-                    if (!newSelectedImages.length) {
-                        if (updatedImagesArray.length) {
-                            const imageToSelect = updatedImagesArray[0];
-                            newSelectedImages.push(imageToSelect);
-                            this.props.onSelectedImagesChanged(newSelectedImages, undefined);
-                        } else {
-
-                        }
-                    }
-                    console.log('Album Change', changeDetails, album.title, newSelectedImages);
-
-                    this.setState({
-                        selected: newSelectedImages
-                    });
-                }
-                this.setState({
-                    images: updatedImagesArray,
-                    dataSource: this.appendToState([], updatedImagesArray, this.props.imagesPerRow),
-                    shouldUpdate: this.guid()
+    setupChangeHandling() {
+        this.albumChangeHandler = this.album.onChange((changeDetails, update) => {
+            if (changeDetails.hasIncrementalChanges) {
+                update(this.assets, (updatedAssetArray) => {
+                    this.assets = updatedAssetArray;
+                    this.columnSplittedAssets = columnSplitter.appendToState([], this.assets, this.columns);
+                    this.emit('onNewAssetsRecived', this.columnSplittedAssets, this.assets, this.assets);
+                }, {
+                    includeMetadata: false
                 });
-            });
-        }
+            }
+        });
     }
+
 }

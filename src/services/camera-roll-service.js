@@ -30,6 +30,10 @@ class CameraRollService extends EventEmitter {
     return this.albumService.fetchAlbums();
   }
 
+  toogleMultiExportMode() {
+    this.mediaStore.toogleMultiExportMode();
+  }
+
   openSettings() {
     Linking.openURL('app-settings:');
   }
@@ -79,6 +83,14 @@ class CameraRollService extends EventEmitter {
   onCurrentAlbumChanged(cb) {
     this.addListener('onCurrentAlbumChanged', cb);
     return () => this.removeListener('onCurrentAlbumChanged', cb);
+  }
+
+  onMarkedForExportMediaChanged(cb, initalCallback) {
+    return this.mediaStore.onMarkedForExportMediaChanged(cb, initalCallback);
+  }
+
+  onToogleMultiExportMode(cb, initalCallback) {
+    return this.mediaStore.onToogleMultiExportMode(cb, initalCallback);
   }
 
   async authorize() {
