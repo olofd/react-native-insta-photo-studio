@@ -94,6 +94,7 @@ export default class CropperViewContainer extends Component {
   }
 
   getNextPushIndex() {
+    console.log(this.props.numberOfCroppers);
     if (this.state.currentImageIndex < this.props.numberOfCroppers - 1) {
       if (this.state.images.length < this.props.numberOfCroppers) {
         return this.state.images.length;
@@ -157,6 +158,7 @@ export default class CropperViewContainer extends Component {
         pointerEvents={isActive
         ? ACTIVE_POINTER
         : INACTIVE_POINTER}
+        isActive={isActive}
         onProgress={this.onProgress.bind(this)}
         onLoad={this.onLoad.bind(this, imageObj, this.currentLoadingGuid)}
         onError={() => alert('error')}

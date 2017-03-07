@@ -35,15 +35,17 @@ export default class ColumnSplitter {
             let uriFound = '';
             for (var j = 0; j < row.rowData.length; j++) {
                 const item = row.rowData[j];
-                uriFound = imageUris.find(uri => item.uri === uri);
-                if (newSelectionRow === -1) {
-                    const selectionFoundInRow = item.uri === newSelection.uri;
-                    if (selectionFoundInRow) {
-                        newSelectionRow = i;
+                if (item) {
+                    uriFound = imageUris.find(uri => item.uri === uri);
+                    if (newSelectionRow === -1) {
+                        const selectionFoundInRow = item.uri === newSelection.uri;
+                        if (selectionFoundInRow) {
+                            newSelectionRow = i;
+                        }
                     }
-                }
-                if (uriFound) {
-                    break;
+                    if (uriFound) {
+                        break;
+                    }
                 }
             }
 

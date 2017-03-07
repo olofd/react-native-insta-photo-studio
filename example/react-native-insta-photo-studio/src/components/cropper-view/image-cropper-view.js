@@ -66,6 +66,8 @@ export default class ImageCropperView extends Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.image !== this.props.image) {
       this.unregisterFromImage();
+      this.zoomRectStartupValue = undefined;
+      this.userHasMovedImage = false;
       this.zommToImageHasBeenRun = false;
       this.viewPortZoomIsZoomedOut = false;
       this.setState({ imageReady: false });
@@ -79,6 +81,18 @@ export default class ImageCropperView extends Component {
     this.scrollViewPanDelegatorBound.onScroll(e);
     if (this.props.image) {
       this.props.image.updateLastScrollEvent(e.nativeEvent);
+    }
+
+    if (this.zommToImageHasBeenRun) {
+      const zoomRectValue = e.nativeEvent.contentOffset.y + e.nativeEvent.contentOffset.x + e.nativeEvent.zoomScale;
+      if (this.zoomRectStartupValue === undefined || zoomRectValue === this.zoomRectStartupValue) {
+        //Arrived at original react.
+        this.zoomRectStartupValue = zoomRectValue;
+        this.atOriginalZoomReact = true;
+      }
+      else if (zoomRectValue !== this.zoomRectStartupValue) {
+        this.atOriginalZoomReact = false;
+      }
     }
   }
 
@@ -98,17 +112,21 @@ export default class ImageCropperView extends Component {
 
   initalZoomToImage(cb) {
     if (!this.zommToImageHasBeenRun) {
-      return this.zoomToImage(cb);
+      return this.zoomToImage(cb, false, true);
     }
     cb && cb();
   }
 
-  zoomToImage(cb, animated) {
+  zoomToImage(cb, animated, startup) {
     this.zommToImageHasBeenRun = true;
-    const { zoomRect } = this.state.imageInfo;
-    this.zoomToRect(zoomRect.x, zoomRect.y, zoomRect.width, zoomRect.height, animated === true);
-    this.setState({ imageReady: true });
-    cb && cb();
+    const { originalZoomRect, startupZoomRect } = this.state.imageInfo.zoomRect;
+    const zoomRect = startup ? startupZoomRect : originalZoomRect;
+    setTimeout(() => {
+      this.zoomToRect(zoomRect.x, zoomRect.y, zoomRect.width, zoomRect.height, animated === true);
+      cb && cb();
+      this.setState({ imageReady: true });
+    }, 0);
+    this.atOriginalZoomReact = true;
   }
 
   zoomToRect(x, y, width, height, animated = false) {
@@ -116,13 +134,12 @@ export default class ImageCropperView extends Component {
   }
 
   toogleViewportZoom() {
-    if (!this.viewPortZoomIsZoomedOut) {
+    if (this.atOriginalZoomReact) {
       const { previewSurface } = this.state.imageInfo;
       this.zoomToRect(0, 0, previewSurface.width, previewSurface.height, true);
     } else {
       this.zoomToImage(undefined, true);
     }
-    this.viewPortZoomIsZoomedOut = !this.viewPortZoomIsZoomedOut;
   }
 
   renderMainImage(imageInfo) {
@@ -182,6 +199,7 @@ export default class ImageCropperView extends Component {
 
   renderMainImageScrollView() {
     if (!this.state.imageInfo) {
+      console.log('ACTIVE');
       return null;
     }
     const { previewSurface, window, minimumZoomLevel, maximumZoomLevel } = this.state.imageInfo;
@@ -190,9 +208,9 @@ export default class ImageCropperView extends Component {
     const scrollViewStyle = {
       height: window.width,
       width: window.width,
-      opacity: this.state.imageReady
+      /*display: this.state.imageReady
         ? 1
-        : 0
+        : 0*/
     };
     const contentContainerStyle = {
       height: height + 1,

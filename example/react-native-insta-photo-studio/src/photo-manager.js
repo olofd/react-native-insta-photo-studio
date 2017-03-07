@@ -233,6 +233,7 @@ export default class PhotoManager extends Component {
 
     return (
       <CameraRollPicker
+      numberOfCroppers={1}
         currentAlbum={this.props.currentAlbum}
         scrollViewStyle={scrollViewStyle}
         scrollToRowOnSelection={this.state.isRetracted}

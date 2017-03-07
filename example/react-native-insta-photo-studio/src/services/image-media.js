@@ -14,8 +14,9 @@ export default class ImageMedia extends EventEmitter {
 
     onRequestImageInfo(cb) {
         if (this.imageDataLoaded) {
+            this.imageInfo.zoomRect = this.getZoomRect(this.imageInfo);
             cb && cb(this.imageInfo);
-            return () => {};
+            return () => { };
         }
         this.addListener('onRequestImageInfo', cb);
         return () => this.removeListener('onRequestImageInfo', cb);
@@ -50,7 +51,7 @@ export default class ImageMedia extends EventEmitter {
             this.imageInfo.magnification = this.getMagnification(this.imageInfo, magnification);
             this.imageInfo.minimumZoomLevel = this.getMinimumZoomLevel(this.imageInfo);
             const maximumZoomLevel = this.imageInfo.minimumZoomLevel * 4;
-            this.maximumZoomLevel = maximumZoomLevel < 1 ? 1 : maximumZoomLevel;
+            this.imageInfo.maximumZoomLevel = maximumZoomLevel < 1 ? 1 : maximumZoomLevel;
             this.imageInfo.previewSurface = this.getMainPreviewImageDiemensions(this.imageInfo);
             this.imageInfo.zoomRect = this.getZoomRect(this.imageInfo);
             this.imageDataLoaded = true;
@@ -136,27 +137,47 @@ export default class ImageMedia extends EventEmitter {
     getZoomRect(imageInfo) {
         const {
             window,
-            magnification
+            magnification,
         } = imageInfo;
         const {
             width,
             height
         } = imageInfo.previewSurface;
-        const fixedSize = height > width ?
-            width :
-            height;
-        let x = 0,
-            y = 0;
+
+        const fixedSize =  height > width ?
+                width :
+                height;
+        let originalZoomRect = {
+            width : fixedSize,
+            height : fixedSize,
+            x: 0,
+            y: 0
+        };
         if (width > height) {
-            x = ((width - (window.width * magnification)) / 2);
+            originalZoomRect.x = ((width - (window.width * magnification)) / 2);
         } else {
-            y = ((height - (window.width * magnification)) / 2)
+            originalZoomRect.y = ((height - (window.width * magnification)) / 2)
         }
+
+        let startupZoomRect = { ...originalZoomRect };
+        if (this.lastScrollEvent) {
+            let startupFixedSize = fixedSize / (this.lastScrollEvent.zoomScale * magnification);
+            startupZoomRect.x = this.lastScrollEvent.contentOffset.x / this.lastScrollEvent.zoomScale;
+            startupZoomRect.y = this.lastScrollEvent.contentOffset.y / this.lastScrollEvent.zoomScale;
+            if (startupFixedSize === window.width) {
+                //Some kind of crazy bug here. If the zoom-rect is exactly as big as width of the screen
+                //animated false won't work when zooming to that place, hence, you'll see the animation.
+                //I think this has nothing to to with RN, much to do with UI kit that somehow says that this rect is invalid.
+                startupFixedSize += 0.1
+            }
+            startupZoomRect.width = startupFixedSize;
+            startupZoomRect.height = startupFixedSize;
+        }
+
+
         return {
-            x,
-            y,
-            width: fixedSize,
-            height: fixedSize
+            originalZoomRect,
+            startupZoomRect
         };
     }
 
@@ -200,4 +221,4 @@ export default class ImageMedia extends EventEmitter {
             }, (failure) => reject(failure));
         });
     }
-}
+} 
