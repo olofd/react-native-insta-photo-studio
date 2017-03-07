@@ -4,12 +4,28 @@ import {
 } from 'react-native';
 export default class ImageMedia extends EventEmitter {
 
+    constructor() {
+        super();
+        this.isMarked = false;
+    }
+
     get image() {
         return this.imageInfo.image;
     }
 
     get uri() {
         return this.imageInfo.image.uri;
+    }
+
+    marked() {
+        this.isMarked = true;
+    }
+
+    unmarked() {
+        this.isMarked = false;
+        if (this.lastScrollEvent) {
+            delete this.lastScrollEvent;
+        }
     }
 
     onRequestImageInfo(cb) {
@@ -144,19 +160,25 @@ export default class ImageMedia extends EventEmitter {
             height
         } = imageInfo.previewSurface;
 
-        const fixedSize =  height > width ?
-                width :
-                height;
-        let originalZoomRect = {
-            width : fixedSize,
-            height : fixedSize,
-            x: 0,
-            y: 0
-        };
-        if (width > height) {
-            originalZoomRect.x = ((width - (window.width * magnification)) / 2);
+        const fixedSize = height > width ?
+            width :
+            height;
+
+        let originalZoomRect;
+        if (imageInfo.zoomRect) {
+            originalZoomRect = imageInfo.zoomRect.originalZoomRect;
         } else {
-            originalZoomRect.y = ((height - (window.width * magnification)) / 2)
+            originalZoomRect = {
+                width: fixedSize,
+                height: fixedSize,
+                x: 0,
+                y: 0
+            };
+            if (width > height) {
+                originalZoomRect.x = ((width - (window.width * magnification)) / 2);
+            } else {
+                originalZoomRect.y = ((height - (window.width * magnification)) / 2)
+            }
         }
 
         let startupZoomRect = { ...originalZoomRect };
