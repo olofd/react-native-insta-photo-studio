@@ -184,7 +184,6 @@ class CameraRollPicker extends Component {
     if (!this.state.dataSource || !this.state.selectedImage) {
       return <ActivityIndicator style={styles.spinner} />;
     }
-    console.log('rendering listview');
     return (
       <WindowedListView
         renderWindowBoundaryIndicator={this.renderFooter.bind(this)}
@@ -207,9 +206,6 @@ class CameraRollPicker extends Component {
   }
 
   render() {
-    this.r = this.r !== undefined ? this.r : -1;
-    this.r++;
-    console.log('rendering', this.r);
     const { imageMargin, backgroundColor } = this.props;
     return (
       <View

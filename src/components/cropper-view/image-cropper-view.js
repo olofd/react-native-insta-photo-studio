@@ -9,6 +9,7 @@ import {
   PixelRatio,
   ImageEditor
 } from 'react-native';
+import Video from 'react-native-video';
 import OverlayGrid from '../overlay-grid';
 import fbjsPerformanceNow from 'fbjs/lib/performanceNow';
 import {
@@ -142,6 +143,20 @@ export default class ImageCropperView extends Component {
     }
   }
 
+  renderMainVideo(imageInfo) {
+    return (<Video source={imageInfo.image.video} // Looks for .mp4 file (background.mp4) in the given expansion version.
+      rate={1.0}                   // 0 is paused, 1 is normal.
+      volume={1.0}                 // 0 is muted, 1 is normal.
+      muted={false}                // Mutes the audio entirely.
+      paused={!this.props.isActive}               // Pauses playback entirely.
+      resizeMode="contain"           // Fill the whole screen at aspect ratio.
+      repeat={true}                // Repeat forever.
+      onLoadStart={this.initalZoomToImage.bind(this, this.props.onPartialLoad)} // Callback when video starts to load
+      onLoad={this.initalZoomToImage.bind(this, this.props.onLoad)}    // Callback when video loads
+      onError={this.props.onError}    // Callback when video cannot be loaded
+      style={styles.backgroundVideo} />)
+  }
+
   renderMainImage(imageInfo) {
     const { previewSurface } = imageInfo;
     return (
@@ -236,7 +251,7 @@ export default class ImageCropperView extends Component {
         alwaysBounceVertical={true}
         alwaysBounceHorizontal={true}
         scrollEnabled={this.state.scrollEnabled}>
-        {this.renderMainImage(this.state.imageInfo)}
+        {this.state.imageInfo.image.mediaType === 'video' ? this.renderMainVideo(this.state.imageInfo) : this.renderMainImage(this.state.imageInfo)}
       </ScrollView>
     );
   }
@@ -269,5 +284,12 @@ const styles = StyleSheet.create({
   },
   firstPreviewItem: {
     marginLeft: 5
+  },
+  backgroundVideo: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
   }
 });

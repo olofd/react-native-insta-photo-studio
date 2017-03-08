@@ -16,7 +16,8 @@
     "react-native": "0.43.0-rc.1",
     "react-native-i18n": "^1.0.0",
     "react-native-insta-photo-studio": "git://github.com/olofd/react-native-insta-photo-studio.git",
-    "react-native-scroll-block-view": "1.0.0"
+    "react-native-scroll-block-view": "1.0.0",
+    "react-native-video": "git://github.com/olofd/react-native-video.git#react-native-photos-framework"
   },
   "devDependencies": {
     "babel-jest": "19.0.0",
