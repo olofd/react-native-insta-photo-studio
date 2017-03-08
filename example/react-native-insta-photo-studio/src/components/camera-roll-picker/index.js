@@ -20,6 +20,7 @@ import WindowedListView from 'react-native/Libraries/Experimental/WindowedListVi
 import debounce from 'debounce';
 import { ScrollViewPanDelegator, BoundarySwipeDelgator, ContentOffsetDelegator, swipeUpDetector, swipeDownDetector } from '../../pan-delegator/scroll-view-pan-delegator';
 import cameraRollService from '../../services/camera-roll-service';
+
 class CameraRollPicker extends Component {
   constructor(props) {
     super(props);
@@ -29,7 +30,7 @@ class CameraRollPicker extends Component {
       bounces: true,
       selectedImage: null,
       markedForExport: [],
-      multiExportModeEnabled: true
+      multiExportModeEnabled: false
     };
     this._onEndReachedDebounce = debounce(this._onEndReached, 200).bind(this);
     this.setupScrollViewPanDelegator(props);
@@ -81,12 +82,16 @@ class CameraRollPicker extends Component {
     });
 
     this.cameraRollServiceListeners.push(cameraRollService.onToogleMultiExportMode((multiExportModeEnabled) => {
-      this.markAllRowsForRerender();
-      this.setState({
-        multiExportModeEnabled: multiExportModeEnabled,
-        shouldUpdate: this.guid()
-      });
+      if (multiExportModeEnabled !== this.state.multiExportModeEnabled) {
+        this.markAllRowsForRerender();
+        this.setState({
+          multiExportModeEnabled: multiExportModeEnabled,
+          shouldUpdate: this.guid(),
+          markedForExport: this.markedForExport || this.state.markedForExport
+        });
+      }
     }, true));
+
     this.cameraRollServiceListeners.push(cameraRollService.onAlbumAssetServiceChanged((albumAssetService) => {
       this.scrollToRow(0, undefined, false);
       this.unregisterFromAlbumAssetService();
@@ -110,11 +115,14 @@ class CameraRollPicker extends Component {
       }));
 
       this.albumAssetServiceListeners.push(this.albumAssetService.onMarkedForExportMediaChanged((markedForExport, columnsSplittedData) => {
-        this.setState({
-          markedForExport: markedForExport,
-          columnsSplittedData: columnsSplittedData,
-          shouldUpdate: this.guid()
-        });
+        this.markedForExport = markedForExport;
+        if (this.state.multiExportModeEnabled) {
+          this.setState({
+            markedForExport: markedForExport,
+            columnsSplittedData: columnsSplittedData,
+            shouldUpdate: this.guid()
+          });
+        }
       }));
 
     }, true));
@@ -171,9 +179,10 @@ class CameraRollPicker extends Component {
   }
 
   renderListView() {
-    if (!this.state.dataSource) {
+    if (!this.state.dataSource || !this.state.selectedImage) {
       return <ActivityIndicator style={styles.spinner} />;
     }
+    console.log('rendering listview');
     return (
       <WindowedListView
         renderWindowBoundaryIndicator={this.renderFooter.bind(this)}
@@ -196,7 +205,9 @@ class CameraRollPicker extends Component {
   }
 
   render() {
-    console.log('RENDER SCROLLVIEW');
+    this.r = this.r !== undefined ? this.r : -1;
+    this.r++;
+    console.log('rendering', this.r);
     const { imageMargin, backgroundColor } = this.props;
     return (
       <View
@@ -231,7 +242,7 @@ class CameraRollPicker extends Component {
         key={item.uri}
         style={[cellStyles.cellMargin, {
           paddingRight: lastItemInRow ? 0 : this.props.imageMargin,
-          paddingTop : rowIndex === 0 ? 0 : this.props.imageMargin
+          paddingTop: rowIndex === 0 ? 0 : this.props.imageMargin
         }]}
         onPress={() => this._selectImage(item, rowIndex, rowData)}>
         <Image source={item.image} style={cellStyles.imageSize}>

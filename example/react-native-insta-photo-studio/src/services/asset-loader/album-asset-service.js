@@ -56,7 +56,7 @@ export default class AlbumAssetService extends EventEmitter {
         //We load three rounds of small batches to start with. To get things going.
         if (this.fetchRound < 3) {
             const fetchNum = 12;
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 1; i++) {
                 this.queue.add(() => {
                     const fetchNumber = this.fetchRound === -1 ?
                         fetchNum :

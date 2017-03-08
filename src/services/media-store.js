@@ -102,7 +102,7 @@ export default class MediaStore {
                 const alreadyMarkedMediaIndex = this.markedForExportMedia.indexOf(mediaToUnmark);
                 if (alreadyMarkedMediaIndex !== -1) {
                     this.markedForExportMedia.splice(alreadyMarkedMediaIndex, 1);
-                    this.emitUnmarkForExport(mediaToUnmark);
+                    this.emitUnmarkForExport([mediaToUnmark]);
                     this.eventEmitter.emit('onMarkedForExportMediaChanged', this.markedForExportMedia, mediaToUnmark, [...this.markedForExportMedia, mediaToUnmark]);
                     if (this.markedForExportMedia.length) {
                         const imageToSelect = this.markedForExportMedia[this.markedForExportMedia.length - 1];
