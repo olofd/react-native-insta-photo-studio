@@ -20,6 +20,8 @@ import WindowedListView from 'react-native/Libraries/Experimental/WindowedListVi
 import debounce from 'debounce';
 import { ScrollViewPanDelegator, BoundarySwipeDelgator, ContentOffsetDelegator, swipeUpDetector, swipeDownDetector } from '../../pan-delegator/scroll-view-pan-delegator';
 import cameraRollService from '../../services/camera-roll-service';
+import momentDurationFormat from 'moment-duration-format';
+import moment from 'moment';
 
 class CameraRollPicker extends Component {
   constructor(props) {
@@ -222,7 +224,19 @@ class CameraRollPicker extends Component {
     );
   }
 
+  getDurationStringForVideo(videoItem) {
+    if (!videoItem.__instaFormatedTime) {
+      videoItem.__instaFormatedTime = moment.duration(Math.ceil(videoItem.duration), "seconds").format("m:ss", { trim: false });
+    }
+    return videoItem.__instaFormatedTime;
+  }
+
   _renderImage(item, rowIndex, rowColumn, rowData) {
+    const isVideo = item.mediaType === 'video';
+    let durationString;
+    if (isVideo) {
+      durationString = this.getDurationStringForVideo(item);
+    }
     let isSelected = !!this.state.selectedImage && this.state.selectedImage.uri === item.uri;
     let markedNumber = 0;
     let markedForExport = false;
@@ -246,6 +260,7 @@ class CameraRollPicker extends Component {
         }]}
         onPress={() => this._selectImage(item, rowIndex, rowData)}>
         <Image source={item.image} style={cellStyles.imageSize}>
+          {isVideo ? <View style={styles.videoDimmer}></View> : null}
           {isSelected
             ? <View style={[cellStyles.imageSize, styles.selectedImage]}></View>
             : null}
@@ -254,6 +269,7 @@ class CameraRollPicker extends Component {
               {markedForExport ? <Text style={styles.markedForExportCircleText}>{markedNumber}</Text> : undefined}
             </View>
             : null}
+          {isVideo ? <Text style={styles.durationString}>{durationString}</Text> : null}
         </Image>
       </TouchableOpacity>
     );
@@ -326,6 +342,8 @@ class CameraRollPicker extends Component {
   }
 }
 
+const onePixel = 1 / PixelRatio.get();
+
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1
@@ -371,6 +389,19 @@ const styles = StyleSheet.create({
   markedForExportCircleText: {
     fontSize: 11,
     color: '#FFFFFF'
+  },
+  videoDimmer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0, 0.3)'
+  },
+  durationString: {
+    color: 'white',
+    fontSize: 11.5,
+    position: 'absolute',
+    bottom: 6,
+    right: 7,
+    backgroundColor: 'transparent',
+    fontWeight: '500'
   }
 })
 
