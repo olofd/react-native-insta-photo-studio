@@ -1,16 +1,18 @@
 import React, {Component} from 'react';
 import {View, StyleSheet, Animated, Dimensions, Text, TouchableOpacity} from 'react-native';
 import photoFrameworkService from '../services/camera-roll-service';
+import I18n from 'react-native-i18n';
+
 export default class Unauthorized extends Component {
 
   render() {
     return (
       <View style={[styles.container, this.props.style]}>
-        <Text style={styles.headerText}>{this.props.unauthorizedHeaderText}</Text>
-        <Text style={styles.headerSubtitle}>{this.props.unauthorizedSubtitle}</Text>
+        <Text style={styles.headerText}>{I18n.t('unauthorizedHeaderText')}</Text>
+        <Text style={styles.headerSubtitle}>{I18n.t('unauthorizedSubtitle')}</Text>
         <TouchableOpacity style={styles.activateButton} onPress={() => photoFrameworkService.openSettings()}>
           <Text style={styles.activateText}>
-            {this.props.unauthorizedSettingsButtonText}
+            {I18n.t('unauthorizedSettingsButtonText')}
           </Text>
         </TouchableOpacity>
       </View>

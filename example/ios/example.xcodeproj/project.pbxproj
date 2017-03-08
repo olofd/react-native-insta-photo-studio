@@ -43,6 +43,8 @@
 		563EA19D3B474D6683D56CFF /* EvilIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9FE56C715B9A4C11AB0EBA55 /* EvilIcons.ttf */; };
 		5C3068F5A2714937B0ABFCB7 /* libRNBlur.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 845E8BEC7BC14BDAB2F2BE4A /* libRNBlur.a */; };
 		5E9157361DD0AC6A00FF2AA8 /* libRCTAnimation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E9157331DD0AC6500FF2AA8 /* libRCTAnimation.a */; };
+		63081D301E703E9F00B4C3DA /* sv.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 63081D2F1E703E9F00B4C3DA /* sv.lproj */; };
+		63081D311E703E9F00B4C3DA /* sv.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 63081D2F1E703E9F00B4C3DA /* sv.lproj */; };
 		6332E1E61E62CE79002420C5 /* libRNPhotosFramework.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6332E1E11E62CE72002420C5 /* libRNPhotosFramework.a */; };
 		7335354136894844A44C4077 /* libRCTImageResizer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 56C39B00E3AC4EADA038A98A /* libRCTImageResizer.a */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
@@ -367,6 +369,7 @@
 		56C39B00E3AC4EADA038A98A /* libRCTImageResizer.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRCTImageResizer.a; sourceTree = "<group>"; };
 		5C73CDF3BDD64922A2597BB5 /* RCTImageResizer.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RCTImageResizer.xcodeproj; path = "../node_modules/react-native-image-resizer/ios/RCTImageResizer.xcodeproj"; sourceTree = "<group>"; };
 		5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTAnimation.xcodeproj; path = "../node_modules/react-native/Libraries/NativeAnimation/RCTAnimation.xcodeproj"; sourceTree = "<group>"; };
+		63081D2F1E703E9F00B4C3DA /* sv.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = sv.lproj; path = example/sv.lproj; sourceTree = SOURCE_ROOT; };
 		6332E1BC1E62CE72002420C5 /* RNPhotosFramework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNPhotosFramework.xcodeproj; path = "../../../react-native-photos-framework/ios/RNPhotosFramework.xcodeproj"; sourceTree = "<group>"; };
 		6C6991C84C2B47C6A54BEDB1 /* RNGL.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNGL.xcodeproj; path = "../node_modules/gl-react-native/ios/RNGL.xcodeproj"; sourceTree = "<group>"; };
 		70DE41D5279A43B29DAB6753 /* RNI18n.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNI18n.xcodeproj; path = "../node_modules/react-native-i18n/RNI18n.xcodeproj"; sourceTree = "<group>"; };
@@ -506,6 +509,7 @@
 		00E356F01AD99517003FC87E /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				63081D2F1E703E9F00B4C3DA /* sv.lproj */,
 				00E356F11AD99517003FC87E /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -1213,6 +1217,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				63081D311E703E9F00B4C3DA /* sv.lproj in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1223,6 +1228,7 @@
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 				5522F14C273343B385BC79C4 /* Entypo.ttf in Resources */,
+				63081D301E703E9F00B4C3DA /* sv.lproj in Resources */,
 				563EA19D3B474D6683D56CFF /* EvilIcons.ttf in Resources */,
 				EBDE95D03F374D4E96031F7E /* FontAwesome.ttf in Resources */,
 				91FDC3B2B8A04279B1D40BA0 /* Foundation.ttf in Resources */,

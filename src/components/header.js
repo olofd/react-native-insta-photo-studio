@@ -7,20 +7,23 @@ import {
   TouchableOpacity,
   Easing
 } from 'react-native';
-import React, {Component} from 'react';
-import Icon from 'react-native-vector-icons/Ionicons'; 
+import React, { Component } from 'react';
+import Icon from 'react-native-vector-icons/Ionicons';
 import I18n from 'react-native-i18n';
-
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 export default class PhotoManagerHeader extends Component {
 
   constructor() {
     super();
-    this.state = {};
+    this.state = {
+      editStepAnim: new Animated.Value(0),
+      currentStep: 0
+    };
   }
   static defaultProps = {
-    height : 45,
-    styles : StyleSheet.create({
-       fontStyle : {
+    height: 45,
+    styles: StyleSheet.create({
+      fontStyle: {
         fontFamily: 'Arial'
       }
     })
@@ -35,15 +38,15 @@ export default class PhotoManagerHeader extends Component {
   }
 
   setupStyleObjs(props) {
-    if(!this.state.headerStyles || props.height !== this.state.height) {
-      const dStyles =  StyleSheet.create({
-        buttonArea : {
-          height : props.height
+    if (!this.state.headerStyles || props.height !== this.state.height) {
+      const dStyles = StyleSheet.create({
+        buttonArea: {
+          height: props.height,
         }
       });
       this.setState({
-        height : props.height,
-        buttonArea : [styles.buttonArea, dStyles.buttonArea]
+        height: props.height,
+        buttonArea: [styles.buttonArea, dStyles.buttonArea]
       });
     }
   }
@@ -52,16 +55,27 @@ export default class PhotoManagerHeader extends Component {
     this.props.onAlbumDropDownPressed();
   }
 
+  onNextButtonPress() {
+    Animated.timing(this.state.editStepAnim, {
+      toValue: this.state.currentStep === 0 ? 1 : 0,
+      duration: 300,
+      useNativeDriver: true
+    }).start();
+    this.setState({
+      currentStep : this.state.currentStep === 0 ? 1 : 0
+    });
+  }
+
   renderRightButton() {
     return <View
       style={{
-      opacity: this.props.hasNextButton
-        ? 1
-        : 0
-    }}>
+        opacity: this.props.hasNextButton
+          ? 1
+          : 0
+      }}>
       <TouchableOpacity
         style={[this.state.buttonArea, styles.rightButtonArea]}
-        onPress={this.props.onCreateLocationPress}>
+        onPress={this.onNextButtonPress.bind(this)}>
         <Text style={[styles.linkButton, this.props.styles.fontStyle]}>{I18n.t('next')}</Text>
       </TouchableOpacity>
     </View>;
@@ -78,12 +92,32 @@ export default class PhotoManagerHeader extends Component {
   }
 
   _renderLeftButton() {
+    const leftCancelButtonStyle = {
+      opacity: this.state.editStepAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [1, 0]
+      })
+    };
+    const leftBackButtonStyle = {
+      opacity: this.state.editStepAnim
+    };
     return (
-      <TouchableOpacity
-        style={[this.state.buttonArea, styles.leftButtonArea]}
-        onPress={this.props.onCancelAction}>
-        <Text style={[styles.cancelButton, this.props.styles.fontStyle]}>{I18n.t('cancel')}</Text>
-      </TouchableOpacity>
+      <View style={[this.state.buttonArea]}>
+        <Animated.View style={[styles.overlayButton, leftBackButtonStyle]}>
+          <TouchableOpacity
+            style={[this.state.buttonArea, styles.leftButtonArea, { paddingRight : 48 }]}
+            onPress={this.props.onCancelAction}>
+            <Icon style={styles.leftBackButtonStyle} name='ios-arrow-back-outline'></Icon>
+          </TouchableOpacity>
+        </Animated.View>
+        <Animated.View style={[leftCancelButtonStyle]} pointerEvents={this.state.currentStep === 0 ? 'auto' : 'none' }>
+          <TouchableOpacity 
+            style={[this.state.buttonArea, styles.leftButtonArea]}
+            onPress={this.props.onCancelAction}>
+            <Text style={[styles.cancelButton, this.props.styles.fontStyle]}>{I18n.t('cancel')}</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
     );
   }
 
@@ -144,10 +178,10 @@ export default class PhotoManagerHeader extends Component {
   }
 
   _renderMenu() {
-    if(!this.props.renderMenu) {
+    if (!this.props.renderMenu) {
       return null;
     }
-    if(this.props.renderExitMenu) {
+    if (this.props.renderExitMenu) {
       return this._renderExitMenu();
     }
 
@@ -171,10 +205,10 @@ export default class PhotoManagerHeader extends Component {
     return (
       <View
         style={[
-        styles.topBar, {
-          height: this.props.height
-        }
-      ]}>
+          styles.topBar, {
+            height: this.props.height
+          }
+        ]}>
         {this._renderMenu()}
       </View>
     );
@@ -195,7 +229,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     margin: 5,
-    fontWeight : '600'
+    fontWeight: '600'
   },
   buttonArea: {
     alignItems: 'center',
@@ -203,24 +237,25 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     color: 'black',
-    fontSize: 16
+    fontSize: 16,
+    backgroundColor : 'transparent'
   },
   linkButton: {
     color: '#3897f0',
     fontSize: 16,
-    fontWeight : '500'
+    fontWeight: '500'
   },
   leftButtonArea: {
     alignItems: 'center',
     paddingHorizontal: 15
   },
-  exitButton : {
-    width : 50,
-    position : 'absolute',
-    left : 0
+  exitButton: {
+    width: 50,
+    position: 'absolute',
+    left: 0
   },
-  exitIcon : {
-    fontSize : 35
+  exitIcon: {
+    fontSize: 35
   },
   centerButton: {
     flex: 1,
@@ -241,5 +276,18 @@ const styles = StyleSheet.create({
   arrow: {
     fontSize: 20,
     top: 2
+  },
+  overlayButton: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+  leftBackButtonStyle: {
+    fontSize: 30,
+    backgroundColor: 'transparent'
   }
 });

@@ -9,16 +9,11 @@ export default class InstaPhotoStudio extends Component {
 
   static defaultProps = {
     fontFamily: 'Arial',
-    libraryDisplayName: 'Library',
-    photoDisplayName: 'Photo',
     topBarHeight : 45,
     footerHeight : 45,
     cropperMagnification : 2.0,
     finnishCropperAnimationDuration : 200,
-    showAlbumsAnimationDuration : 200,
-    unauthorizedHeaderText : 'Grant access to your photos',
-    unauthorizedSubtitle : 'This will make it possible for this app to crop and select photos from the camera roll.',
-    unauthorizedSettingsButtonText : 'Activate access to library'
+    showAlbumsAnimationDuration : 200
   }
 
   constructor() {
