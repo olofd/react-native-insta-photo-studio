@@ -2,6 +2,8 @@
 
 `npm i react-native-insta-photo-studio --save`
 
+Demo 1: https://www.youtube.com/edit?video_id=w2MZMxMO0js
+
 ~~~js
 import React, { Component } from 'react';
 import {
