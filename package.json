@@ -40,8 +40,19 @@
     "react-native-i18n": "^1.0.0",
     "react-native-image-resizer": "0.1.0",
     "react-native-scroll-block-view": "1.0.0",
-    "react-native-vector-icons": "^4.0.0"
+    "react-native-vector-icons": "^4.0.0",
+    "react-native-photos-framework": "^1.0.2"
   },
+  "files": [
+    "LICENSE",
+    "src/",
+    "local-cli/",
+    "index.js",
+    "install.js",
+    "README.md",
+    "event-emitter.js",
+    "react-native-photos-framework.podspec"
+  ],
   "scripts": {
     "update": "git add . && git commit -m \"Updated\" && npm version patch && git push --tags && git push origin master && npm publish",
     "postinstall": "node install.js"

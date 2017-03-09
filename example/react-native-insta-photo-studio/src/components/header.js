@@ -37,6 +37,10 @@ export default class PhotoManagerHeader extends Component {
     this.setupStyleObjs(nextProps);
   }
 
+  onBackAction() {
+    
+  }
+
   setupStyleObjs(props) {
     if (!this.state.headerStyles || props.height !== this.state.height) {
       const dStyles = StyleSheet.create({
@@ -115,7 +119,7 @@ export default class PhotoManagerHeader extends Component {
         <Animated.View style={[leftCancelButtonStyle]} pointerEvents={this.state.currentStep === 0 ? 'auto' : 'none'}>
           <TouchableOpacity
             style={[this.state.buttonArea, styles.leftButtonArea]}
-            onPress={this.props.onCancelAction}>
+            onPress={this.onBackAction.bind(this)}>
             <Text style={[styles.cancelButton, this.props.styles.fontStyle]}>{I18n.t('cancel')}</Text>
           </TouchableOpacity>
         </Animated.View>
