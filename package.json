@@ -41,7 +41,8 @@
     "react-native-image-resizer": "0.1.0",
     "react-native-scroll-block-view": "1.0.0",
     "react-native-vector-icons": "^4.0.0",
-    "react-native-photos-framework": "^1.0.2"
+    "react-native-photos-framework": "^1.0.1",
+    "react-native-video": "git://github.com/olofd/react-native-video.git#react-native-photos-framework"
   },
   "files": [
     "LICENSE",
