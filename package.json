@@ -33,15 +33,16 @@
     "gl-react-native": "^2.42.0",
     "gl-react-negative": "~1.1.0",
     "moment": "^2.17.1",
+    "moment-duration-format": "^1.3.0",
     "promise-queue": "^2.2.3",
     "react-native-blur": "^2.0.0",
     "react-native-camera": "git+https://github.com/lwansbrough/react-native-camera.git",
     "react-native-circular-progress": "0.0.8",
     "react-native-i18n": "^1.0.0",
     "react-native-image-resizer": "0.1.0",
+    "react-native-photos-framework": "^1.0.1",
     "react-native-scroll-block-view": "1.0.0",
     "react-native-vector-icons": "^4.0.0",
-    "react-native-photos-framework": "^1.0.1",
     "react-native-video": "git://github.com/olofd/react-native-video.git#react-native-photos-framework"
   },
   "files": [
@@ -52,7 +53,8 @@
     "install.js",
     "README.md",
     "event-emitter.js",
-    "react-native-photos-framework.podspec"
+    "react-native-photos-framework.podspec",
+    "react-native-photos-framework.js"
   ],
   "scripts": {
     "update": "git add . && git commit -m \"Updated\" && npm version patch && git push --tags && git push origin master && npm publish",
