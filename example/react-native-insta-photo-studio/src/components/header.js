@@ -56,13 +56,14 @@ export default class PhotoManagerHeader extends Component {
   }
 
   onNextButtonPress() {
+    const nextStep = this.state.currentStep === 2 ? 0 : this.state.currentStep + 1;
     Animated.timing(this.state.editStepAnim, {
-      toValue: this.state.currentStep === 0 ? 1 : 0,
+      toValue: nextStep,
       duration: 300,
       useNativeDriver: true
     }).start();
     this.setState({
-      currentStep : this.state.currentStep === 0 ? 1 : 0
+      currentStep: nextStep
     });
   }
 
@@ -76,7 +77,7 @@ export default class PhotoManagerHeader extends Component {
       <TouchableOpacity
         style={[this.state.buttonArea, styles.rightButtonArea]}
         onPress={this.onNextButtonPress.bind(this)}>
-        <Text style={[styles.linkButton, this.props.styles.fontStyle]}>{I18n.t('next')}</Text>
+        <Text style={[styles.linkButton, this.props.styles.fontStyle]}>{this.state.currentStep === 2 ? I18n.t('share') : I18n.t('next')}</Text>
       </TouchableOpacity>
     </View>;
   }
@@ -95,23 +96,24 @@ export default class PhotoManagerHeader extends Component {
     const leftCancelButtonStyle = {
       opacity: this.state.editStepAnim.interpolate({
         inputRange: [0, 1],
-        outputRange: [1, 0]
+        outputRange: [1, 0],
+        extrapolate: 'clamp'
       })
     };
     const leftBackButtonStyle = {
       opacity: this.state.editStepAnim
     };
     return (
-      <View style={[this.state.buttonArea]}>
+      <View>
         <Animated.View style={[styles.overlayButton, leftBackButtonStyle]}>
           <TouchableOpacity
-            style={[this.state.buttonArea, styles.leftButtonArea, { paddingRight : 48 }]}
+            style={[this.state.buttonArea, styles.leftButtonArea, { paddingRight: 48 }]}
             onPress={this.props.onCancelAction}>
             <Icon style={styles.leftBackButtonStyle} name='ios-arrow-back-outline'></Icon>
           </TouchableOpacity>
         </Animated.View>
-        <Animated.View style={[leftCancelButtonStyle]} pointerEvents={this.state.currentStep === 0 ? 'auto' : 'none' }>
-          <TouchableOpacity 
+        <Animated.View style={[leftCancelButtonStyle]} pointerEvents={this.state.currentStep === 0 ? 'auto' : 'none'}>
+          <TouchableOpacity
             style={[this.state.buttonArea, styles.leftButtonArea]}
             onPress={this.props.onCancelAction}>
             <Text style={[styles.cancelButton, this.props.styles.fontStyle]}>{I18n.t('cancel')}</Text>
@@ -145,35 +147,106 @@ export default class PhotoManagerHeader extends Component {
   _renderAlbumsDropDown() {
     const hasAlbum = !!this.props.currentAlbum;
     return (
-      <View style={[this.state.buttonArea, styles.centerButton]}>
-        <TouchableOpacity
-          disabled={!hasAlbum}
-          style={styles.centerContainer}
-          onPress={this.onTitleButtonPressed.bind(this)}>
-          <Text style={[styles.title, this.props.styles.fontStyle]}>
-            {hasAlbum
-              ? this.props.currentAlbum.title
-              : ''}
-          </Text>
+      <TouchableOpacity
+        disabled={!hasAlbum}
+        style={styles.centerContainer}
+        onPress={this.onTitleButtonPressed.bind(this)}>
+        <Text style={[styles.title, this.props.styles.fontStyle]}>
           {hasAlbum
-            ? this._renderArrow()
-            : null}
-        </TouchableOpacity>
-      </View>
+            ? this.props.currentAlbum.title
+            : ''}
+        </Text>
+        {hasAlbum
+          ? this._renderArrow()
+          : null}
+      </TouchableOpacity>
     );
   }
 
-  _renderCenterColumn() {
+  _renderInnerCenterColumnStepOne() {
     const hasAlbum = !!this.props.currentAlbum;
     if (this.props.showAlbumsDropDown && hasAlbum) {
       return this._renderAlbumsDropDown();
     }
+
+    return (<Text style={[styles.title, this.props.styles.fontStyle]}>
+      {this.props.headerTitle}
+    </Text>);
+  }
+
+  _renderCenterColumnStepOne() {
+    const centerColumnStyle = {
+      opacity: this.state.editStepAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [1, 0],
+        extrapolate: 'clamp'
+      }),
+      transform: [
+        {
+          translateX: this.state.editStepAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, ((-this.props.window.width) / 2) + 100]
+          })
+        }
+      ]
+    };
+
     return (
-      <View style={[this.state.buttonArea, styles.centerButton]}>
+      <Animated.View style={[styles.headerContainer, centerColumnStyle]}>
+        {this._renderInnerCenterColumnStepOne()}
+      </Animated.View>
+    );
+  }
+
+  _renderCenterColumnStepTwo() {
+    const centerColumnStyle = {
+      opacity: this.state.editStepAnim.interpolate({
+        inputRange: [0, 1, 2],
+        outputRange: [0, 1, 0],
+        extrapolate: 'clamp'
+      }),
+      transform: [
+        {
+          translateX: this.state.editStepAnim.interpolate({
+            inputRange: [0, 1, 2],
+            outputRange: [this.props.window.width, 0, ((-this.props.window.width) / 2) + 100]
+          })
+        }
+      ]
+    };
+    return (
+      <Animated.View style={[styles.headerContainer, centerColumnStyle]}>
         <Text style={[styles.title, this.props.styles.fontStyle]}>
-          {this.props.headerTitle}
-        </Text>
-      </View>
+          {I18n.t('edit')}
+      </Text>
+      </Animated.View >
+    );
+  }
+
+  _renderCenterColumnStepThree() {
+    const centerColumnStyle = {
+      opacity: this.state.editStepAnim.interpolate({
+        inputRange: [0, 1, 2],
+        outputRange: [0, 0, 1],
+        extrapolate: 'clamp'
+      }),
+      transform: [
+        {
+          translateX: this.state.editStepAnim.interpolate({
+            inputRange: [1, 2],
+            outputRange: [this.props.window.width, 0],
+            extrapolate: 'clamp'
+          })
+        }
+      ]
+    };
+    return (
+      <Animated.View style={[styles.headerContainer, centerColumnStyle]}>
+        <Text style={[styles.title, this.props.styles.fontStyle]}>
+          {I18n.t('share')}
+      </Text>
+      </Animated.View>
+
     );
   }
 
@@ -188,18 +261,32 @@ export default class PhotoManagerHeader extends Component {
     const fadeAnim = {
       opacity: this.props.showAlbumsAnim
     };
+
     return (
       <View style={styles.topBarInner}>
-        <Animated.View style={fadeAnim}>
+        <Animated.View style={[fadeAnim, styles.leftButtonContainer]}>
           {this._renderLeftButton()}
         </Animated.View>
-        {this._renderCenterColumn()}
-        <Animated.View style={fadeAnim}>
+        <Animated.View style={[this.state.buttonArea, styles.centerButton]}>
+          {this._renderCenterColumnStepOne()}
+          {this._renderCenterColumnStepTwo()}
+          {this._renderCenterColumnStepThree()}
+        </Animated.View>
+        <Animated.View style={[fadeAnim, styles.rightButtonContainer]}>
           {this.renderRightButton()}
         </Animated.View>
       </View>
     );
   }
+
+  /*
+                  <Animated.View style={[fadeAnim, styles.leftButtonContainer]}>
+          {this._renderLeftButton()}
+        </Animated.View>
+          <Animated.View style={fadeAnim}>
+          {this.renderRightButton()}
+        </Animated.View>
+  */
 
   render() {
     return (
@@ -221,6 +308,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   topBarInner: {
+    flex: 1,
     backgroundColor: 'white',
     flexDirection: 'row',
     justifyContent: 'center'
@@ -238,12 +326,28 @@ const styles = StyleSheet.create({
   cancelButton: {
     color: 'black',
     fontSize: 16,
-    backgroundColor : 'transparent'
+    backgroundColor: 'transparent',
   },
   linkButton: {
     color: '#3897f0',
     fontSize: 16,
     fontWeight: '500'
+  },
+  leftButtonContainer: {
+    backgroundColor: 'transparent',
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    zIndex: 1
+  },
+  rightButtonContainer: {
+    backgroundColor: 'transparent',
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    zIndex: 2
   },
   leftButtonArea: {
     alignItems: 'center',
@@ -258,8 +362,13 @@ const styles = StyleSheet.create({
     fontSize: 35
   },
   centerButton: {
-    flex: 1,
-    flexGrow: 1
+    flexDirection: 'row',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0
   },
 
   centerContainer: {
@@ -289,5 +398,14 @@ const styles = StyleSheet.create({
   leftBackButtonStyle: {
     fontSize: 30,
     backgroundColor: 'transparent'
+  },
+  headerContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 });

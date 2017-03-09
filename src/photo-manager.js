@@ -233,7 +233,7 @@ export default class PhotoManager extends Component {
 
     return (
       <CameraRollPicker
-      numberOfCroppers={1}
+        numberOfCroppers={1}
         currentAlbum={this.props.currentAlbum}
         scrollViewStyle={scrollViewStyle}
         scrollToRowOnSelection={this.state.isRetracted}
@@ -316,6 +316,7 @@ export default class PhotoManager extends Component {
       <Animated.View
         style={[animationStyle, styles.absolute, styles.headerContainer, forceTopBarAnim]}>
         <Header
+          window={this.props.window}
           styles={this.props.styles}
           renderMenu={renderMenu}
           renderExitMenu={renderExitMenu}
