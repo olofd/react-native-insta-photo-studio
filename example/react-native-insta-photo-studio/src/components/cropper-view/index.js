@@ -9,11 +9,11 @@ import {
   ScrollView,
   InteractionManager
 } from 'react-native';
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import ImageCopperView from './image-cropper-view';
 import BlockView from 'react-native-scroll-block-view';
-import {BlurView} from 'react-native-blur';
-import {AnimatedCircularProgress} from '../../react-native-circular-progress';
+import { BlurView } from 'react-native-blur';
+import { AnimatedCircularProgress } from '../../react-native-circular-progress';
 import ToolBar from './tool-bar';
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
@@ -33,7 +33,7 @@ export default class CropperViewContainer extends Component {
     super(props);
     const images = [];
     if (props.image) {
-      images.push({loaded: false, image: props.image});
+      images.push({ loaded: false, image: props.image });
     }
     this.state = {
       currentImageIndex: 0,
@@ -60,7 +60,7 @@ export default class CropperViewContainer extends Component {
         }
       }
       this.loadCircle && this.loadCircle.setAnimationValue(0);
-      this.setState({currentImageIndex: nextPushIndex, isLoading: false});
+      this.setState({ currentImageIndex: nextPushIndex, isLoading: false });
     }
   }
 
@@ -156,21 +156,21 @@ export default class CropperViewContainer extends Component {
         animate={this.props.animate}
         resetAnimation={this.props.resetAnimation}
         pointerEvents={isActive
-        ? ACTIVE_POINTER
-        : INACTIVE_POINTER}
+          ? ACTIVE_POINTER
+          : INACTIVE_POINTER}
         isActive={isActive}
         onProgress={this.onProgress.bind(this)}
         onLoad={this.onLoad.bind(this, imageObj, this.currentLoadingGuid)}
         onError={() => alert('error')}
         onPartialLoad={this.onPartialLoad.bind(this, imageObj, this.currentLoadingGuid)}
         style={style}
-        image={imageObj.image}/>);
+        image={imageObj.image} />);
     }
     return cropperViews;
   }
 
   render() {
-    const {width, height} = this.props.window;
+    const { width, height } = this.props.window;
     const drawerContainer = {
       opacity: this.props.anim.interpolate({
         inputRange: [
@@ -196,7 +196,7 @@ export default class CropperViewContainer extends Component {
           scrollEnabled={true}>
           {this.renderCroppers()}
         </ScrollView>
-                {this.renderToolbar()}
+        {this.renderToolbar()}
         <Animated.View
           pointerEvents={INACTIVE_POINTER}
           style={[styles.drawerContainer, styles.absoluteStyle, drawerContainer]}></Animated.View>
@@ -204,12 +204,9 @@ export default class CropperViewContainer extends Component {
       </BlockView>
     );
   }
-/*
-        {this.renderToolbar()}
 
-*/
   renderToolbar() {
-    return (<ToolBar image={this.props.image}></ToolBar>);
+    return (<ToolBar appService={this.props.appService} image={this.props.image}></ToolBar>);
   }
 
   renderLoadingView(widthHeightStyle) {
@@ -217,22 +214,22 @@ export default class CropperViewContainer extends Component {
       <Animated.View
         pointerEvents={INACTIVE_POINTER}
         style={[
-        styles.absoluteStyle,
-        styles.blurView, {
-          backgroundColor: 'black',
-          opacity: this.state.loadingViewAnim.interpolate({
-            inputRange: [
-              0, 1
-            ],
-            outputRange: [0, 0.65]
-          }),
-          transform: [
-            {
-              scale: this.state.loadingViewAnim.interpolate(loadingViewScale)
-            }
-          ]
-        }
-      ]}
+          styles.absoluteStyle,
+          styles.blurView, {
+            backgroundColor: 'black',
+            opacity: this.state.loadingViewAnim.interpolate({
+              inputRange: [
+                0, 1
+              ],
+              outputRange: [0, 0.65]
+            }),
+            transform: [
+              {
+                scale: this.state.loadingViewAnim.interpolate(loadingViewScale)
+              }
+            ]
+          }
+        ]}
         blurType='dark'>
         <AnimatedCircularProgress
           ref={loadCircle => this.loadCircle = loadCircle}
@@ -242,7 +239,7 @@ export default class CropperViewContainer extends Component {
           width={1.5}
           fill={5}
           tintColor='white'
-          backgroundColor="rgba(170, 170, 170, 1)"/>
+          backgroundColor="rgba(170, 170, 170, 1)" />
       </Animated.View>
     );
   }

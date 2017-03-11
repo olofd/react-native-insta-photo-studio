@@ -1,6 +1,12 @@
-import EventEmitter from '../../../event-emitter';
 import columnSplitter from './column-splitter';
 import Queue from 'promise-queue';
+import EventEmitter, { events } from '../event-emitter';
+
+export const albumAssetServiceEvents = {
+    onMarkedForExportMediaChanged : 'onMarkedForExportMediaChanged',
+    onSelectionChanged : 'onSelectionChanged',
+    onNewAssetsRecived : 'onNewAssetsRecived'
+};
 
 export default class AlbumAssetService extends EventEmitter {
 
@@ -26,21 +32,21 @@ export default class AlbumAssetService extends EventEmitter {
     }
 
     setupSelectionRerendering() {
-        this.eventEmitter.onMarkedForExportMediaChanged((markedForExportMedia, affectedImage, affectedMedia) => {
+        this.eventEmitter.emit(events.requestMarkedForExportMedia, (markedForExportMedia, affectedImage, affectedMedia) => {
             if (affectedMedia && affectedMedia.length) {
                 columnSplitter.markRowsForRerender(this.columnSplittedAssets, affectedMedia.map(media => media.uri), affectedImage);
             }
             this.markedForExportMedia = markedForExportMedia;
-            this.emit('onMarkedForExportMediaChanged', markedForExportMedia, this.columnSplittedAssets);
+            this.emit(albumAssetServiceEvents.onMarkedForExportMediaChanged, markedForExportMedia, this.columnSplittedAssets);
         }, true);
-        this.eventEmitter.addListener('onSelectionChanged', (newSelection, oldSelection, albumAssetService) => {
+        this.eventEmitter.addListener(events.onSelectionChanged, (newSelection, oldSelection, albumAssetService) => {
             if (albumAssetService === this) {
                 const updateImages = [newSelection.uri];
                 if (oldSelection) {
                     updateImages.push(oldSelection.uri);
                 }
                 const rowIndexToScrollTo = columnSplitter.markRowsForRerender(this.columnSplittedAssets, updateImages, newSelection);
-                this.emit('onSelectionChanged', newSelection, rowIndexToScrollTo, this.columnSplittedAssets);
+                this.emit(albumAssetServiceEvents.onSelectionChanged, newSelection, rowIndexToScrollTo, this.columnSplittedAssets);
             }
         });
     }
@@ -83,7 +89,7 @@ export default class AlbumAssetService extends EventEmitter {
             this.startIndex = (this.startIndex + (data.assets.length));
             this.assets = this.assets.concat(data.assets);
             this.columnSplittedAssets = columnSplitter.appendToState(this.columnSplittedAssets, data.assets, this.columns);
-            this.emit('onNewAssetsRecived', this.columnSplittedAssets, data.assets, this.assets);
+            this.emit(albumAssetServiceEvents.onNewAssetsRecived, this.columnSplittedAssets, data.assets, this.assets);
         });
     }
 
@@ -95,21 +101,21 @@ export default class AlbumAssetService extends EventEmitter {
         if (this.assets.length) {
             cb(this.columnSplittedAssets, this.assets, this.assets);
         }
-        this.addListener('onNewAssetsRecived', cb);
-        return () => this.removeListener('onNewAssetsRecived', cb);
+        this.addListener(albumAssetServiceEvents.onNewAssetsRecived, cb);
+        return () => this.removeListener(albumAssetServiceEvents.onNewAssetsRecived, cb);
     }
 
     onMarkedForExportMediaChanged(cb) {
         if (this.markedForExportMedia.length) {
             cb(this.markedForExportMedia, this.columnSplittedAssets);
         }
-        this.addListener('onMarkedForExportMediaChanged', cb);
-        return () => this.removeListener('onMarkedForExportMediaChanged', cb);
+        this.addListener(albumAssetServiceEvents.onMarkedForExportMediaChanged, cb);
+        return () => this.removeListener(albumAssetServiceEvents.onMarkedForExportMediaChanged, cb);
     }
 
     onSelectionChanged(cb) {
-        this.addListener('onSelectionChanged', cb);
-        return () => this.removeListener('onSelectionChanged', cb);
+        this.addListener(albumAssetServiceEvents.onSelectionChanged, cb);
+        return () => this.removeListener(albumAssetServiceEvents.onSelectionChanged, cb);
     }
 
     setupChangeHandling() {
@@ -118,10 +124,10 @@ export default class AlbumAssetService extends EventEmitter {
                 update(this.assets, (updatedAssetArray) => {
                     this.assets = updatedAssetArray;
                     this.columnSplittedAssets = columnSplitter.appendToState([], this.assets, this.columns);
-                    this.emit('onNewAssetsRecived', this.columnSplittedAssets, this.assets, this.assets);
+                    this.emit(albumAssetServiceEvents.onNewAssetsRecived, this.columnSplittedAssets, this.assets, this.assets);
                 }, {
-                    includeMetadata: false
-                });
+                        includeMetadata: false
+                    });
             }
         });
     }

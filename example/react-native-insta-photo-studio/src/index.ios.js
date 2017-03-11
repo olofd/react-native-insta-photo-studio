@@ -1,10 +1,10 @@
 import PhotoManager from './photo-manager';
 import React, { Component } from 'react';
 import { View, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
-import photoFrameworkService from './services/camera-roll-service';
+import CameraRollService from './services/camera-roll-service';
 import AlbumList from './components/album-list';
 import I18N from './I18n';
-import appService from './services/app-service';
+import AppService from './services/app-service';
 
 export default class InstaPhotoStudio extends Component {
 
@@ -24,7 +24,8 @@ export default class InstaPhotoStudio extends Component {
       window: Dimensions.get('window'),
       currentAlbum: null,
       showAlbumsAnim: new Animated.Value(1),
-      editStepAnim: new Animated.Value(0)
+      editStepAnim: new Animated.Value(0),
+      appService: new AppService()
     };
     this.albumsButtonPressed = false;
   }
@@ -62,17 +63,23 @@ export default class InstaPhotoStudio extends Component {
   }
 
   componentWillMount() {
+    if(this.props.onEventEmitterCreated) {
+      this.props.onEventEmitterCreated(this.state.appService);
+    }
+    const { appService } = this.state;
+    const { cameraRollService } = appService;
     I18N(this.props.translations);
+    
     this.setupStyleObjs(this.props);
-    this.listeners.push(photoFrameworkService.onCurrentAlbumsChanged((currentAlbums) => {
+    this.listeners.push(cameraRollService.onCurrentAlbumsChanged((currentAlbums) => {
       this.setState({ currentAlbums: currentAlbums });
     }));
 
-    this.listeners.push(photoFrameworkService.onCurrentAlbumChanged((currentAlbum) => {
+    this.listeners.push(cameraRollService.onCurrentAlbumChanged((currentAlbum) => {
       this.setState({ currentAlbum: currentAlbum });
     }));
 
-    this.listeners.push(photoFrameworkService.onAuthorizationChanged((authStatus) => {
+    this.listeners.push(cameraRollService.onAuthorizationChanged((authStatus) => {
       this.setState({ authStatus: authStatus });
     }));
 
@@ -86,15 +93,16 @@ export default class InstaPhotoStudio extends Component {
       });
     }));
 
-    photoFrameworkService.authorize().then((authStatus) => {
+    cameraRollService.authorize().then((authStatus) => {
       if (authStatus.isAuthorized) {
-        photoFrameworkService.fetchAlbums();
+        cameraRollService.fetchAlbums();
       }
     });
   }
 
   onAlbumSelected(album) {
-    photoFrameworkService.setCurrentAlbum(album);
+    const { cameraRollService } = this.state.appService;
+    cameraRollService.setCurrentAlbum(album);
     this.onAlbumDropDownPressed();
   }
 
@@ -136,6 +144,7 @@ export default class InstaPhotoStudio extends Component {
         <PhotoManager
           {...statePass}
           {...this.props}
+          appService={this.state.appService}
           window={this.state.window}
           authStatus={this.state.authStatus}
           onAlbumDropDownPressed={this.onAlbumDropDownPressed.bind(this)}
@@ -149,6 +158,21 @@ export default class InstaPhotoStudio extends Component {
     );
   }
 }
+
+/*
+        <PhotoManager
+          {...statePass}
+          {...this.props}
+          window={this.state.window}
+          authStatus={this.state.authStatus}
+          onAlbumDropDownPressed={this.onAlbumDropDownPressed.bind(this)}
+          showAlbumsAnim={this.state.showAlbumsAnim}
+          editStepAnim={this.state.editStepAnim}
+          currentAlbum={this.state.currentAlbum}></PhotoManager>
+        <Animated.View style={[styles.albumListModal, showAlbumViewAnim]}>
+          <AlbumList {...statePass} {...this.props} albums={this.state.currentAlbums} onAlbumSelected={this.onAlbumSelected.bind(this)}></AlbumList>
+        </Animated.View>
+*/
 
 
 const styles = StyleSheet.create({

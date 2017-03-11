@@ -10,7 +10,6 @@ import {
 import React, { Component } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import I18n from 'react-native-i18n';
-import appService from '../services/app-service';
 
 export default class PhotoManagerHeader extends Component {
 
@@ -37,7 +36,7 @@ export default class PhotoManagerHeader extends Component {
 
   componentWillMount() {
     this.setupStyleObjs(this.props);
-    this.listeners.push(appService.onEditStepUpdated((stepIndex, stepName, stepModel) => {
+    this.listeners.push(this.props.appService.onEditStepUpdated((stepIndex, stepName, stepModel) => {
       this.setState({
         currentStep: stepIndex
       });

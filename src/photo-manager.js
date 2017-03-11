@@ -23,8 +23,6 @@ import Swiper from './components/swiper';
 import clamp from 'clamp';
 import Unauthorized from './components/unauthorized';
 import I18n from 'react-native-i18n';
-import cameraRollService from './services/camera-roll-service';
-//import mediaStore from '../services/mediaStore';
 const SCROLLVIEW_REF = "SCROLLVIEW_REF";
 const imageMargin = 2;
 export default class PhotoManager extends Component {
@@ -57,7 +55,8 @@ export default class PhotoManager extends Component {
 
   componentWillMount() {
     this.updateHeader('library');
-    this.listeners.push(cameraRollService.onSelectionChanged((newSelection) => {
+    const { mediaStore } = this.props.appService;
+    this.listeners.push(mediaStore.onSelectionChanged((newSelection) => {
       this.setState({
         currentLibraryImage: newSelection
       });
@@ -103,7 +102,7 @@ export default class PhotoManager extends Component {
 
   onCancelAction() {
     this.props.onClose && this.props.onClose();
-  } 
+  }
 
   willStartAnimating() {
     this.isResponding = false;
@@ -200,6 +199,7 @@ export default class PhotoManager extends Component {
       height: this.props.window.width + 2
     };
     return (<CropperView
+      appService={this.props.appService}
       anim={this.state.anim}
       style={[styles.absolute, cropperView]}
       willStartAnimating={this.willStartAnimating.bind(this)}
@@ -233,6 +233,7 @@ export default class PhotoManager extends Component {
 
     return (
       <CameraRollPicker
+        appService={this.props.appService}
         numberOfCroppers={1}
         currentAlbum={this.props.currentAlbum}
         scrollViewStyle={scrollViewStyle}
@@ -316,6 +317,7 @@ export default class PhotoManager extends Component {
       <Animated.View
         style={[animationStyle, styles.absolute, styles.headerContainer, forceTopBarAnim]}>
         <Header
+          appService={this.props.appService}
           editStepAnim={this.props.editStepAnim}
           window={this.props.window}
           styles={this.props.styles}
