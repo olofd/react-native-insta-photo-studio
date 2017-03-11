@@ -1,11 +1,12 @@
+
+import { events } from './event-emitter';
 import ImageMedia from './image-media';
-import EventEmitter from 'react-native/Libraries/EventEmitter/EventEmitter';
+import appService from './app-service';
 export default class MediaStore {
 
-    constructor(eventEmitter, magnification, window) {
+    constructor(eventEmitter, magnification) {
         this.eventEmitter = eventEmitter;
         this.currentMagnification = magnification;
-        this.currentWindow = window;
 
         this.selectedAsset = null;
         this.markedForExportMedia = [];
@@ -14,35 +15,61 @@ export default class MediaStore {
         this.multiExportMode = false;
         this.setupAutomaticSelection();
         this.setupMarkForExportMode();
+        this.setupCroppingListener();
+        this.setupRequestMarkedForExportEmitter();
+    }
+
+    setupRequestMarkedForExportEmitter() {
+        this.eventEmitter.addListener(events.requestMarkedForExportMedia, (listener, subscribe, unsubscribe) => {
+            listener(this.markedForExportMedia);
+            if (subscribe) {
+                const unsubscribeFunc = this.onMarkedForExportMediaChanged(listener, false);
+                unsubscribe && unsubscribe(unsubscribeFunc);
+            }
+        });
+    }
+
+    setupCroppingListener() {
+        /* appService.onEditStepUpdated((stepIndex, stepName, model) => {
+             debugger;
+         });*/
     }
 
     isMarkedForSelection(media) {
         return this.markedForExportMedia.some(exportMedia => exportMedia.uri === media.uri);
     }
 
+    onSelectionChanged(cb, initalCallback) {
+        if (initalCallback) {
+            cb && cb(this.selectedAsset);
+        }
+        this.eventEmitter.addListener(events.onSelectionChanged, cb);
+        return () => this.eventEmitter.removeListener(events.onSelectionChanged, cb);
+    }
+
     onToogleMultiExportMode(cb, initalCallback) {
         if (initalCallback) {
             cb && cb(this.multiExportMode);
         }
-        this.eventEmitter.addListener('onToogleMultiExportMode', cb);
-        return () => this.eventEmitter.removeListener('onToogleMultiExportMode', cb);
+        this.eventEmitter.addListener(events.onToogleMultiExportMode, cb);
+        return () => this.eventEmitter.removeListener(events.onToogleMultiExportMode, cb);
     }
 
     onMarkedForExportMediaChanged(cb, initalCallback) {
         if (initalCallback) {
             cb && cb(this.markedForExportMedia);
         }
-        this.eventEmitter.addListener('onMarkedForExportMediaChanged', cb);
-        return () => this.eventEmitter.removeListener('onMarkedForExportMediaChanged', cb);
+        this.eventEmitter.addListener(events.onMarkedForExportMediaChanged, cb);
+        return () => this.eventEmitter.removeListener(events.onMarkedForExportMediaChanged, cb);
     }
 
     toogleMultiExportMode() {
         this.multiExportMode = !this.multiExportMode;
-        this.eventEmitter.emit('onToogleMultiExportMode', this.multiExportMode);
+        this.eventEmitter.emit(events.onToogleMultiExportMode, this.multiExportMode);
     }
 
     setupAutomaticSelection() {
-        this.eventEmitter.onAlbumAssetServiceChanged((albumAssetService) => {
+        this.eventEmitter.addListener(events.onAlbumAssetServiceChanged, (albumAssetService) => {
             if (this.newAssetUnsubscribe) {
                 this.newAssetUnsubscribe();
             }
@@ -78,32 +105,32 @@ export default class MediaStore {
                 this.markedForExportMedia = [selectedMedia];
                 this.emitUnmarkForExport(previouslyMarked);
                 this.emitMarkedForExport(selectedMedia);
-                this.eventEmitter.emit('onMarkedForExportMediaChanged', this.markedForExportMedia, selectedMedia, this.markedForExportMedia.concat(previouslyMarked));
+                this.eventEmitter.emit(events.onMarkedForExportMediaChanged, this.markedForExportMedia, selectedMedia, this.markedForExportMedia.concat(previouslyMarked));
             }
         });
-        this.eventEmitter.addListener('onSelectionChanged', (newSelectionMedia, oldSelection, albumAssetService) => {
+        this.eventEmitter.addListener(events.onSelectionChanged, (newSelectionMedia, oldSelection, albumAssetService) => {
             if (this.multiExportMode) {
                 const alreadyMarkedMedia = this.markedForExportMedia.find(media => media === newSelectionMedia);
                 if (!alreadyMarkedMedia) {
                     this.markedForExportMedia.push(newSelectionMedia);
                     this.emitMarkedForExport(newSelectionMedia);
-                    this.eventEmitter.emit('onMarkedForExportMediaChanged', this.markedForExportMedia, newSelectionMedia, this.markedForExportMedia);
+                    this.eventEmitter.emit(events.onMarkedForExportMediaChanged, this.markedForExportMedia, newSelectionMedia, this.markedForExportMedia);
                 }
             } else {
                 const previouslyMarked = this.markedForExportMedia;
                 this.markedForExportMedia = [newSelectionMedia];
                 this.emitUnmarkForExport(previouslyMarked);
                 this.emitMarkedForExport(newSelectionMedia);
-                this.eventEmitter.emit('onMarkedForExportMediaChanged', this.markedForExportMedia, newSelectionMedia, this.markedForExportMedia.concat(previouslyMarked));
+                this.eventEmitter.emit(events.onMarkedForExportMediaChanged, this.markedForExportMedia, newSelectionMedia, this.markedForExportMedia.concat(previouslyMarked));
             }
         });
-        this.eventEmitter.addListener('onUnmarkRequested', (mediaToUnmark, albumAssetService) => {
+        this.eventEmitter.addListener(events.onUnmarkRequested, (mediaToUnmark, albumAssetService) => {
             if (this.multiExportMode) {
                 const alreadyMarkedMediaIndex = this.markedForExportMedia.indexOf(mediaToUnmark);
                 if (alreadyMarkedMediaIndex !== -1) {
                     this.markedForExportMedia.splice(alreadyMarkedMediaIndex, 1);
                     this.emitUnmarkForExport([mediaToUnmark]);
-                    this.eventEmitter.emit('onMarkedForExportMediaChanged', this.markedForExportMedia, mediaToUnmark, [...this.markedForExportMedia, mediaToUnmark]);
+                    this.eventEmitter.emit(events.onMarkedForExportMediaChanged, this.markedForExportMedia, mediaToUnmark, [...this.markedForExportMedia, mediaToUnmark]);
                     if (this.markedForExportMedia.length) {
                         const imageToSelect = this.markedForExportMedia[this.markedForExportMedia.length - 1];
                         this.selectionRequested(albumAssetService, imageToSelect);
@@ -112,7 +139,7 @@ export default class MediaStore {
                     //Media does not exist should be added
                     this.markedForExportMedia.push(mediaToUnmark);
                     this.emitMarkedForExport(mediaToUnmark);
-                    this.eventEmitter.emit('onMarkedForExportMediaChanged', this.markedForExportMedia, mediaToUnmark, this.markedForExportMedia);
+                    this.eventEmitter.emit(events.onMarkedForExportMediaChanged, this.markedForExportMedia, mediaToUnmark, this.markedForExportMedia);
                 }
             }
         });
@@ -120,12 +147,12 @@ export default class MediaStore {
 
     emitSelectionChanged(newSelectionImage, oldSelection, albumAssetService) {
         const newSelectionMedia = this.getImageMedia(newSelectionImage);
-        this.eventEmitter.emit('onSelectionChanged', newSelectionMedia, oldSelection, albumAssetService);
+        this.eventEmitter.emit(events.onSelectionChanged, newSelectionMedia, oldSelection, albumAssetService);
     }
 
     selectionRequested(albumAssetService, asset) {
         if (this.selectedAsset && asset.uri === this.selectedAsset.uri) {
-            this.eventEmitter.emit('onUnmarkRequested', this.getImageMedia(asset), albumAssetService);
+            this.eventEmitter.emit(events.onUnmarkRequested, this.getImageMedia(asset), albumAssetService);
             return;
         }
         const previouslySelected = this.selectedAsset;
@@ -145,7 +172,7 @@ export default class MediaStore {
             }
         }
         if (imagesToRerender.length) {
-            this.eventEmitter.emit('onSelectionChanged', this.selectedAssets, selectionModel.imagesToRerender, selectionModel.newSelection, albumAssetService);
+            this.eventEmitter.emit(events.onSelectionChanged, this.selectedAssets, selectionModel.imagesToRerender, selectionModel.newSelection, albumAssetService);
         }
     }
 
@@ -157,8 +184,7 @@ export default class MediaStore {
         if (currentImageMedia) {
             return currentImageMedia;
         }
-        const imageMedia = new ImageMedia();
-        imageMedia.initWithAsset(imageToUse, this.currentMagnification, this.currentWindow);
+        const imageMedia = new ImageMedia(this.eventEmitter, imageToUse, this.currentMagnification);
         this.currentLoadedMedia.push(imageMedia);
         return imageMedia;
     }

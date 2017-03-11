@@ -1,5 +1,5 @@
 import RNPhotosFramework from '../../react-native-photos-framework';
-
+import {events} from './event-emitter';
 export default class AlbumService {
 
     constructor(eventEmitter) {
@@ -19,7 +19,7 @@ export default class AlbumService {
     setCurrentAlbums(albums) {
         if (albums !== this.currentAlbums) {
             this.currentAlbums = this.filterAlbums(albums);
-            this.eventEmitter.emit('onCurrentAlbumsChanged', this.currentAlbums);
+            this.eventEmitter.emit(events.onCurrentAlbumsChanged, this.currentAlbums);
         }
         return this.currentAlbums;
     }
@@ -35,7 +35,7 @@ export default class AlbumService {
     setCurrentAlbum(album) {
         if (album !== this.currentAlbum) {
             this.currentAlbum = album;
-            this.eventEmitter.emit('onCurrentAlbumChanged', album);
+            this.eventEmitter.emit(events.onCurrentAlbumChanged, album);
         }
         return this.currentAlbum;
     }

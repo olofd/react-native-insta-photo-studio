@@ -1,12 +1,21 @@
-import EventEmitter from '../../event-emitter';
+import EventEmitter, { events } from './event-emitter';
 import {
     Image
 } from 'react-native';
+
+export const imageMediaEvents = {
+    onRequestImageInfo: 'onRequestImageInfo',
+    onToogleViewportZoom: 'onToogleViewportZoom'
+};
+
 export default class ImageMedia extends EventEmitter {
 
-    constructor() {
+    constructor(eventEmitter, image, magnification, cb) {
         super();
         this.isMarked = false;
+        eventEmitter.emit(events.requestWindow, (window) => {
+            this.initWithAsset(image, magnification, window, cb);
+        }, true);
     }
 
     get image() {
@@ -34,18 +43,18 @@ export default class ImageMedia extends EventEmitter {
             cb && cb(this.imageInfo);
             return () => { };
         }
-        this.addListener('onRequestImageInfo', cb);
-        return () => this.removeListener('onRequestImageInfo', cb);
+        this.addListener(imageMediaEvents.onRequestImageInfo, cb);
+        return () => this.removeListener(imageMediaEvents.onRequestImageInfo, cb);
     }
 
 
     toogleViewportZoom() {
-        this.emit('onToogleViewportZoom');
+        this.emit(imageMediaEvents.onToogleViewportZoom);
     }
 
     onToogleViewportZoom(cb) {
-        this.addListener('onToogleViewportZoom', cb);
-        return () => this.removeListener('onToogleViewportZoom', cb);
+        this.addListener(imageMediaEvents.onToogleViewportZoom, cb);
+        return () => this.removeListener(imageMediaEvents.onToogleViewportZoom, cb);
     }
 
     updateLastScrollEvent(scrollEvent) {
@@ -71,7 +80,7 @@ export default class ImageMedia extends EventEmitter {
             this.imageInfo.previewSurface = this.getMainPreviewImageDiemensions(this.imageInfo);
             this.imageInfo.zoomRect = this.getZoomRect(this.imageInfo);
             this.imageDataLoaded = true;
-            this.emit('onRequestImageInfo', this.imageInfo);
+            this.emit(imageMediaEvents.onRequestImageInfo, this.imageInfo);
             cb && cb(this.imageInfo);
         });
     }

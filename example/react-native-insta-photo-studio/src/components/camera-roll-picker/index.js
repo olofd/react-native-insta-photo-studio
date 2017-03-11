@@ -19,7 +19,6 @@ import {
 import WindowedListView from 'react-native/Libraries/Experimental/WindowedListView';
 import debounce from 'debounce';
 import { ScrollViewPanDelegator, BoundarySwipeDelgator, ContentOffsetDelegator, swipeUpDetector, swipeDownDetector } from '../../pan-delegator/scroll-view-pan-delegator';
-import cameraRollService from '../../services/camera-roll-service';
 import momentDurationFormat from 'moment-duration-format';
 import moment from 'moment';
 
@@ -63,6 +62,7 @@ class CameraRollPicker extends Component {
   }
 
   componentWillMount() {
+    const { cameraRollService, mediaStore } = this.props.appService;
     let { width } = Dimensions.get('window');
     let { imageMargin, imagesPerRow, containerWidth } = this.props;
 
@@ -83,7 +83,7 @@ class CameraRollPicker extends Component {
       })
     });
 
-    this.cameraRollServiceListeners.push(cameraRollService.onToogleMultiExportMode((multiExportModeEnabled) => {
+    this.cameraRollServiceListeners.push(mediaStore.onToogleMultiExportMode((multiExportModeEnabled) => {
       if (multiExportModeEnabled !== this.state.multiExportModeEnabled) {
         this.markAllRowsForRerender();
         this.setState({
@@ -290,7 +290,8 @@ class CameraRollPicker extends Component {
   }
 
   _selectImage(image, rowIndex, rowData) {
-    cameraRollService.selectionRequested(this.albumAssetService, image);
+    const { mediaStore } = this.props.appService;
+    mediaStore.selectionRequested(this.albumAssetService, image);
   }
 
   onScrollAdjustmentOnSelect(rowIndex) {

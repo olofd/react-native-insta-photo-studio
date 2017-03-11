@@ -10,7 +10,6 @@ import {
 import React, { Component } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import I18n from 'react-native-i18n';
-import appService from '../services/app-service';
 
 export default class PhotoManagerHeader extends Component {
 
@@ -37,7 +36,7 @@ export default class PhotoManagerHeader extends Component {
 
   componentWillMount() {
     this.setupStyleObjs(this.props);
-    this.listeners.push(appService.onEditStepUpdated((stepIndex, stepName, stepModel) => {
+    this.listeners.push(this.props.appService.onEditStepUpdated((stepIndex, stepName, stepModel) => {
       this.setState({
         currentStep: stepIndex
       });
@@ -71,11 +70,11 @@ export default class PhotoManagerHeader extends Component {
   }
 
   onBackAction() {
-    appService.moveEditStep('previous');
+    this.props.appService.moveEditStep('previous');
   }
 
   onNextButtonPress() {
-    appService.moveEditStep('next');
+    this.props.appService.moveEditStep('next');
   }
 
   renderRightButton() {
@@ -119,7 +118,7 @@ export default class PhotoManagerHeader extends Component {
         <Animated.View style={[styles.overlayButton, leftBackButtonStyle]}>
           <TouchableOpacity
             style={[this.state.buttonArea, styles.leftButtonArea, { paddingRight: 48 }]}
-            onPress={this.onBackAction}>
+            onPress={this.onBackAction.bind(this)}>
             <Icon style={styles.leftBackButtonStyle} name='ios-arrow-back-outline'></Icon>
           </TouchableOpacity>
         </Animated.View>

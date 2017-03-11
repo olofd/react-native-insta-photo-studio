@@ -4,22 +4,16 @@ import {
   Dimensions
 } from 'react-native';
 import RNPhotosFramework from '../../react-native-photos-framework';
-import EventEmitter from '../../event-emitter';
 import AlbumService from './album-service';
 import AlbumAssetsService from './asset-loader/album-asset-service';
-import MediaStore from './media-store';
-class CameraRollService extends EventEmitter {
+import {events} from './event-emitter';
+class CameraRollService {
 
-  constructor() {
-    super();
+  constructor(eventEmitter) {
+    this.eventEmitter = eventEmitter;
     this.albumAssetServices = [];
-    this.albumService = new AlbumService(this);
-    this.mediaStore = new MediaStore(this, 2, Dimensions.get('window'));
+    this.albumService = new AlbumService(eventEmitter);
     this.setupAlbumAssetService();
-  }
-
-  selectionRequested(albumAssetService, asset) {
-    this.mediaStore.selectionRequested(albumAssetService, asset);
   }
 
   setCurrentAlbum(album) {
@@ -30,24 +24,16 @@ class CameraRollService extends EventEmitter {
     return this.albumService.fetchAlbums();
   }
 
-  toogleMultiExportMode() {
-    this.mediaStore.toogleMultiExportMode();
-  }
-
-  openSettings() {
-    Linking.openURL('app-settings:');
-  }
-
   setupAlbumAssetService() {
     this.onCurrentAlbumChanged((currentAlbum) => {
       let albumAssetService = this.albumAssetServices.find(assetService => assetService.album.localIdentifier === currentAlbum.localIdentifier);
       if (albumAssetService === undefined) {
-        albumAssetService = new AlbumAssetsService(this, currentAlbum);
+        albumAssetService = new AlbumAssetsService(this.eventEmitter, currentAlbum);
         this.albumAssetServices.push(albumAssetService);
       }
       if (albumAssetService !== this.currentAlbumAssetService) {
         this.currentAlbumAssetService = albumAssetService;
-        this.emit('albumAssetServiceChanged', this.currentAlbumAssetService);
+        this.eventEmitter.emit(events.onAlbumAssetServiceChanged, this.currentAlbumAssetService);
       }
     });
   }
@@ -56,51 +42,33 @@ class CameraRollService extends EventEmitter {
     if (initalCallback && this.currentAlbumAssetService) {
       cb && cb(this.currentAlbumAssetService);
     }
-    this.addListener('albumAssetServiceChanged', cb);
-    return () => this.removeListener('albumAssetServiceChanged', cb);
-  }
-
-  onSelectionChanged(cb) {
-    this.addListener('onSelectionChanged', cb);
-    return () => this.removeListener('onSelectionChanged', cb);
-  }
-
-  onListSelectionChanged(cb) {
-    this.addListener('onListSelectionChanged', cb);
-    return () => this.removeListener('onListSelectionChanged', cb);
+    this.eventEmitter.addListener(events.onAlbumAssetServiceChanged, cb);
+    return () => this.eventEmitter.removeListener(events.onAlbumAssetServiceChanged, cb);
   }
 
   onAuthorizationChanged(cb) {
-    this.addListener('onAuthorizationChanged', cb);
-    return () => this.removeListener('onAuthorizationChanged', cb);
+    this.eventEmitter.addListener(events.onAuthorizationChanged, cb);
+    return () => this.eventEmitter.removeListener(events.onAuthorizationChanged, cb);
   }
 
   onCurrentAlbumsChanged(cb) {
-    this.addListener('onCurrentAlbumsChanged', cb);
-    return () => this.removeListener('onCurrentAlbumsChanged', cb);
+    this.eventEmitter.addListener(events.onCurrentAlbumsChanged, cb);
+    return () => this.eventEmitter.removeListener(events.onCurrentAlbumsChanged, cb);
   }
 
   onCurrentAlbumChanged(cb) {
-    this.addListener('onCurrentAlbumChanged', cb);
-    return () => this.removeListener('onCurrentAlbumChanged', cb);
-  }
-
-  onMarkedForExportMediaChanged(cb, initalCallback) {
-    return this.mediaStore.onMarkedForExportMediaChanged(cb, initalCallback);
-  }
-
-  onToogleMultiExportMode(cb, initalCallback) {
-    return this.mediaStore.onToogleMultiExportMode(cb, initalCallback);
+    this.eventEmitter.addListener(events.onCurrentAlbumChanged, cb);
+    return () => this.eventEmitter.removeListener(events.onCurrentAlbumChanged, cb);
   }
 
   async authorize() {
     const authStatus = await RNPhotosFramework.requestAuthorization();
     if (authStatus.isAuthorized !== this.isAuthorized) {
-      this.emit('onAuthorizationChanged', authStatus);
+      this.eventEmitter.emit(events.onAuthorizationChanged, authStatus);
       this.isAuthorized = authStatus.isAuthorized;
     }
     return authStatus;
   }
 }
 
-export default new CameraRollService();
+export default CameraRollService;

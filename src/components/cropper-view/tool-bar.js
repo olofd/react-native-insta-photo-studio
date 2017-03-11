@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { View, StyleSheet, PixelRatio, TouchableOpacity, InteractionManager } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import camerRollService from '../../services/camera-roll-service';
 
 export default class ToolBar extends Component {
 
@@ -12,8 +11,10 @@ export default class ToolBar extends Component {
     };
     this.listeners = [];
   }
+
   componentWillMount() {
-    this.listeners.push(camerRollService.onToogleMultiExportMode((multiExportModeEnabled) => {
+    const { mediaStore } = this.props.appService;
+    this.listeners.push(mediaStore.onToogleMultiExportMode((multiExportModeEnabled) => {
       if (multiExportModeEnabled !== this.state.multiExportModeEnabled) {
         this.setState({
           multiExportModeEnabled: multiExportModeEnabled
@@ -31,11 +32,12 @@ export default class ToolBar extends Component {
   }
 
   toggleSelectMultiple() {
+    const { mediaStore } = this.props.appService;
     this.setState({
       multiExportModeEnabled: !this.state.multiExportModeEnabled
     });
     InteractionManager.runAfterInteractions(() => {
-      camerRollService.toogleMultiExportMode();
+      mediaStore.toogleMultiExportMode();
     });
   }
 
