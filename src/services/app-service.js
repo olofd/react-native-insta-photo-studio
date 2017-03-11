@@ -8,11 +8,11 @@ import MediaStore from './media-store';
 
 class AppService extends EventEmitter {
 
-    constructor() {
+    constructor(imageEditor) {
         super();
         this.currentEditStep = 0;
         this.cameraRollService = new CameraRollService(this);
-        this.mediaStore = new MediaStore(this, CROPPER_MAGNIFICATION);
+        this.mediaStore = new MediaStore(this, CROPPER_MAGNIFICATION, imageEditor);
         this.currentWindow = Dimensions.get('window');
         this.setupRequestWindow();
     }

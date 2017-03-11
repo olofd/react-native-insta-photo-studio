@@ -6,8 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Text,
-  PixelRatio,
-  ImageEditor
+  PixelRatio
 } from 'react-native';
 import Video from 'react-native-video';
 import OverlayGrid from '../overlay-grid';

@@ -10,9 +10,11 @@ export const imageMediaEvents = {
 
 export default class ImageMedia extends EventEmitter {
 
-    constructor(eventEmitter, image, magnification, cb) {
+    constructor(eventEmitter, image, magnification, cb, imageEditor) {
         super();
+        this.imageEditor = imageEditor;
         this.isMarked = false;
+        this.magnification = magnification;
         eventEmitter.emit(events.requestWindow, (window) => {
             this.initWithAsset(image, magnification, window, cb);
         }, true);
@@ -216,13 +218,14 @@ export default class ImageMedia extends EventEmitter {
         const offsetY = this.lastScrollEvent.contentOffset.y / this.lastScrollEvent.contentSize.height;
         const offsetX = this.lastScrollEvent.contentOffset.x / this.lastScrollEvent.contentSize.width;
         const {
-            width,
-            height
-        } = this.state.currentImageDimensions;
+            image,
+            magnification
+        } = this.imageInfo;
+        const {width, height} = image;
         let newX = width * offsetX;
         let newY = height * offsetY;
-        let newWidth = width / (this.lastScrollEvent.zoomScale * this.getMagnification());
-        let newHeight = width / (this.lastScrollEvent.zoomScale * this.getMagnification());
+        let newWidth = width / (this.lastScrollEvent.zoomScale * magnification);
+        let newHeight = width / (this.lastScrollEvent.zoomScale * magnification);
         if (newWidth > width) {
             newWidth = width;
         }
@@ -247,8 +250,9 @@ export default class ImageMedia extends EventEmitter {
         };
 
         return new Promise((resolve, reject) => {
-            ImageEditor.cropImage(this.state.currentImage, cropData, (croppedUri) => {
-                resolve(croppedUri);
+            this.imageEditor.cropImage(image.image, cropData, (croppedUri) => {
+                this.croppedUri = croppedUri;
+                resolve(this);
             }, (failure) => reject(failure));
         });
     }

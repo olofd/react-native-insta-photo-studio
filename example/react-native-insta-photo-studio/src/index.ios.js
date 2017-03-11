@@ -1,6 +1,6 @@
 import PhotoManager from './photo-manager';
 import React, { Component } from 'react';
-import { View, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
+import { View, StyleSheet, Animated, Dimensions, Easing, ImageEditor } from 'react-native';
 import CameraRollService from './services/camera-roll-service';
 import AlbumList from './components/album-list';
 import I18N from './I18n';
@@ -25,7 +25,7 @@ export default class InstaPhotoStudio extends Component {
       currentAlbum: null,
       showAlbumsAnim: new Animated.Value(1),
       editStepAnim: new Animated.Value(0),
-      appService: new AppService()
+      appService: new AppService(ImageEditor)
     };
     this.albumsButtonPressed = false;
   }

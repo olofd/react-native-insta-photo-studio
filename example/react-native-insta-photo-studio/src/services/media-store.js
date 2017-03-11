@@ -1,13 +1,12 @@
-
 import { events } from './event-emitter';
 import ImageMedia from './image-media';
 import appService from './app-service';
 export default class MediaStore {
 
-    constructor(eventEmitter, magnification) {
+    constructor(eventEmitter, magnification, imageEditor) {
         this.eventEmitter = eventEmitter;
         this.currentMagnification = magnification;
-
+        this.imageEditor = imageEditor;
         this.selectedAsset = null;
         this.markedForExportMedia = [];
 
@@ -30,9 +29,13 @@ export default class MediaStore {
     }
 
     setupCroppingListener() {
-        /* appService.onEditStepUpdated((stepIndex, stepName, model) => {
-             debugger;
-         });*/
+        this.eventEmitter.addListener(events.onEditStepUpdated, (stepIndex, stepName, stepModel) => {
+            if (stepName === 'crop') {
+                Promise.all(this.markedForExportMedia.map(media => media.crop())).then(() => {
+                    debugger;
+                });
+            }
+        });
     }
 
     isMarkedForSelection(media) {
@@ -184,7 +187,7 @@ export default class MediaStore {
         if (currentImageMedia) {
             return currentImageMedia;
         }
-        const imageMedia = new ImageMedia(this.eventEmitter, imageToUse, this.currentMagnification);
+        const imageMedia = new ImageMedia(this.eventEmitter, imageToUse, this.currentMagnification, undefined, this.imageEditor);
         this.currentLoadedMedia.push(imageMedia);
         return imageMedia;
     }
