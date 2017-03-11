@@ -10,11 +10,13 @@ import {
 import React, { Component } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import I18n from 'react-native-i18n';
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+import appService from '../services/app-service';
+
 export default class PhotoManagerHeader extends Component {
 
   constructor() {
     super();
+    this.listeners = [];
     this.state = {
       editStepAnim: new Animated.Value(0),
       currentStep: 0
@@ -29,16 +31,21 @@ export default class PhotoManagerHeader extends Component {
     })
   }
 
+  componentWillUnmount() {
+    this.listeners.forEach(cb => cb && cb());
+  }
+
   componentWillMount() {
     this.setupStyleObjs(this.props);
+    this.listeners.push(appService.onEditStepUpdated((stepIndex, stepName, stepModel) => {
+      this.setState({
+        currentStep: stepIndex
+      });
+    }));
   }
 
   componentWillReceiveProps(nextProps) {
     this.setupStyleObjs(nextProps);
-  }
-
-  onBackAction() {
-    
   }
 
   setupStyleObjs(props) {
@@ -59,16 +66,16 @@ export default class PhotoManagerHeader extends Component {
     this.props.onAlbumDropDownPressed();
   }
 
+  onCancelAction() {
+    this.props.onCancelAction && this.props.onCancelAction();
+  }
+
+  onBackAction() {
+    appService.moveEditStep('previous');
+  }
+
   onNextButtonPress() {
-    const nextStep = this.state.currentStep === 2 ? 0 : this.state.currentStep + 1;
-    Animated.timing(this.state.editStepAnim, {
-      toValue: nextStep,
-      duration: 300,
-      useNativeDriver: true
-    }).start();
-    this.setState({
-      currentStep: nextStep
-    });
+    appService.moveEditStep('next');
   }
 
   renderRightButton() {
@@ -90,7 +97,7 @@ export default class PhotoManagerHeader extends Component {
     return (
       <TouchableOpacity
         style={[this.state.buttonArea, styles.exitButton]}
-        onPress={this.props.onCancelAction}>
+        onPress={this.onCancelAction}>
         <Icon name='ios-close' style={styles.exitIcon}></Icon>
       </TouchableOpacity>
     );
@@ -98,28 +105,28 @@ export default class PhotoManagerHeader extends Component {
 
   _renderLeftButton() {
     const leftCancelButtonStyle = {
-      opacity: this.state.editStepAnim.interpolate({
+      opacity: this.props.editStepAnim.interpolate({
         inputRange: [0, 1],
         outputRange: [1, 0],
         extrapolate: 'clamp'
       })
     };
     const leftBackButtonStyle = {
-      opacity: this.state.editStepAnim
+      opacity: this.props.editStepAnim
     };
     return (
       <View>
         <Animated.View style={[styles.overlayButton, leftBackButtonStyle]}>
           <TouchableOpacity
             style={[this.state.buttonArea, styles.leftButtonArea, { paddingRight: 48 }]}
-            onPress={this.props.onCancelAction}>
+            onPress={this.onBackAction}>
             <Icon style={styles.leftBackButtonStyle} name='ios-arrow-back-outline'></Icon>
           </TouchableOpacity>
         </Animated.View>
         <Animated.View style={[leftCancelButtonStyle]} pointerEvents={this.state.currentStep === 0 ? 'auto' : 'none'}>
           <TouchableOpacity
             style={[this.state.buttonArea, styles.leftButtonArea]}
-            onPress={this.onBackAction.bind(this)}>
+            onPress={this.onCancelAction.bind(this)}>
             <Text style={[styles.cancelButton, this.props.styles.fontStyle]}>{I18n.t('cancel')}</Text>
           </TouchableOpacity>
         </Animated.View>
@@ -180,14 +187,14 @@ export default class PhotoManagerHeader extends Component {
 
   _renderCenterColumnStepOne() {
     const centerColumnStyle = {
-      opacity: this.state.editStepAnim.interpolate({
+      opacity: this.props.editStepAnim.interpolate({
         inputRange: [0, 1],
         outputRange: [1, 0],
         extrapolate: 'clamp'
       }),
       transform: [
         {
-          translateX: this.state.editStepAnim.interpolate({
+          translateX: this.props.editStepAnim.interpolate({
             inputRange: [0, 1],
             outputRange: [0, ((-this.props.window.width) / 2) + 100]
           })
@@ -204,14 +211,14 @@ export default class PhotoManagerHeader extends Component {
 
   _renderCenterColumnStepTwo() {
     const centerColumnStyle = {
-      opacity: this.state.editStepAnim.interpolate({
+      opacity: this.props.editStepAnim.interpolate({
         inputRange: [0, 1, 2],
         outputRange: [0, 1, 0],
         extrapolate: 'clamp'
       }),
       transform: [
         {
-          translateX: this.state.editStepAnim.interpolate({
+          translateX: this.props.editStepAnim.interpolate({
             inputRange: [0, 1, 2],
             outputRange: [this.props.window.width, 0, ((-this.props.window.width) / 2) + 100]
           })
@@ -222,21 +229,21 @@ export default class PhotoManagerHeader extends Component {
       <Animated.View style={[styles.headerContainer, centerColumnStyle]}>
         <Text style={[styles.title, this.props.styles.fontStyle]}>
           {I18n.t('edit')}
-      </Text>
+        </Text>
       </Animated.View >
     );
   }
 
   _renderCenterColumnStepThree() {
     const centerColumnStyle = {
-      opacity: this.state.editStepAnim.interpolate({
+      opacity: this.props.editStepAnim.interpolate({
         inputRange: [0, 1, 2],
         outputRange: [0, 0, 1],
         extrapolate: 'clamp'
       }),
       transform: [
         {
-          translateX: this.state.editStepAnim.interpolate({
+          translateX: this.props.editStepAnim.interpolate({
             inputRange: [1, 2],
             outputRange: [this.props.window.width, 0],
             extrapolate: 'clamp'
@@ -248,7 +255,7 @@ export default class PhotoManagerHeader extends Component {
       <Animated.View style={[styles.headerContainer, centerColumnStyle]}>
         <Text style={[styles.title, this.props.styles.fontStyle]}>
           {I18n.t('share')}
-      </Text>
+        </Text>
       </Animated.View>
 
     );
@@ -293,6 +300,7 @@ export default class PhotoManagerHeader extends Component {
   */
 
   render() {
+    console.log('render');
     return (
       <View
         style={[

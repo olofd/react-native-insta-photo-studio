@@ -103,7 +103,7 @@ export default class PhotoManager extends Component {
 
   onCancelAction() {
     this.props.onClose && this.props.onClose();
-  }
+  } 
 
   willStartAnimating() {
     this.isResponding = false;
@@ -316,6 +316,7 @@ export default class PhotoManager extends Component {
       <Animated.View
         style={[animationStyle, styles.absolute, styles.headerContainer, forceTopBarAnim]}>
         <Header
+          editStepAnim={this.props.editStepAnim}
           window={this.props.window}
           styles={this.props.styles}
           renderMenu={renderMenu}

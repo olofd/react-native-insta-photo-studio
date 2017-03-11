@@ -1,38 +1,40 @@
 import PhotoManager from './photo-manager';
-import React, {Component} from 'react';
-import {View, StyleSheet, Animated, Dimensions, Easing} from 'react-native';
+import React, { Component } from 'react';
+import { View, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
 import photoFrameworkService from './services/camera-roll-service';
 import AlbumList from './components/album-list';
 import I18N from './I18n';
+import appService from './services/app-service';
 
 export default class InstaPhotoStudio extends Component {
 
   static defaultProps = {
     fontFamily: 'Arial',
-    topBarHeight : 45,
-    footerHeight : 45,
-    cropperMagnification : 2.0,
-    finnishCropperAnimationDuration : 200,
-    showAlbumsAnimationDuration : 200
+    topBarHeight: 45,
+    footerHeight: 45,
+    cropperMagnification: 2.0,
+    finnishCropperAnimationDuration: 200,
+    showAlbumsAnimationDuration: 200
   }
 
   constructor() {
     super();
-    this.ch = [];
+    this.listeners = [];
     this.state = {
       window: Dimensions.get('window'),
       currentAlbum: null,
-      showAlbumsAnim: new Animated.Value(1)
+      showAlbumsAnim: new Animated.Value(1),
+      editStepAnim: new Animated.Value(0)
     };
     this.albumsButtonPressed = false;
   }
 
   setupStyleObjs(props) {
-    if(!this.state.styles || props.fontFamily !== this.props.fontFamily) {
+    if (!this.state.styles || props.fontFamily !== this.props.fontFamily) {
       this.setState({
-        styles : StyleSheet.create({
-          fontStyle : {
-            fontFamily : props.fontFamily
+        styles: StyleSheet.create({
+          fontStyle: {
+            fontFamily: props.fontFamily
           }
         })
       });
@@ -40,11 +42,11 @@ export default class InstaPhotoStudio extends Component {
   }
 
   componentWillUnmount() {
-    this.ch.forEach(cb => cb && cb());
+    this.listeners.forEach(cb => cb && cb());
   }
 
   onLayout(e) {
-    const {width, height} = e.nativeEvent.layout;
+    const { width, height } = e.nativeEvent.layout;
     if (width !== this.state.window.width || height !== this.state.window.height) {
       this.setState({
         window: {
@@ -62,20 +64,30 @@ export default class InstaPhotoStudio extends Component {
   componentWillMount() {
     I18N(this.props.translations);
     this.setupStyleObjs(this.props);
-    this.ch.push(photoFrameworkService.onCurrentAlbumsChanged((currentAlbums) => {
-      this.setState({currentAlbums: currentAlbums});
+    this.listeners.push(photoFrameworkService.onCurrentAlbumsChanged((currentAlbums) => {
+      this.setState({ currentAlbums: currentAlbums });
     }));
 
-    this.ch.push(photoFrameworkService.onCurrentAlbumChanged((currentAlbum) => {
-      this.setState({currentAlbum: currentAlbum});
+    this.listeners.push(photoFrameworkService.onCurrentAlbumChanged((currentAlbum) => {
+      this.setState({ currentAlbum: currentAlbum });
     }));
 
-    this.ch.push(photoFrameworkService.onAuthorizationChanged((authStatus) => {
-      this.setState({authStatus: authStatus});
+    this.listeners.push(photoFrameworkService.onAuthorizationChanged((authStatus) => {
+      this.setState({ authStatus: authStatus });
+    }));
+
+    this.listeners.push(appService.onEditStepUpdated((stepIndex, stepName, stepModel) => {
+      this.state.editStepAnim.stopAnimation((value) => {
+        Animated.timing(this.state.editStepAnim, {
+          toValue: stepIndex,
+          duration: 300,
+          useNativeDriver: true
+        }).start();
+      });
     }));
 
     photoFrameworkService.authorize().then((authStatus) => {
-      if(authStatus.isAuthorized) {
+      if (authStatus.isAuthorized) {
         photoFrameworkService.fetchAlbums();
       }
     });
@@ -95,7 +107,7 @@ export default class InstaPhotoStudio extends Component {
           : 1,
         duration: this.props.showAlbumsAnimationDuration,
         useNativeDriver: true,
-        easing: Easing. in(Easing.ease)
+        easing: Easing.in(Easing.ease)
       }).start();
     });
   }
@@ -103,11 +115,11 @@ export default class InstaPhotoStudio extends Component {
 
   render() {
     const statePass = {
-      window : this.state.window,
-      styles : this.state.styles
+      window: this.state.window,
+      styles: this.state.styles
     };
     const showAlbumViewAnim = {
-      bottom : this.props.topBarHeight,
+      bottom: this.props.topBarHeight,
       transform: [
         {
           translateY: this.state.showAlbumsAnim.interpolate({
@@ -128,6 +140,7 @@ export default class InstaPhotoStudio extends Component {
           authStatus={this.state.authStatus}
           onAlbumDropDownPressed={this.onAlbumDropDownPressed.bind(this)}
           showAlbumsAnim={this.state.showAlbumsAnim}
+          editStepAnim={this.state.editStepAnim}
           currentAlbum={this.state.currentAlbum}></PhotoManager>
         <Animated.View style={[styles.albumListModal, showAlbumViewAnim]}>
           <AlbumList {...statePass} {...this.props} albums={this.state.currentAlbums} onAlbumSelected={this.onAlbumSelected.bind(this)}></AlbumList>
