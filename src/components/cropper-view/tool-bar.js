@@ -11,9 +11,9 @@ export default class ToolBar extends Component {
     };
     this.listeners = [];
   }
-  
+
   componentWillMount() {
-    const {mediaStore} = this.props.appService;
+    const { mediaStore } = this.props.appService;
     this.listeners.push(mediaStore.onToogleMultiExportMode((multiExportModeEnabled) => {
       if (multiExportModeEnabled !== this.state.multiExportModeEnabled) {
         this.setState({
@@ -32,11 +32,12 @@ export default class ToolBar extends Component {
   }
 
   toggleSelectMultiple() {
+    const { mediaStore } = this.props.appService;
     this.setState({
       multiExportModeEnabled: !this.state.multiExportModeEnabled
     });
     InteractionManager.runAfterInteractions(() => {
-      camerRollService.toogleMultiExportMode();
+      mediaStore.toogleMultiExportMode();
     });
   }
 

@@ -62,7 +62,7 @@ class CameraRollPicker extends Component {
   }
 
   componentWillMount() {
-    const {cameraRollService, mediaStore} = this.props.appService;
+    const { cameraRollService, mediaStore } = this.props.appService;
     let { width } = Dimensions.get('window');
     let { imageMargin, imagesPerRow, containerWidth } = this.props;
 
@@ -290,7 +290,8 @@ class CameraRollPicker extends Component {
   }
 
   _selectImage(image, rowIndex, rowData) {
-    cameraRollService.selectionRequested(this.albumAssetService, image);
+    const { mediaStore } = this.props.appService;
+    mediaStore.selectionRequested(this.albumAssetService, image);
   }
 
   onScrollAdjustmentOnSelect(rowIndex) {

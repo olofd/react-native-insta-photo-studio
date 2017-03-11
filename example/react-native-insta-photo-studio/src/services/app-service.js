@@ -37,8 +37,8 @@ class AppService extends EventEmitter {
         if (initalCallback && this.window) {
             cb && cb(this.currentWindow);
         }
-        this.addListener(events.onEditStepUpdated, cb);
-        return () => this.removeListener(events.onEditStepUpdated, cb);
+        this.addListener(events.onWindowChanged, cb);
+        return () => this.removeListener(events.onWindowChanged, cb);
     }
 
     setupRequestWindow() {
@@ -52,16 +52,17 @@ class AppService extends EventEmitter {
     }
 
     moveEditStep(direction) {
-        const markedForExport = cameraRollService.mediaStore.markedForExportMedia;
-        if (!markedForExport || !markedForExport.length) {
-            return this.emitEditStepMoveError('No media to move to next step');
-        }
-        const nextStep = this.getNextStep(direction);
-        if (nextStep === undefined) {
-            return this.emitEditStepMoveError('Invalid direction');
-        }
-        this.currentEditStep = nextStep;
-        return this.emitEditStepUpdated(nextStep, markedForExport);
+        this.emit(events.requestMarkedForExportMedia, (markedForExport) => {
+            if (!markedForExport || !markedForExport.length) {
+                return this.emitEditStepMoveError('No media to move to next step');
+            }
+            const nextStep = this.getNextStep(direction);
+            if (nextStep === undefined) {
+                return this.emitEditStepMoveError('Invalid direction');
+            }
+            this.currentEditStep = nextStep;
+            return this.emitEditStepUpdated(nextStep, markedForExport);
+        });
     }
 
     emitEditStepUpdated(nextStep, model) {

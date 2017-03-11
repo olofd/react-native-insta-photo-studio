@@ -37,7 +37,7 @@ export default class AlbumAssetService extends EventEmitter {
                 columnSplitter.markRowsForRerender(this.columnSplittedAssets, affectedMedia.map(media => media.uri), affectedImage);
             }
             this.markedForExportMedia = markedForExportMedia;
-            this.emit(albumAssetServiceEvents.onMarkedForExportMediaChanged, markedForExportMedia, this.columnSplittedAssets);
+            this.emit(albumAssetServiceEvents.onMarkedForExportMediaChanged,  this.markedForExportMedia, this.columnSplittedAssets);
         }, true);
         this.eventEmitter.addListener(events.onSelectionChanged, (newSelection, oldSelection, albumAssetService) => {
             if (albumAssetService === this) {
