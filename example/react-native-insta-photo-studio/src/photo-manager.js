@@ -23,6 +23,7 @@ import Swiper from './components/swiper';
 import clamp from 'clamp';
 import Unauthorized from './components/unauthorized';
 import I18n from 'react-native-i18n';
+import EditView from './components/edit';
 const SCROLLVIEW_REF = "SCROLLVIEW_REF";
 const imageMargin = 2;
 export default class PhotoManager extends Component {
@@ -335,6 +336,15 @@ export default class PhotoManager extends Component {
     );
   }
 
+  _renderEditView() {
+    const topStyle = {
+      top : this.props.topBarHeight
+    };
+    return (
+      <EditView appService={this.props.appService} style={[styles.absolute, topStyle]}></EditView>
+    );
+  }
+
   render() {
     const animationStyle = {
       transform: [
@@ -371,6 +381,7 @@ export default class PhotoManager extends Component {
             ? 'library'
             : 'photo'}
           height={this.props.footerHeight}></Footer>
+        {this._renderEditView()}
       </View>
     );
   }

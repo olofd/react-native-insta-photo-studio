@@ -1,5 +1,5 @@
 import EventEmitterEngine from '../../event-emitter';
-const debug = true;
+const debug = false;
 class EventEmitter extends EventEmitterEngine {
     constructor() {
         super();
@@ -36,6 +36,7 @@ export const events = {
     onAuthorizationChanged : 'onAuthorizationChanged',
     onCurrentAlbumsChanged : 'onCurrentAlbumsChanged',
     onCurrentAlbumChanged : 'onCurrentAlbumChanged',
+    requestEditStepMove : 'requestEditStepMove',
     onEditStepUpdated : 'onEditStepUpdated',
     onEditStepMoveError : 'onEditStepMoveError',
     onMarkedForExportMediaChanged : 'onMarkedForExportMediaChanged',

@@ -56,7 +56,7 @@ export default class ImageCropperView extends Component {
   }
 
   componentWillUnmount() {
-    this.unregisterFromImage();
+    this.unregisterFromImage(); 
   }
 
   unregisterFromImage() {

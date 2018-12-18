@@ -1,2 +1,2 @@
-import RNIPS from './src';
-export default RNIPS; 
+import RNIPS from "./src";
+export default RNIPS;

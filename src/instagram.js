@@ -10,21 +10,26 @@ import {
 } from 'react-native';
 import React from 'react';
 import GL from 'gl-react';
-import TestImage from '../../../resources/test.jpg';
+import TestImage from './test-media/test.jpg';
 import FilterSeventySeven from './filters/1977';
 import Normal from './filters/normal';
 import Multi from './filters/multi';
 import App from './effects/App';
-console.log(TestImage);
-import {Surface} from 'gl-react-native';
+import { Surface, resolveAssetSource } from 'gl-react-native';
+import RNPhotosFramework from '../react-native-photos-framework';
+
+
+
+console.log(resolveAssetSource(TestImage));
+
 var {
   width,
   height
 } = Dimensions.get('window');
 var rn_instagram = React.createClass({
-  getInitialState: function() {
+  getInitialState: function () {
     return {
-      width:100,
+      width: 100,
       height: 100,
       saturation: 1,
       brightness: 1,
@@ -35,7 +40,7 @@ var rn_instagram = React.createClass({
       mixFactor: 0
     };
   },
-  renderWithDimensions: function(layout) {
+  renderWithDimensions: function (layout) {
     var {
       width,
       height
@@ -44,6 +49,13 @@ var rn_instagram = React.createClass({
       width,
       height
     })
+  },
+  componentWillMount() {
+    RNPhotosFramework.getAssets().then((data) => {
+      this.setState({
+        image : data.assets[3].image
+      });
+    });
   },
   /*
   saturation={this.state.saturation}
@@ -56,7 +68,10 @@ var rn_instagram = React.createClass({
   height={this.state.height}
   image='https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg'
   */
-  getImage: function() {
+  getImage: function () {
+    if(!this.state.image) {
+      return null;
+    }
     return (
       <Surface width={280} height={280}>
         <Instagram
@@ -69,10 +84,8 @@ var rn_instagram = React.createClass({
           mixFactor={this.state.mixFactor}
           width={this.state.width}
           height={this.state.height}
-          image='https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg'
-          ></Instagram>
-
-
+          image={this.state.image}
+        ></Instagram>
       </Surface>
 
     )
@@ -111,11 +124,11 @@ var rn_instagram = React.createClass({
     inputImageTexture3='valenciaGradientMap.png'
   >
   */
-  render: function() {
+  render: function () {
     return (
       <View style={styles.container}>
         <View style={styles.container} onLayout={this.renderWithDimensions}>
-          { this.state.width ? this.getImage() : null}
+          {this.state.width ? this.getImage() : null}
         </View>
         <ScrollView style={styles.container}>
           <View>
@@ -124,7 +137,7 @@ var rn_instagram = React.createClass({
               value={this.state.mixFactor}
               minimumValue={0}
               maximumValue={2}
-              onValueChange={(mixFactor) => this.setState({mixFactor})}
+              onValueChange={(mixFactor) => this.setState({ mixFactor })}
             />
           </View>
           <View>
@@ -133,7 +146,7 @@ var rn_instagram = React.createClass({
               value={this.state.brightness}
               minimumValue={0}
               maximumValue={3}
-              onValueChange={(brightness) => this.setState({brightness})}
+              onValueChange={(brightness) => this.setState({ brightness })}
             />
           </View>
           <View>
@@ -142,7 +155,7 @@ var rn_instagram = React.createClass({
               value={this.state.saturation}
               minimumValue={0}
               maximumValue={3}
-              onValueChange={(saturation) => this.setState({saturation})}
+              onValueChange={(saturation) => this.setState({ saturation })}
             />
           </View>
           <View>
@@ -151,7 +164,7 @@ var rn_instagram = React.createClass({
               value={this.state.contrast}
               minimumValue={0}
               maximumValue={3}
-              onValueChange={(contrast) => this.setState({contrast})}
+              onValueChange={(contrast) => this.setState({ contrast })}
             />
           </View>
           <View>
@@ -160,7 +173,7 @@ var rn_instagram = React.createClass({
               value={this.state.sepia}
               minimumValue={0}
               maximumValue={1}
-              onValueChange={(sepia) => this.setState({sepia})}
+              onValueChange={(sepia) => this.setState({ sepia })}
             />
           </View>
           <View>
@@ -169,7 +182,7 @@ var rn_instagram = React.createClass({
               value={this.state.gray}
               minimumValue={0}
               maximumValue={1}
-              onValueChange={(gray) => this.setState({gray})}
+              onValueChange={(gray) => this.setState({ gray })}
             />
           </View>
           <View>
@@ -178,7 +191,7 @@ var rn_instagram = React.createClass({
               value={this.state.hue}
               minimumValue={0}
               maximumValue={10}
-              onValueChange={(hue) => this.setState({hue})}
+              onValueChange={(hue) => this.setState({ hue })}
             />
           </View>
         </ScrollView>
@@ -207,25 +220,25 @@ module.exports = rn_instagram;
 
 
 var AnyInsta = GL.createComponent(
-  ({shader, inputImageTexture, inputImageTexture2, inputImageTexture3, ...rest}) =>
-  <GL.Node
-    {...rest}
-    inputTextureCoordinate={[
+  ({ shader, inputImageTexture, inputImageTexture2, inputImageTexture3, ...rest }) =>
+    <GL.Node
+      {...rest}
+      inputTextureCoordinate={[
         -1.0, -1.0,
         1.0, -1.0,
-        -1.0,  1.0,
-        1.0,  1.0,
-    ]}
-    shader={shader}
-    uniforms={{'u_Texture0' : inputImageTexture, 'u_Texture1' : inputImageTexture2}}>
-  </GL.Node>
-, { displayName: "Any" });
+        -1.0, 1.0,
+        1.0, 1.0,
+      ]}
+      shader={shader}
+      uniforms={{ 'u_Texture0': inputImageTexture, 'u_Texture1': inputImageTexture2 }}>
+    </GL.Node>
+  , { displayName: "Any" });
 
 var Instagram = GL.createComponent(
-  ({ brightness, saturation, contrast, hue, gray, sepia, mixFactor, image ,children, ...rest }) =>
-  <GL.Node
-    {...rest}
-    shader={shaders.instagram}
-    uniforms={{ brightness, saturation, contrast, hue, gray, sepia, mixFactor, tex : image  }}>
-  </GL.Node>
-, { displayName: "Instagram" });
+  ({ brightness, saturation, contrast, hue, gray, sepia, mixFactor, image, children, ...rest }) =>
+    <GL.Node
+      {...rest}
+      shader={shaders.instagram}
+      uniforms={{ brightness, saturation, contrast, hue, gray, sepia, mixFactor, tex: image }}>
+    </GL.Node>
+  , { displayName: "Instagram" });

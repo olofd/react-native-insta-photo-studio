@@ -31,8 +31,8 @@ export default class MediaStore {
     setupCroppingListener() {
         this.eventEmitter.addListener(events.onEditStepUpdated, (stepIndex, stepName, stepModel) => {
             if (stepName === 'crop') {
-                Promise.all(this.markedForExportMedia.map(media => media.crop())).then(() => {
-                    debugger;
+                Promise.all(this.markedForExportMedia.map(media => media.crop())).then((allMedia) => {
+                    this.eventEmitter.emit(events.requestEditStepMove, 'next', undefined, allMedia);
                 });
             }
         });

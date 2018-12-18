@@ -61,6 +61,9 @@ export default class ImageMedia extends EventEmitter {
 
     updateLastScrollEvent(scrollEvent) {
         this.lastScrollEvent = scrollEvent;
+        if(this.croppedUri) {
+            delete this.croppedUri;
+        }
     }
 
     initWithAsset(image, magnification, window, cb) {
@@ -215,41 +218,44 @@ export default class ImageMedia extends EventEmitter {
     }
 
     crop() {
-        const offsetY = this.lastScrollEvent.contentOffset.y / this.lastScrollEvent.contentSize.height;
-        const offsetX = this.lastScrollEvent.contentOffset.x / this.lastScrollEvent.contentSize.width;
-        const {
-            image,
-            magnification
-        } = this.imageInfo;
-        const {width, height} = image;
-        let newX = width * offsetX;
-        let newY = height * offsetY;
-        let newWidth = width / (this.lastScrollEvent.zoomScale * magnification);
-        let newHeight = width / (this.lastScrollEvent.zoomScale * magnification);
-        if (newWidth > width) {
-            newWidth = width;
-        }
-        if (newHeight > height) {
-            newHeight = height;
-        }
-        if (newX < 0) {
-            newX = 0;
-        }
-        if (newY < 0) {
-            newY = 0;
-        }
-        const cropData = {
-            offset: {
-                x: newX,
-                y: newY
-            },
-            size: {
-                width: newWidth,
-                height: newHeight
-            }
-        };
-
         return new Promise((resolve, reject) => {
+            if(this.croppedUri) {
+                return resolve(this);
+            }
+            const offsetY = this.lastScrollEvent.contentOffset.y / this.lastScrollEvent.contentSize.height;
+            const offsetX = this.lastScrollEvent.contentOffset.x / this.lastScrollEvent.contentSize.width;
+            const {
+            image,
+                magnification
+        } = this.imageInfo;
+            const { width, height } = image;
+            let newX = width * offsetX;
+            let newY = height * offsetY;
+            let newWidth = width / (this.lastScrollEvent.zoomScale * magnification);
+            let newHeight = width / (this.lastScrollEvent.zoomScale * magnification);
+            if (newWidth > width) {
+                newWidth = width;
+            }
+            if (newHeight > height) {
+                newHeight = height;
+            }
+            if (newX < 0) {
+                newX = 0;
+            }
+            if (newY < 0) {
+                newY = 0;
+            }
+            const cropData = {
+                offset: {
+                    x: newX,
+                    y: newY
+                },
+                size: {
+                    width: newWidth,
+                    height: newHeight
+                }
+            };
+
             this.imageEditor.cropImage(image.image, cropData, (croppedUri) => {
                 this.croppedUri = croppedUri;
                 resolve(this);

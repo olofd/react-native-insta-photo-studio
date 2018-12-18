@@ -15,6 +15,13 @@ class AppService extends EventEmitter {
         this.mediaStore = new MediaStore(this, CROPPER_MAGNIFICATION, imageEditor);
         this.currentWindow = Dimensions.get('window');
         this.setupRequestWindow();
+        this.setupListernerForStepMove();
+    }
+
+    setupListernerForStepMove() {
+        this.addListener(events.requestEditStepMove, (direction, nextStepName, stepModel) => {
+            this.moveEditStep(direction, nextStepName, stepModel);
+        });
     }
 
     openSettings() {
@@ -51,21 +58,34 @@ class AppService extends EventEmitter {
         });
     }
 
-    moveEditStep(direction) {
-        this.emit(events.requestMarkedForExportMedia, (markedForExport) => {
-            if (!markedForExport || !markedForExport.length) {
+    moveEditStep(direction, nextStepName /*optional*/, stepModel /*optional*/) {
+        const moveFunction = (direction, nextStepName, stepModel) => {
+            if (!stepModel) {
                 return this.emitEditStepMoveError('No media to move to next step');
             }
-            const nextStep = this.getNextStep(direction);
-            if (nextStep === undefined) {
+            let nextStep;
+            if (!nextStepName) {
+                nextStep = this.getNextStep(direction);
+            } else {
+                nextStep = controlFlowSteps.indexOf(nextStepName);
+            }
+            if (nextStep === undefined || nextStep === -1) {
                 return this.emitEditStepMoveError('Invalid direction');
             }
             this.currentEditStep = nextStep;
-            return this.emitEditStepUpdated(nextStep, markedForExport);
+            return this.emitEditStepUpdated(nextStep, stepModel);
+        };
+
+        if (stepModel) {
+            return moveFunction(direction, nextStepName, stepModel);
+        }
+        return this.emit(events.requestMarkedForExportMedia, (markedForExport) => {
+            moveFunction(direction, nextStepName, markedForExport);
         });
     }
 
     emitEditStepUpdated(nextStep, model) {
+        console.log('EditStepUpdated', nextStep, controlFlowSteps[nextStep], model);
         this.emit(events.onEditStepUpdated, nextStep, controlFlowSteps[nextStep], model);
     }
 

@@ -18,7 +18,7 @@ export default class PhotoManagerHeader extends Component {
     this.listeners = [];
     this.state = {
       editStepAnim: new Animated.Value(0),
-      currentStep: 0
+      currentStepName: 'select'
     };
   }
   static defaultProps = {
@@ -37,9 +37,25 @@ export default class PhotoManagerHeader extends Component {
   componentWillMount() {
     this.setupStyleObjs(this.props);
     this.listeners.push(this.props.appService.onEditStepUpdated((stepIndex, stepName, stepModel) => {
-      this.setState({
-        currentStep: stepIndex
-      });
+      let animationStep;
+      if (stepName === 'select') {
+        animationStep = 0;
+      }
+      else if (stepName === 'edit') {
+        animationStep = 1;
+      } else if (stepName === 'share') {
+        animationStep = 2;
+      }
+      if (animationStep !== undefined) {
+        Animated.timing(this.state.editStepAnim, {
+          toValue: animationStep,
+          duration: 300,
+          useNativeDriver: true
+        }).start();
+        this.setState({
+          currentStep: stepIndex
+        });
+      }
     }));
   }
 
@@ -70,7 +86,8 @@ export default class PhotoManagerHeader extends Component {
   }
 
   onBackAction() {
-    this.props.appService.moveEditStep('previous');
+    const stepName = this.state.currentStepName === 'edit' ? 'select' : this.state.currentStepName === 'share' ? 'edit' : 'select';
+    this.props.appService.moveEditStep('previous', stepName);
   }
 
   onNextButtonPress() {
@@ -104,14 +121,14 @@ export default class PhotoManagerHeader extends Component {
 
   _renderLeftButton() {
     const leftCancelButtonStyle = {
-      opacity: this.props.editStepAnim.interpolate({
+      opacity: this.state.editStepAnim.interpolate({
         inputRange: [0, 1],
         outputRange: [1, 0],
         extrapolate: 'clamp'
       })
     };
     const leftBackButtonStyle = {
-      opacity: this.props.editStepAnim
+      opacity: this.state.editStepAnim
     };
     return (
       <View>
@@ -186,14 +203,14 @@ export default class PhotoManagerHeader extends Component {
 
   _renderCenterColumnStepOne() {
     const centerColumnStyle = {
-      opacity: this.props.editStepAnim.interpolate({
+      opacity: this.state.editStepAnim.interpolate({
         inputRange: [0, 1],
         outputRange: [1, 0],
         extrapolate: 'clamp'
       }),
       transform: [
         {
-          translateX: this.props.editStepAnim.interpolate({
+          translateX: this.state.editStepAnim.interpolate({
             inputRange: [0, 1],
             outputRange: [0, ((-this.props.window.width) / 2) + 100]
           })
@@ -210,14 +227,14 @@ export default class PhotoManagerHeader extends Component {
 
   _renderCenterColumnStepTwo() {
     const centerColumnStyle = {
-      opacity: this.props.editStepAnim.interpolate({
+      opacity: this.state.editStepAnim.interpolate({
         inputRange: [0, 1, 2],
         outputRange: [0, 1, 0],
         extrapolate: 'clamp'
       }),
       transform: [
         {
-          translateX: this.props.editStepAnim.interpolate({
+          translateX: this.state.editStepAnim.interpolate({
             inputRange: [0, 1, 2],
             outputRange: [this.props.window.width, 0, ((-this.props.window.width) / 2) + 100]
           })
@@ -235,14 +252,14 @@ export default class PhotoManagerHeader extends Component {
 
   _renderCenterColumnStepThree() {
     const centerColumnStyle = {
-      opacity: this.props.editStepAnim.interpolate({
+      opacity: this.state.editStepAnim.interpolate({
         inputRange: [0, 1, 2],
         outputRange: [0, 0, 1],
         extrapolate: 'clamp'
       }),
       transform: [
         {
-          translateX: this.props.editStepAnim.interpolate({
+          translateX: this.state.editStepAnim.interpolate({
             inputRange: [1, 2],
             outputRange: [this.props.window.width, 0],
             extrapolate: 'clamp'
@@ -289,17 +306,7 @@ export default class PhotoManagerHeader extends Component {
     );
   }
 
-  /*
-                  <Animated.View style={[fadeAnim, styles.leftButtonContainer]}>
-          {this._renderLeftButton()}
-        </Animated.View>
-          <Animated.View style={fadeAnim}>
-          {this.renderRightButton()}
-        </Animated.View>
-  */
-
   render() {
-    console.log('render');
     return (
       <View
         style={[

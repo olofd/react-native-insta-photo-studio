@@ -5,7 +5,32 @@ import CameraRollService from './services/camera-roll-service';
 import AlbumList from './components/album-list';
 import I18N from './I18n';
 import AppService from './services/app-service';
-
+import {Surface} from "gl-react-native"; // for React Native
+import { Shaders, Node, GLSL } from "gl-react";
+const shaders = Shaders.create({
+  helloBlue: {
+    frag: GLSL`
+precision highp float;
+varying vec2 uv;
+uniform float blue;
+void main() {
+  gl_FragColor = vec4(uv.x, uv.y, blue, 1.0);
+}`
+  }
+});
+class HelloBlue extends React.Component {
+  render() {
+    const { blue } = this.props;
+    return <Node
+      shader={shaders.helloBlue}
+      uniforms={{ blue }}
+    />;
+  }
+}
+/*import Instagram from './instagram';
+import App from './effects/App';
+import Edit from './components/edit/index'
+*/
 export default class InstaPhotoStudio extends Component {
 
   static defaultProps = {
@@ -63,13 +88,13 @@ export default class InstaPhotoStudio extends Component {
   }
 
   componentWillMount() {
-    if(this.props.onEventEmitterCreated) {
+    if (this.props.onEventEmitterCreated) {
       this.props.onEventEmitterCreated(this.state.appService);
     }
     const { appService } = this.state;
     const { cameraRollService } = appService;
     I18N(this.props.translations);
-    
+
     this.setupStyleObjs(this.props);
     this.listeners.push(cameraRollService.onCurrentAlbumsChanged((currentAlbums) => {
       this.setState({ currentAlbums: currentAlbums });
@@ -120,6 +145,12 @@ export default class InstaPhotoStudio extends Component {
     });
   }
 
+
+  __render() {
+    return <Surface width={300} height={300}>
+  <HelloBlue blue={0.5} />
+</Surface>
+  }
 
   render() {
     const statePass = {

@@ -169,7 +169,6 @@ export default class PhotoCamera extends Component {
           </View>
         </TouchableWithoutFeedback>
       </BlockView>
-
     );
   }
 
